@@ -15,6 +15,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.WindowConstants;
 
+import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
+
+
 /** Simple application model.
  *
  * @author Emmanuel Bigeon */
@@ -58,6 +61,14 @@ public class App {
                 }
                 if ("--gui".equals(string)) { //$NON-NLS-1$
                     showLogo();
+                }
+                if ("--parse".equals(string)) {
+                    if ( args.length != 2 ){
+                        System.out.println("Invalid command line for parser. Missing target file.");
+                        return;
+                    }
+                    launchParser( new String[] { args[1]} );
+                    return;
                 }
             }
         }
@@ -110,5 +121,10 @@ public class App {
 
         frame.pack();
         frame.setVisible(true);
+    }
+
+    public static void launchParser(String[] outputFile) {
+        System.out.println("Hello world from launch parser, output file: " + outputFile[0]);
+        IDFMNetworkExtractor.parse(outputFile);
     }
 }

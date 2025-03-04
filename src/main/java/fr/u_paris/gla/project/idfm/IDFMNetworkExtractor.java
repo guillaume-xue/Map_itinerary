@@ -36,15 +36,19 @@ public class IDFMNetworkExtractor {
     private static final String TRACE_FILE_URL = "https://data.iledefrance-mobilites.fr/api/explore/v2.1/catalog/datasets/traces-des-lignes-de-transport-en-commun-idfm/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B";
     private static final String STOPS_FILE_URL = "https://data.iledefrance-mobilites.fr/api/explore/v2.1/catalog/datasets/arrets-lignes/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B";
 
+    //ID;Short Name;Long Name;Route Type;Color;Route URL;Shape;id_ilico;OperatorName;NetworkName;URL;long_name_first;geo_point_2d
+
     // IDF mobilite csv formats
     private static final int IDFM_TRACE_ID_INDEX    = 0;
     private static final int IDFM_TRACE_SNAME_INDEX = 1;
     private static final int IDFM_TRACE_SHAPE_INDEX = 6;
 
+    //route_id;route_long_name;stop_id;stop_name;stop_lon;stop_lat;OperatorName;shortName;mode;Pointgeo;Nom_commune;Code_insee
+
     private static final int IDFM_STOPS_RID_INDEX  = 0;
-    private static final int IDFM_STOPS_NAME_INDEX = 5;
-    private static final int IDFM_STOPS_LON_INDEX  = 6;
-    private static final int IDFM_STOPS_LAT_INDEX  = 7;
+    private static final int IDFM_STOPS_NAME_INDEX = 3;
+    private static final int IDFM_STOPS_LON_INDEX  = 4;
+    private static final int IDFM_STOPS_LAT_INDEX  = 5;
 
     // Magically chosen values
     /** A number of stops on each line */
@@ -57,7 +61,7 @@ public class IDFMNetworkExtractor {
      * defined by this application.
      * 
      * @param args the arguments (expected one for the destination file) */
-    public static void main(String[] args) {
+    public static void parse(String[] args) {
 
         if (args.length != 1) {
             LOGGER.severe("Invalid command line. Missing target file.");
