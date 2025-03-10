@@ -9,13 +9,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Properties;
 
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.WindowConstants;
-
-import fr.u_paris.gla.project.views.Gui;
+import fr.u_paris.gla.project.views.Launcher;
 
 /**
  * Simple application model.
@@ -65,8 +59,7 @@ public class App {
                     return;
                 }
                 if ("--gui".equals(string)) { //$NON-NLS-1$
-                    Gui gui = new Gui();
-                    gui.launch();
+                    new Launcher();
                     return;
                 }
             }
