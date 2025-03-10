@@ -7,22 +7,22 @@ public class Subline {
 
     private String name;
 
-    //The first station should ALWAYS be the departure station.
-    private ArrayList<Station> listOfStations = new ArrayList<>();
+    //The first Stop should ALWAYS be the departure Stop.
+    private ArrayList<Stop> listOfStops = new ArrayList<>();
     private ArrayList<LocalTime> departureTimesAtStartOfSubline = new ArrayList<>();
 
 
-    public Subline(String name, Station departureStation){
+    public Subline(String name, Stop departureStop){
         this.name = name;
     }
 
-    public void addNextStation(Station station){
-        listOfStations.add(station);
+    public void addNextStop(Stop Stop){
+        listOfStops.add(Stop);
     }
-    //station should be the departure station. 
-    public void addDepartureTimes(Station station, ArrayList<LocalTime> departureTimes) throws Exception{
-        if(!station.equals(listOfStations.get(0))){
-            throw new Exception("The departure station indicated does not match the first station in the list of stations.");
+    //Stop should be the departure Stop. 
+    public void addDepartureTimes(Stop Stop, ArrayList<LocalTime> departureTimes) throws Exception{
+        if(!Stop.equals(listOfStops.get(0))){
+            throw new Exception("The departure Stop indicated does not match the first Stop in the list of Stops.");
         }
         departureTimesAtStartOfSubline.addAll(departureTimes);
     }

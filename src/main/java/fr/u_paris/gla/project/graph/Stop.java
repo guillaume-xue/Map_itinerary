@@ -7,14 +7,14 @@ import java.util.HashMap;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 
-public class Station {
+public class Stop {
 
     private float gpsCoordX;
     private float gpsCoordY;
-    private String name;
+    private String nameOfAssociatedStation;
 
     //A list of all adjacent stations, with the associated time and distance to get from current station to adjacent station. 
-    private HashMap<Station, MutablePair<LocalTime, Float>> timeDistancePerAdjacentStation = new HashMap<>();
+    private HashMap<Stop, MutablePair<LocalTime, Float>> timeDistancePerAdjacentStop = new HashMap<>();
 
     //For each subline that passes through this station, it should have an entry here
     /*if this station is not a departure station, 
@@ -22,10 +22,10 @@ public class Station {
     */
     private HashMap<Subline, ArrayList<LocalTime>> departures = new HashMap<>();
 
-    public Station(float gpsCoordX, float gpsCoordY, String name){
+    public Stop(float gpsCoordX, float gpsCoordY, String nameOfAssociatedStation){
         this.gpsCoordX = gpsCoordX;
         this.gpsCoordY = gpsCoordY;
-        this.name = name;
+        this.nameOfAssociatedStation = nameOfAssociatedStation;
     }
 
     public float getGpsCoordX() {
@@ -36,12 +36,12 @@ public class Station {
         return gpsCoordY;
     }
 
-    public String getName() {
-        return name;
+    public String getNameOfAssociatedStation() {
+        return nameOfAssociatedStation;
     }
 
-    public void addAdjacentStation(Station adjacentStation, LocalTime timeToNextStation, Float distanceToNextStation){
-        timeDistancePerAdjacentStation.put(adjacentStation, new MutablePair<>(timeToNextStation, distanceToNextStation));
+    public void addAdjacentStop(Stop adjacentStop, LocalTime timeToNextStation, Float distanceToNextStation){
+        timeDistancePerAdjacentStop.put(adjacentStop, new MutablePair<>(timeToNextStation, distanceToNextStation));
     }
 
     public void addDeparture(Subline subline, ArrayList<LocalTime> times){
