@@ -8,8 +8,10 @@ package fr.u_paris.gla.project.utils;
  * @author Emmanuel Bigeon */
 public final class GPS {
 
+    /** The value of a flat angle, in degrees. */
+    private static final int    FLAT_ANGLE_DEGREE = 180;
     /** The (approximated) earth radius in km. */
-    private static final double EARTH_RADIUS = 6_370.0;
+    private static final double EARTH_RADIUS      = 6_370.0;
 
     /** Hidden constructor for tool class */
     private GPS() {
@@ -20,8 +22,8 @@ public final class GPS {
      * 
      * @param degree the degree value
      * @return the radian value */
-    private static final double degreeToRadian(double degree) {
-        return degree / 180 * Math.PI;
+    private static double degreeToRadian(double degree) {
+        return degree / FLAT_ANGLE_DEGREE * Math.PI;
     }
 
     /** Compute the flying distance between two GPS positions.

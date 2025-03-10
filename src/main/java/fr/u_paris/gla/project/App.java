@@ -76,26 +76,26 @@ public class App {
 
     /** @param out */
     public static void printAppInfos(PrintStream out) {
-        Properties props = new Properties();
-        try (InputStream is = App.class.getResourceAsStream("application.properties")) { //$NON-NLS-1$
-            props.load(is);
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to read application informations", e); //$NON-NLS-1$
-        }
+        Properties props = readApplicationProperties();
 
         out.println("Application: " + props.getProperty("app.name", UNSPECIFIED)); //$NON-NLS-1$ //$NON-NLS-2$
         out.println("Version: " + props.getProperty("app.version", UNSPECIFIED)); //$NON-NLS-1$ //$NON-NLS-2$
         out.println("By: " + props.getProperty("app.team", UNSPECIFIED)); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
-    /** Shows the logo in an image. */
-    public static void showLogo() {
+    private static Properties readApplicationProperties() {
         Properties props = new Properties();
         try (InputStream is = App.class.getResourceAsStream("application.properties")) { //$NON-NLS-1$
             props.load(is);
         } catch (IOException e) {
             throw new RuntimeException("Unable to read application informations", e); //$NON-NLS-1$
         }
+        return props;
+    }
+
+    /** Shows the logo in an image. */
+    public static void showLogo() {
+        Properties props = readApplicationProperties();
 
         JFrame frame = new JFrame(props.getProperty("app.name")); //$NON-NLS-1$
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
