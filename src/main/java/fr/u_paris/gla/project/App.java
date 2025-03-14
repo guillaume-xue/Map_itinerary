@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.WindowConstants;
 
 import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
+import fr.u_paris.gla.project.utils.CSVExtractor;
 
 
 /** Simple application model.
@@ -62,12 +63,15 @@ public class App {
                 if ("--gui".equals(string)) { //$NON-NLS-1$
                     showLogo();
                 }
+                // --parse [URL|CSV] [Target file.csv]
+                //  args[0]  args[1]   args[2] 
                 if ("--parse".equals(string)) {
-                    if ( args.length != 2 ){
-                        System.out.println("Invalid command line for parser. Missing target file.");
+                    if ( args.length < 2 ){
+                        System.out.println("Invalid command line for parser. Missing parsing mode.");
+                        System.out.println("Use with: --parse [URL|CSV] [Target file.csv]");
                         return;
                     }
-                    launchParser( new String[] { args[1]} );
+                    launchParser( args );
                     return;
                 }
             }
@@ -123,8 +127,23 @@ public class App {
         frame.setVisible(true);
     }
 
-    public static void launchParser(String[] outputFile) {
-        System.out.println("Hello world from launch parser, output file: " + outputFile[0]);
-        IDFMNetworkExtractor.parse(outputFile);
+    public static void launchParser(String[] args) {
+        if ( args.length != 3 ){
+            System.out.println("Invalid command line for parser. Missing target file.");
+            System.out.println("Use with: --parse [URL|CSV] [Target file.csv]");
+            return;
+        }
+
+        if ( "URL".equals(args[1]) ){
+            IDFMNetworkExtractor.parse(args[2]);
+        } else if ( "CSV".equals(args[1]) ){
+            CSVExtractor.makeOjectsFromCSV(args[2]);
+        } else {
+            System.out.print("Wrong argument for parser.");
+            System.out.println("Use with: --parse [URL|CSV] [Target file.csv]");
+            return;
+        }
     }
+
+
 }

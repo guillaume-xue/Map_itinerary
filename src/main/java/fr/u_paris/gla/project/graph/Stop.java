@@ -3,14 +3,15 @@ package fr.u_paris.gla.project.graph;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 import org.apache.commons.lang3.tuple.MutablePair;
 
 
-public class Stop {
+public class Stop implements Comparable<Stop>{
 
-    private float gpsCoordX;
-    private float gpsCoordY;
+    private double longitude;
+    private double latitude;
     private String nameOfAssociatedStation;
 
     //A list of all adjacent stations, with the associated time and distance to get from current station to adjacent station. 
@@ -22,18 +23,18 @@ public class Stop {
     */
     private HashMap<Subline, ArrayList<LocalTime>> departures = new HashMap<>();
 
-    public Stop(float gpsCoordX, float gpsCoordY, String nameOfAssociatedStation){
-        this.gpsCoordX = gpsCoordX;
-        this.gpsCoordY = gpsCoordY;
+    public Stop(double longitude, double latitude, String nameOfAssociatedStation){
+        this.longitude = longitude;
+        this.latitude = latitude;
         this.nameOfAssociatedStation = nameOfAssociatedStation;
     }
 
-    public float getGpsCoordX() {
-        return gpsCoordX;
+    public double getLongitude() {
+        return longitude;
     }
 
-    public float getGpsCoordY() {
-        return gpsCoordY;
+    public double getLatitude() {
+        return latitude;
     }
 
     public String getNameOfAssociatedStation() {
@@ -46,6 +47,43 @@ public class Stop {
 
     public void addDeparture(Subline subline, ArrayList<LocalTime> times){
         departures.put(subline, times);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "Stop [" +
+            "name: '%s'," +
+            " longitude: %.6f," +
+            " latitude: %.6f" +
+            "]\n",
+            nameOfAssociatedStation, longitude, latitude
+        );    
+    }
+
+    @Override
+    public int compareTo(Stop o) {
+        return nameOfAssociatedStation.compareTo(o.nameOfAssociatedStation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(longitude, latitude, nameOfAssociatedStation);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Stop other = (Stop) obj;
+        return Double.doubleToLongBits(latitude) == Double
+                .doubleToLongBits(other.latitude) && Objects.equals(nameOfAssociatedStation, other.nameOfAssociatedStation)
+                && Double.doubleToLongBits(longitude) == Double
+                        .doubleToLongBits(other.longitude);
     }
 }
 

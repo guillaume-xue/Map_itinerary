@@ -60,10 +60,10 @@ public class IDFMNetworkExtractor {
     /** Main entry point for the extractor of IDF mobilite data into a network as
      * defined by this application.
      * 
-     * @param args the arguments (expected one for the destination file) */
-    public static void parse(String[] args) {
+     * @param destination The destination file */
+    public static void parse(String destinationFile) {
 
-        if (args.length != 1) {
+        if (destinationFile == null) {
             LOGGER.severe("Invalid command line. Missing target file.");
             return;
         }
@@ -89,11 +89,11 @@ public class IDFMNetworkExtractor {
         CSVStreamProvider provider = new CSVStreamProvider(traces.values().iterator());
 
         try {
-            CSVTools.writeCSVToFile(args[0], Stream.iterate(provider.next(),
+            CSVTools.writeCSVToFile(destinationFile, Stream.iterate(provider.next(),
                     t -> provider.hasNext(), t -> provider.next()));
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, e,
-                    () -> MessageFormat.format("Could not write in file {0}", args[0]));
+                    () -> MessageFormat.format("Could not write in file {0}", destinationFile));
         }
     }
 
