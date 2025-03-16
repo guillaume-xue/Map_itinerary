@@ -22,6 +22,11 @@ import com.opencsv.ICSVParser;
 import com.opencsv.ICSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
 
+import java.io.FileNotFoundException;
+import java.io.FileInputStream;
+
+
+
 /** A CSV tool class.
  * 
  * @author Emmanuel Bigeon */
@@ -60,6 +65,37 @@ public final class CSVTools {
                 contentLineConsumer.forEachOrdered(csv::writeNext);
             }
         }
+    }
+    
+    //quasiment meme code que readCSVFromURL sauf pour le parser qui est différent et la façon de récuperer le fichier source
+    public static void readCSVFromFile(String resource, Consumer<String[]> contentLineConsumer) 
+    		throws IOException {
+    	
+    	URL fileUrl = CSVTools.class.getClassLoader().getResource(resource);
+    	if (fileUrl == null) {
+            throw new FileNotFoundException("Resource not found: " + resource);
+        }
+    	
+    	ICSVParser parser = new CSVParserBuilder().withSeparator(',').build();
+    	try (InputStream is = fileUrl.openStream(); Reader reader = new 
+    			BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            // Configuration du parser CSV
+            
+            CSVReaderBuilder csvReaderBuilder = new CSVReaderBuilder(reader)
+            		.withCSVParser(parser);
+            try (CSVReader csv = csvReaderBuilder.build()) {
+                // Ignorer la première ligne (header)
+                String[] line = csv.readNextSilently();
+                // Lire les lignes suivantes
+                while (csv.peek() != null) {
+                	line = csv.readNext();
+                    contentLineConsumer.accept(line);
+                }
+            }
+        } catch (CsvValidationException e) {
+            throw new IOException("Invalid csv file", e); //$NON-NLS-1$
+        }
+    	
     }
 
 }

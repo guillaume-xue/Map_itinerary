@@ -24,7 +24,7 @@ public final class UnidentifiedStopEntry extends StopEntry {
      * @param longitude
      * @param latitude */
     public UnidentifiedStopEntry(double longitude, double latitude) {
-        super("Unidentified", longitude, latitude); //$NON-NLS-1$
+        super("Unidentified", "NoId", longitude, latitude); //$NON-NLS-1$
     }
 
     @Override

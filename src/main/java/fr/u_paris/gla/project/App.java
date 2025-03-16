@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.imageio.ImageIO;
@@ -16,7 +17,8 @@ import javax.swing.JLabel;
 import javax.swing.WindowConstants;
 
 import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
-
+import java.io.File;
+import java.net.URL;
 
 /** Simple application model.
  *
@@ -27,11 +29,12 @@ public class App {
      */
     private static final String UNSPECIFIED = "Unspecified";         //$NON-NLS-1$
     /** The logo image name. */
-    private static final String LOGO_NAME   = "uparis_logo_rvb.png"; //$NON-NLS-1$
+    private static final String LOGO_NAME   = "fr/u_paris/gla/project/uparis_logo_rvb.png"; //$NON-NLS-1$
     /** Image height. */
     private static final int    HEIGHT      = 256;
     /** Image width. */
     private static final int    WIDTH       = HEIGHT;
+    
 
     /** Resizes an image.
      *
@@ -63,13 +66,19 @@ public class App {
                     showLogo();
                 }
                 if ("--parse".equals(string)) {
-                    if ( args.length != 2 ){
-                        System.out.println("Invalid command line for parser. Missing target file.");
+                    if ( args.length != 3 ){
+                        System.out.println("Invalid command line for parser. Needs a target file and a target repertory.");
                         return;
                     }
-                    launchParser( new String[] { args[1]} );
+                    launchParser( new String[] { args[1], args[2]} );
                     return;
                 }
+                //possiblement faire le parsing pour le schedule avec l'option précédente directement
+                //si on fait cette option on met en argument le nom du dossier ds lequel on mettra les csv horaire
+                /*if ("--parseScheduleData".equals(string)) {
+                	launchParserForScheduleData(new String[] { args[1]});
+                	return;
+                }*/
             }
         }
     }
@@ -93,8 +102,9 @@ public class App {
         return props;
     }
 
+    
     /** Shows the logo in an image. */
-    public static void showLogo() {
+    /*public static void showLogo() {
         Properties props = readApplicationProperties();
 
         JFrame frame = new JFrame(props.getProperty("app.name")); //$NON-NLS-1$
@@ -121,10 +131,47 @@ public class App {
 
         frame.pack();
         frame.setVisible(true);
+    }*/
+    public static void showLogo() {
+        Properties props = readApplicationProperties();
+
+        JFrame frame = new JFrame(props.getProperty("app.name"));
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        JLabel container = new JLabel();
+
+        // Debug: Vérifie si le logo est trouvé
+        URL logoUrl = App.class.getClassLoader().getResource(LOGO_NAME);
+        if (logoUrl == null) {
+            container.setText("Image Not Found");
+        } else {
+            try (InputStream is = logoUrl.openStream()) {
+                BufferedImage img = ImageIO.read(is);
+                ImageIcon icon = new ImageIcon(img);
+                ImageIcon resized = new ImageIcon(getScaledImage(icon.getImage(), WIDTH, HEIGHT));
+
+                container.setIcon(resized);
+            } catch (IOException e) {
+                container.setText("Image Not Read: " + e.getLocalizedMessage());
+            }
+        }
+
+        frame.getContentPane().add(container);
+
+        frame.pack();
+        frame.setVisible(true);
     }
 
-    public static void launchParser(String[] outputFile) {
-        System.out.println("Hello world from launch parser, output file: " + outputFile[0]);
-        IDFMNetworkExtractor.parse(outputFile);
+
+    public static void launchParser(String[] outputFileAndDirectory) {
+        System.out.println("Hello world from launch parser, output file: " + outputFileAndDirectory[0] + "\nAnd output repertory: " + outputFileAndDirectory[1]);
+        IDFMNetworkExtractor.parse(outputFileAndDirectory);
     }
+    /*
+    public static void launchParserForScheduleData(String[] outputDirectory) {
+    	File directory = new File(outputDirectory);
+    	IDFMNetworkExtractor.parseScheduleData(directory);
+    	System.out.println("You will find the csv files for "
+    			+ "departures at every terminal in the repertory " + DIRECTORY_NAME);
+    }*/
 }

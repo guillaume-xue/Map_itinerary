@@ -11,6 +11,7 @@ import java.util.Objects;
  * @author Emmanuel Bigeon */
 public class StopEntry implements Comparable<StopEntry> {
     public final String lname;
+    private final String stopId;
     public final double longitude;
     public final double latitude;
 
@@ -19,11 +20,16 @@ public class StopEntry implements Comparable<StopEntry> {
      * @param lname
      * @param longitude
      * @param latitude */
-    public StopEntry(String lname, double longitude, double latitude) {
+    public StopEntry(String lname, String stopId, double longitude, double latitude) {
         super();
         this.lname = lname;
+        this.stopId = stopId;
         this.longitude = longitude;
         this.latitude = latitude;
+    }
+    
+    public String getStopId() {
+    	return this.stopId;
     }
 
     @Override
