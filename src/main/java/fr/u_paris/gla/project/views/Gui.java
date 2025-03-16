@@ -3,12 +3,11 @@ package fr.u_paris.gla.project.views;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.Border;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 public class Gui extends JFrame {
 
@@ -17,7 +16,7 @@ public class Gui extends JFrame {
   private static final int RESEARCH_PANEL_WIDTH = 350;
   private static final int MIN_SCREEN_WIDTH = 600;
   private static final int MIN_SCREEN_HEIGHT = 300;
-  private static final String PATH_FILE = "/paths.json";
+  private static final String TXT_PATH_FILE = "/txt/paths.txt";
   private JTextArea textStart;
   private JTextArea textEnd;
   private JPanel contentPanel;
@@ -168,7 +167,7 @@ public class Gui extends JFrame {
     // Add action listener to add displayJsonContent to contentPanel
     buttonSearch.addActionListener(e -> {
       contentPanel.removeAll();
-      contentPanel.add(displayJsonContent());
+      contentPanel.add(displayTxtContent());
       contentPanel.revalidate();
       contentPanel.repaint();
     });
@@ -186,42 +185,59 @@ public class Gui extends JFrame {
   }
 
   /**
-   * Reads and displays the contents of a JSON file in a formatted panel.
+   * Reads and displays the contents of a .txt file in a formatted panel.
    */
-  private JPanel displayJsonContent() {
+  private JPanel displayTxtContent() {
     JPanel pathPanel = new JPanel();
     pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
     pathPanel.setBackground(new Color(48, 54, 63)); // Background color of paths panel
     pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
 
-    try (InputStream inputStream = getClass().getResourceAsStream(PATH_FILE);
-        InputStreamReader reader = new InputStreamReader(inputStream)) {
-      JSONTokener tokener = new JSONTokener(reader);
-      JSONObject jsonObject = new JSONObject(tokener);
-      JSONArray jsonArray = jsonObject.getJSONArray("paths");
+    try (InputStream inputStream = Gui.class.getResourceAsStream(TXT_PATH_FILE)) {
+      if (inputStream == null) {
+        // Handle the case where the file is not found
+        JLabel errorLabel = new JLabel("Error: File not found - " + TXT_PATH_FILE);
+        errorLabel.setForeground(Color.RED);
+        pathPanel.add(errorLabel);
+        return pathPanel;
+      }
 
-      for (int i = 0; i < jsonArray.length(); i++) {
-        String path = jsonArray.getString(i);
-        JTextField pathField = new JTextField(path);
-        pathField.setEditable(false);
-        pathField.setFocusable(false);
-        pathField.setForeground(Color.WHITE);
-
-        // Skip if the path is a number
-        if (path.matches("\\d+")) {
-          pathField.setFont(new Font("Segoe UI", Font.PLAIN, 20));
-          pathField.setBackground(new Color(45, 52, 54));
-          pathField.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Padding for the number
+      InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+      StringBuilder content = new StringBuilder();
+      int c;
+      while ((c = reader.read()) != -1) {
+        if (c == '\n') {
+          String line = content.toString();
+          JTextArea lineTextArea = createTextArea(line);
+          lineTextArea.setEditable(false); // Make the text area read-only
+          lineTextArea.setFocusable(false); // Disable focus to prevent selection
+          if (line.matches("\\d+")) {
+            // If the line is a number, display it without additional formatting
+            lineTextArea.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+          }
+          pathPanel.add(lineTextArea);
+          content.setLength(0); // Clear the content for the next line
         } else {
-          pathField.setBackground(new Color(48, 54, 63));
-          pathField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-          pathField.setBorder(createRoundedBorder(15)); // Rounded border
+          content.append((char) c);
         }
-        pathPanel.add(pathField);
-        pathPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+      }
+      // Add the last line if it exists
+      if (content.length() > 0) {
+        String line = content.toString();
+        JTextArea lineTextArea = createTextArea(line);
+        lineTextArea.setEditable(false);
+        lineTextArea.setFocusable(false); // Disable focus to prevent selection
+        if (line.matches("\\d+")) {
+          lineTextArea.setFont(new Font("Segoe UI", Font.BOLD, 16));
+          lineTextArea.setBackground(new Color(45, 52, 54));
+        }
+        pathPanel.add(lineTextArea);
       }
     } catch (IOException e) {
       e.printStackTrace();
+      JLabel errorLabel = new JLabel("Error reading file: " + e.getMessage());
+      errorLabel.setForeground(Color.RED);
+      pathPanel.add(errorLabel);
     }
 
     return pathPanel;
