@@ -25,16 +25,16 @@ public class Launcher {
     JWindow splashScreen = createSplashScreen();
     splashScreen.setVisible(true);
 
+    // Close the splash screen
+    fadeOut(splashScreen);
+    splashScreen.dispose();
+
     System.setProperty("http.agent", "MyCustomApp/1.0 (https://example.com)");
 
     SwingUtilities.invokeLater(() -> {
       // Create the main window
       Gui gui = new Gui();
       gui.setVisible(true);
-
-      // Close the splash screen
-      fadeOut(splashScreen);
-      splashScreen.dispose();
     });
   }
 
@@ -50,7 +50,7 @@ public class Launcher {
     // Create the content of the splash screen
     JPanel contentPane = new JPanel(new BorderLayout());
     contentPane.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2));
-    contentPane.setBackground(new Color(45, 52, 54));
+    contentPane.setBackground(new Color(240, 240, 240));
     // Resize the image
     ImageIcon icon = new ImageIcon(SPLASH_SCREEN_IMAGE);
     Image image = icon.getImage().getScaledInstance(150, 150, java.awt.Image.SCALE_SMOOTH);
