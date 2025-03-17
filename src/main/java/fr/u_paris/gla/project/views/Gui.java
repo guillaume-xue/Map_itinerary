@@ -1,5 +1,8 @@
 package fr.u_paris.gla.project.views;
 
+import org.openstreetmap.gui.jmapviewer.JMapViewer;
+import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
+
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -20,6 +23,10 @@ public class Gui extends JFrame {
   private JTextArea textStart;
   private JTextArea textEnd;
   private JPanel contentPanel;
+  private static final Color textColor = new Color(11, 22, 44);
+  private static final Color bordeColor = new Color(88, 88, 88);
+  private static final Color primaryBackgroundColor = new Color(240, 240, 240);
+  private static final Color accentColor = new Color(76, 175, 80);
 
   /**
    * Constructor.
@@ -32,32 +39,27 @@ public class Gui extends JFrame {
     setMinimumSize(new Dimension(MIN_SCREEN_WIDTH, MIN_SCREEN_HEIGHT)); // Set minimum size
     setLocationRelativeTo(null);
 
-    // Set a modern font and color scheme
-    Color primaryColor = new Color(34, 40, 49);
-    Color secondaryColor = new Color(45, 52, 54);
-    Color accentColor = new Color(76, 175, 80);
-
     // Create text areas for the start and end
     this.textStart = createTextArea("From");
     JPanel startPanel = new JPanel();
     startPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-    startPanel.setBackground(secondaryColor);
+    startPanel.setBackground(primaryBackgroundColor);
     startPanel.add(textStart);
 
     this.textEnd = createTextArea("To");
     JPanel endPanel = new JPanel();
     endPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-    endPanel.setBackground(secondaryColor);
+    endPanel.setBackground(primaryBackgroundColor);
     endPanel.add(textEnd);
 
     addFocusListenerToTextArea();
 
     // Create a search button with hover effects
-    JButton buttonSearch = createSearchButton(accentColor);
+    JButton buttonSearch = createSearchButton();
 
     // Create a panel for the research area
     JPanel researchPanel = new JPanel();
-    researchPanel.setBackground(secondaryColor);
+    researchPanel.setBackground(primaryBackgroundColor);
     researchPanel.setLayout(new BoxLayout(researchPanel, BoxLayout.Y_AXIS));
     researchPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
     researchPanel.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -69,7 +71,7 @@ public class Gui extends JFrame {
     // Create a container for the button to center it
     JPanel buttonPanel = new JPanel();
     buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER)); // Center the button within the panel
-    buttonPanel.setBackground(secondaryColor); // Ensure the background matches
+    buttonPanel.setBackground(primaryBackgroundColor); // Ensure the background matches
     buttonPanel.add(buttonSearch); // Add the search button to this centered panel
 
     // Add the button panel to the research panel
@@ -79,7 +81,7 @@ public class Gui extends JFrame {
     // Create a content panel for displaying JSON content
     contentPanel = new JPanel();
     contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-    contentPanel.setBackground(secondaryColor);
+    contentPanel.setBackground(primaryBackgroundColor);
 
     // Add the research panel to a scroll pane
     JScrollPane scrollPane = new JScrollPane(contentPanel);
@@ -94,8 +96,7 @@ public class Gui extends JFrame {
     splitPane.add(scrollPane, JSplitPane.BOTTOM);
 
     // Create a map panel
-    JPanel mapPanel = new JPanel();
-    mapPanel.setBackground(primaryColor);
+    JPanel mapPanel = createMapViewerPanel();
 
     // Add the split pane and the map panel to the main content panel
     JPanel mainContentPanel = new JPanel();
@@ -104,6 +105,26 @@ public class Gui extends JFrame {
     mainContentPanel.add(mapPanel, BorderLayout.CENTER);
 
     add(mainContentPanel);
+  }
+
+  /**
+   * Creates a map viewer panel with a tile source and a default location.
+   * 
+   * @return the map viewer panel
+   */
+  private static JPanel createMapViewerPanel() {
+    JMapViewer mapViewer = new JMapViewer();
+    mapViewer.setTileSource(new OsmTileSource.Mapnik());
+
+    // Center the map on Paris (latitude: 48.8566, longitude: 2.3522)
+    mapViewer.setDisplayPosition(
+        new org.openstreetmap.gui.jmapviewer.Coordinate(48.8566, 2.3522), 10);
+
+    JPanel mapPanel = new JPanel();
+    mapPanel.setLayout(new java.awt.BorderLayout());
+    mapPanel.add(mapViewer, java.awt.BorderLayout.CENTER);
+
+    return mapPanel;
   }
 
   /**
@@ -135,32 +156,36 @@ public class Gui extends JFrame {
 
   /**
    * Creates a styled JTextArea with rounded edges.
+   * 
+   * @return the text area
    */
   private JTextArea createTextArea(String text) {
     JTextArea textArea = new JTextArea(text);
-    textArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-    textArea.setForeground(Color.WHITE);
-    textArea.setBackground(new Color(48, 54, 63));
+    textArea.setFont(new Font("Segoe UI", Font.BOLD, 14)); // Set text to bold
+    textArea.setForeground(textColor);
+    textArea.setBackground(primaryBackgroundColor);
     textArea.setPreferredSize(new Dimension(RESEARCH_PANEL_WIDTH, 52));
-    textArea.setCaretColor(Color.WHITE);
+    textArea.setCaretColor(Color.BLACK);
     textArea.setLineWrap(true);
     textArea.setWrapStyleWord(true);
     textArea.setEditable(true);
-    textArea.setBorder(createRoundedBorder(15)); // Rounded border
+    textArea.setBorder(createBorder(15)); // Rounded border
     textArea.setAlignmentX(Component.CENTER_ALIGNMENT); // Align text to center
     return textArea;
   }
 
   /**
    * Creates a styled JButton with rounded edges and hover effects.
+   * 
+   * @return the search button
    */
-  private JButton createSearchButton(Color accentColor) {
+  private JButton createSearchButton() {
     JButton buttonSearch = new JButton("Search");
     buttonSearch.setFont(new Font("Segoe UI", Font.BOLD, 16));
     buttonSearch.setBackground(accentColor);
-    buttonSearch.setForeground(Color.WHITE);
+    buttonSearch.setForeground(textColor);
     buttonSearch.setFocusPainted(false);
-    buttonSearch.setBorder(createRoundedBorder(20)); // Rounded border
+    buttonSearch.setBorder(createBorder(20)); // Rounded border
     buttonSearch.setPreferredSize(new Dimension(200, 50));
     buttonSearch.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
@@ -177,20 +202,24 @@ public class Gui extends JFrame {
 
   /**
    * Creates a rounded border with the given radius.
+   * 
+   * @return the border
    */
-  private Border createRoundedBorder(int radius) {
+  private Border createBorder(int radius) {
     return BorderFactory.createCompoundBorder(
-        BorderFactory.createLineBorder(new Color(76, 175, 80), 2),
+        BorderFactory.createLineBorder(bordeColor, 2),
         BorderFactory.createEmptyBorder(radius, radius, radius, radius));
   }
 
   /**
    * Reads and displays the contents of a .txt file in a formatted panel.
+   * 
+   * @return the panel containing the text content
    */
   private JPanel displayTxtContent() {
     JPanel pathPanel = new JPanel();
     pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
-    pathPanel.setBackground(new Color(48, 54, 63)); // Background color of paths panel
+    pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
     pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
 
     try (InputStream inputStream = Gui.class.getResourceAsStream(TXT_PATH_FILE)) {
@@ -201,7 +230,6 @@ public class Gui extends JFrame {
         pathPanel.add(errorLabel);
         return pathPanel;
       }
-
       InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
       StringBuilder content = new StringBuilder();
       int c;
@@ -229,7 +257,7 @@ public class Gui extends JFrame {
         lineTextArea.setFocusable(false); // Disable focus to prevent selection
         if (line.matches("\\d+")) {
           lineTextArea.setFont(new Font("Segoe UI", Font.BOLD, 16));
-          lineTextArea.setBackground(new Color(45, 52, 54));
+          lineTextArea.setBackground(primaryBackgroundColor);
         }
         pathPanel.add(lineTextArea);
       }
@@ -239,7 +267,6 @@ public class Gui extends JFrame {
       errorLabel.setForeground(Color.RED);
       pathPanel.add(errorLabel);
     }
-
     return pathPanel;
   }
 

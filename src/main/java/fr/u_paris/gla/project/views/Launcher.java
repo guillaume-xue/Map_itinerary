@@ -3,9 +3,9 @@ package fr.u_paris.gla.project.views;
 import javax.swing.BorderFactory;
 import javax.swing.JRootPane;
 import javax.swing.JWindow;
+import javax.swing.SwingUtilities;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
-import javax.swing.Timer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import javax.swing.ImageIcon;
@@ -25,16 +25,17 @@ public class Launcher {
     JWindow splashScreen = createSplashScreen();
     splashScreen.setVisible(true);
 
-    // Schedule the launch of the main window after 3 seconds
-    Timer timer = new Timer(1000, e -> {
-      // Add fade-out effect before closing
+    System.setProperty("http.agent", "MyCustomApp/1.0 (https://example.com)");
+
+    SwingUtilities.invokeLater(() -> {
+      // Create the main window
+      Gui gui = new Gui();
+      gui.setVisible(true);
+
+      // Close the splash screen
       fadeOut(splashScreen);
       splashScreen.dispose();
-      Gui gui = new Gui();
-      gui.launch();
     });
-    timer.setRepeats(false);
-    timer.start();
   }
 
   /**
