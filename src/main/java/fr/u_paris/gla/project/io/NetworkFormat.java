@@ -50,6 +50,13 @@ public final class NetworkFormat {
         return Duration.between(time, ZERO);
     }
 
+    public static Duration parseLargeDuration(String duration) {
+        String[] parts = duration.split(":");
+        long minutes = Long.parseLong(parts[0]);
+        long seconds = Long.parseLong(parts[1]);
+        return Duration.ofMinutes(minutes).plusSeconds(seconds);
+    }
+
     public static String formatDuration(Duration duration) {
         return Long.toString(duration.toMinutes()) + ":"
                 + DURATION_SECONDS_FORMATTER.format(duration.toSecondsPart());

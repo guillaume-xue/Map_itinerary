@@ -12,6 +12,11 @@ public class Line implements Comparable<Line>{
         this.name = name;
     }
 
+    public Line(String name, ArrayList<Subline> listOfSublines ){
+        this.name = name;
+        this.listOfSublines = listOfSublines;
+    }
+
     public void addSubline(Subline subline){
         listOfSublines.add(subline);
     }

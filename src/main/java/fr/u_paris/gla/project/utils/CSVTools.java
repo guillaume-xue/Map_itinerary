@@ -62,9 +62,9 @@ public final class CSVTools {
             CSVReaderBuilder csvBuilder = new CSVReaderBuilder(reader)
                     .withCSVParser(parser);
             try (CSVReader csv = csvBuilder.build()) {
-                String[] line = csv.readNextSilently(); // Eliminate header
+                String[] line;
                 int count = 0;
-                while (csv.peek() != null && count <= 1000) {
+                while (csv.peek() != null && count <= 48) {
                     line = csv.readNext();
                     contentLineConsumer.accept(line);
                     count++;
