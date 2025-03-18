@@ -13,7 +13,7 @@ import java.util.Map;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import fr.u_paris.gla.project.graph.*;
-import fr.u_paris.gla.project.io.NetworkFormat;
+import static fr.u_paris.gla.project.io.NetworkFormat.*;
 import java.time.Duration;
 import java.time.LocalTime;
 
@@ -45,10 +45,9 @@ public final class CSVExtractor {
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error while reading the file", e);
         }
-    
 
         ArrayList<Stop> listOfStops = new ArrayList<>(mapOfStops.values());
-        //Collections.sort(listOfStops);
+        Collections.sort(listOfStops);
 
         ArrayList<Line> listOfLines = new ArrayList<>();
         for (Map.Entry<String, ArrayList<Subline>> entry : mapOfLines.entrySet()) {
@@ -61,25 +60,19 @@ public final class CSVExtractor {
         System.out.println(graph.toString());
     }
 
-    // Format d'une ligne:
-    //"54B";"0";"Rue de la Commanderie";"49.08530899148388, 3.0767128685174954";
-    //          "Cimetière";"49.0878251824414, 3.078824791457119";"00:04";"0.166"
-    // LineName;SublineID;StopA;StopACoord;StopB;StopBCoord;DistanceMin;DistanceKM
-    //    0       1       2        3       4       5           6          7
-
     public static void readLine(
         String[] line, 
         Map<String,ArrayList<Subline>> mapOfLines,  
         Map<ImmutablePair<Double,Double>,Stop> mapOfStops
     ){
-        mapOfLines.putIfAbsent(line[0], new ArrayList<>());
+        mapOfLines.putIfAbsent(line[LINE_INDEX], new ArrayList<>());
 
-        int sublineId = Integer.parseInt(line[1]);
-        if ( mapOfLines.get(line[0]).size() < sublineId+1 ){
-            mapOfLines.get(line[0]).add(new Subline(line[1]));
+        int sublineId = Integer.parseInt(line[VARIANT_INDEX]);
+        if ( mapOfLines.get(line[LINE_INDEX]).size() < sublineId+1 ){
+            mapOfLines.get(line[LINE_INDEX]).add(new Subline(line[VARIANT_INDEX]));
         }
 
-        addStops(line, mapOfLines.get(line[0]).get(sublineId), mapOfStops);
+        addStops(line, mapOfLines.get(line[LINE_INDEX]).get(sublineId), mapOfStops);
     }
 
     public static void addStops(
@@ -92,21 +85,21 @@ public final class CSVExtractor {
         double stopAlat = Double.parseDouble(stopACoordString[1]);
         ImmutablePair<Double,Double> stopACoord = new ImmutablePair<>(stopAlon,stopAlat);
 
-        mapOfStops.putIfAbsent(stopACoord, new Stop(stopAlon,stopAlat,line[2]));
+        mapOfStops.putIfAbsent(stopACoord, new Stop(stopAlon,stopAlat,line[START_INDEX]));
 
         String[] stopBCoordString = line[5].split(",");
         double stopBlon = Double.parseDouble(stopBCoordString[0]);
         double stopBlat = Double.parseDouble(stopBCoordString[1]);
         ImmutablePair<Double,Double> stopBCoord = new ImmutablePair<>(stopBlon,stopBlat);
 
-        mapOfStops.putIfAbsent(stopBCoord, new Stop(stopBlon,stopBlat,line[4]));
+        mapOfStops.putIfAbsent(stopBCoord, new Stop(stopBlon,stopBlat,line[STOP_INDEX]));
 
         Stop stopA = mapOfStops.get(stopACoord);
         Stop stopB = mapOfStops.get(stopBCoord);
 
-        Duration timeToNextStation = NetworkFormat.parseLargeDuration(line[6]);
+        Duration timeToNextStation = parseLargeDuration(line[DURATION_INDEX]);
 
-        Float distanceToNextStation = Float.parseFloat(line[7]);
+        Float distanceToNextStation = Float.parseFloat(line[DISTANCE_INDEX]);
 
         stopA.addAdjacentStop(stopB, timeToNextStation, distanceToNextStation);
         subline.addNextStop(stopA);

@@ -64,10 +64,10 @@ public final class CSVTools {
             try (CSVReader csv = csvBuilder.build()) {
                 String[] line;
                 int count = 0;
-                while (csv.peek() != null && count <= 48) {
+                while (csv.peek() != null /*&& count <= 100*/ ) {
                     line = csv.readNext();
                     contentLineConsumer.accept(line);
-                    count++;
+                    //count++;
                 }
             }
         } catch (CsvValidationException e) {

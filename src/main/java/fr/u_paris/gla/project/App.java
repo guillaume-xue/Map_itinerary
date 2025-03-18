@@ -63,12 +63,9 @@ public class App {
                 if ("--gui".equals(string)) { //$NON-NLS-1$
                     showLogo();
                 }
-                // --parse [URL|CSV] [Target file.csv]
-                //  args[0]  args[1]   args[2] 
                 if ("--parse".equals(string)) {
                     if ( args.length < 2 ){
-                        System.out.println("Invalid command line for parser. Missing parsing mode.");
-                        System.out.println("Use with: --parse [URL|CSV] [Target file.csv]");
+                        errorLog("Missing parsing mode");
                         return;
                     }
                     launchParser( args );
@@ -127,10 +124,14 @@ public class App {
         frame.setVisible(true);
     }
 
+    public static void errorLog(String log){
+        System.out.println("Error: Invalid command line for parser. " + log + ".");
+        System.out.println("Usage: --parse <URL|CSV> <target-file.csv|input-file.csv>");
+    }
+
     public static void launchParser(String[] args) {
         if ( args.length != 3 ){
-            System.out.println("Invalid command line for parser. Missing target file.");
-            System.out.println("Use with: --parse [URL|CSV] [Target file.csv]");
+            errorLog("Missing target file");
             return;
         }
 
@@ -139,9 +140,9 @@ public class App {
         } else if ( "CSV".equals(args[1]) ){
             CSVExtractor.makeOjectsFromCSV(args[2]);
         } else {
-            System.out.print("Wrong argument for parser.");
-            System.out.println("Use with: --parse [URL|CSV] [Target file.csv]");
+            errorLog("Wrong argument for parser");
             return;
+
         }
     }
 

@@ -10,7 +10,7 @@ public class Subline {
     //The first Stop should ALWAYS be the departure Stop.
     private ArrayList<Stop> listOfStops = new ArrayList<>();
     private ArrayList<LocalTime> departureTimesAtStartOfSubline = new ArrayList<>();
-
+    
 
     public Subline(String name){
         this.name = name;
