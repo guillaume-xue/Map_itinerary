@@ -67,36 +67,6 @@ public class App {
         return props;
     }
 
-    /** Shows the logo in an image. */
-    public static void showLogo() {
-        Properties props = readApplicationProperties();
-
-        JFrame frame = new JFrame(props.getProperty("app.name")); //$NON-NLS-1$
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-        JLabel container = new JLabel();
-
-        try (InputStream is = App.class.getResourceAsStream(LOGO_NAME)) {
-            if (is == null) {
-                container.setText("Image Not Found");
-            } else {
-                BufferedImage img = ImageIO.read(is);
-                ImageIcon icon = new ImageIcon(img);
-                ImageIcon resized = new ImageIcon(
-                        getScaledImage(icon.getImage(), WIDTH, HEIGHT));
-
-                container.setIcon(resized);
-            }
-        } catch (IOException e) {
-            container.setText("Image Not Read: " + e.getLocalizedMessage());
-        }
-
-        frame.getContentPane().add(container);
-
-        frame.pack();
-        frame.setVisible(true);
-    }
-
     public static void errorLog(String log){
         System.out.println("Error: Invalid command line for parser. " + log + ".");
         System.out.println("Usage: --parse <URL|CSV> <target-file.csv|input-file.csv>");
