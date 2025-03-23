@@ -1,12 +1,17 @@
 package fr.u_paris.gla.project;
 
-import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
-import fr.u_paris.gla.project.utils.CSVExtractor;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Map;
 import java.util.Properties;
+
+import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
+import fr.u_paris.gla.project.utils.CSVExtractor;
+import fr.u_paris.gla.project.views.Launcher;
+import java.io.File;
+import java.net.URL;
+
 
 /** Simple application model.
  *
@@ -42,20 +47,9 @@ public class App {
                     launchParser( args );
                     return;
                 }
-                if ("--parse".equals(string)) {
-                    if ( args.length != 4 ){
-                        System.out.println("Invalid command line for parser. Needs two target files and a target repertory.");
-                        return;
-                    }
-                    launchParser( new String[] { args[1], args[2], args[3]} );
-                    return;
+                if ("--schedule".equals(string)) {
+                    launchSchedule( new String[] { args[1], args[2], args[3]} );
                 }
-                //possiblement faire le parsing pour le schedule avec l'option précédente directement
-                //si on fait cette option on met en argument le nom du dossier ds lequel on mettra les csv horaire
-                /*if ("--parseScheduleData".equals(string)) {
-                	launchParserForScheduleData(new String[] { args[1]});
-                	return;
-                }*/
             }
         }
     }
@@ -84,6 +78,10 @@ public class App {
         System.out.println("Usage: --parse <URL|CSV> <target-file.csv|input-file.csv>");
     }
 
+    public static void launchSchedule(String[] args){
+        IDFMNetworkExtractor.parseSchedule(args);     
+    }
+
     public static void launchParser(String[] args) {
         if ( args.length != 3 ){
             errorLog("Missing target file");
@@ -97,7 +95,6 @@ public class App {
         } else {
             errorLog("Wrong argument for parser");
             return;
-
         }
     }
 }

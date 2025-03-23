@@ -58,7 +58,7 @@ public final class CSVTools {
         }
     }
 
-    public static void readCSVFromFile(String path, Consumer<String[]> contentLineConsumer) 
+    public static void readCSVFromFileBis(String path, Consumer<String[]> contentLineConsumer) 
             throws IOException {
         ICSVParser parser = new CSVParserBuilder().withSeparator(';').build();
         try (InputStream is = new FileInputStream(path);

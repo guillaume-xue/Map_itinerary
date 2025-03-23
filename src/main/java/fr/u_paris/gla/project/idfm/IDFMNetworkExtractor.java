@@ -88,12 +88,12 @@ public class IDFMNetworkExtractor {
      * @param args one is the output file and the other is the target directory 
      * for csv files containing schedules data
      */
-    public static void parse(String[] args) {
+    public static void parseSchedule(String[] args) {
     	if (args.length != 3) {
             LOGGER.severe("Invalid command line. Needs two target files and a target repertory.");
             return;
         }
-    	Map<String, TraceEntry> traces = parseMapData(new String[] {args[0]});
+    	Map<String, TraceEntry> traces = parseMapData(args[0]);
     	
     	
     	if (traces != null) {
@@ -105,11 +105,11 @@ public class IDFMNetworkExtractor {
         }
     }
     
-    /** parses the map data from given URL and makes the csv containing 
-     * map data required by the client
+    /** Main entry point for the extractor of IDF mobilite data into a network as
+     * defined by this application.
      * 
-     * @param args the arguments (expected one for the destination file) */
-    private static Map<String, TraceEntry> parseMapData(String[] args) {
+     * @param destination The destination file */
+    public static Map<String, TraceEntry> parseMapData(String destinationFile) {
 
         Map<String, TraceEntry> traces = new HashMap<>();
         try {
@@ -140,7 +140,6 @@ public class IDFMNetworkExtractor {
         }
         return traces;
     }
-       
     
     private static void parseScheduleDataWithBifurcations(File directory, String junctionsFile, Map<String, TraceEntry> traces) {
         Map<String, List<String>> tripsByRoutes = createMapRoutesAndTripsData();

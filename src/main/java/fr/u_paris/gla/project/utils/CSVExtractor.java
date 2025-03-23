@@ -40,7 +40,7 @@ public final class CSVExtractor {
         Map<ImmutablePair<Double,Double>,Stop> mapOfStops = new HashMap<>();
 
         try{
-            CSVTools.readCSVFromFile(path,(String[] line) -> 
+            CSVTools.readCSVFromFileBis(path,(String[] line) -> 
                 readLine(line, mapOfLines, mapOfStops));
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error while reading the file", e);
