@@ -1,20 +1,10 @@
 package fr.u_paris.gla.project;
 
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Map;
 import java.util.Properties;
-
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.WindowConstants;
 
 import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
 import java.io.File;
@@ -28,29 +18,6 @@ public class App {
      * 
      */
     private static final String UNSPECIFIED = "Unspecified";         //$NON-NLS-1$
-    /** The logo image name. */
-    private static final String LOGO_NAME   = "fr/u_paris/gla/project/uparis_logo_rvb.png"; //$NON-NLS-1$
-    /** Image height. */
-    private static final int    HEIGHT      = 256;
-    /** Image width. */
-    private static final int    WIDTH       = HEIGHT;
-    
-
-    /** Resizes an image.
-     *
-     * @param src source image
-     * @param w width
-     * @param h height
-     * @return the resized image */
-    private static Image getScaledImage(Image src, int w, int h) {
-        BufferedImage resizedImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = resizedImg.createGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2d.drawImage(src, 0, 0, w, h, null);
-        g2d.dispose();
-        return resizedImg;
-    }
 
     /** Application entry point.
      *
@@ -63,7 +30,8 @@ public class App {
                     return;
                 }
                 if ("--gui".equals(string)) { //$NON-NLS-1$
-                    showLogo();
+                    new Launcher();
+                    return;
                 }
                 if ("--parse".equals(string)) {
                     if ( args.length != 4 ){
@@ -102,76 +70,9 @@ public class App {
         return props;
     }
 
-    
-    /** Shows the logo in an image. */
-    /*public static void showLogo() {
-        Properties props = readApplicationProperties();
-
-        JFrame frame = new JFrame(props.getProperty("app.name")); //$NON-NLS-1$
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-        JLabel container = new JLabel();
-
-        try (InputStream is = App.class.getResourceAsStream(LOGO_NAME)) {
-            if (is == null) {
-                container.setText("Image Not Found");
-            } else {
-                BufferedImage img = ImageIO.read(is);
-                ImageIcon icon = new ImageIcon(img);
-                ImageIcon resized = new ImageIcon(
-                        getScaledImage(icon.getImage(), WIDTH, HEIGHT));
-
-                container.setIcon(resized);
-            }
-        } catch (IOException e) {
-            container.setText("Image Not Read: " + e.getLocalizedMessage());
-        }
-
-        frame.getContentPane().add(container);
-
-        frame.pack();
-        frame.setVisible(true);
-    }*/
-    public static void showLogo() {
-        Properties props = readApplicationProperties();
-
-        JFrame frame = new JFrame(props.getProperty("app.name"));
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-        JLabel container = new JLabel();
-
-        // Debug: Vérifie si le logo est trouvé
-        URL logoUrl = App.class.getClassLoader().getResource(LOGO_NAME);
-        if (logoUrl == null) {
-            container.setText("Image Not Found");
-        } else {
-            try (InputStream is = logoUrl.openStream()) {
-                BufferedImage img = ImageIO.read(is);
-                ImageIcon icon = new ImageIcon(img);
-                ImageIcon resized = new ImageIcon(getScaledImage(icon.getImage(), WIDTH, HEIGHT));
-
-                container.setIcon(resized);
-            } catch (IOException e) {
-                container.setText("Image Not Read: " + e.getLocalizedMessage());
-            }
-        }
-
-        frame.getContentPane().add(container);
-
-        frame.pack();
-        frame.setVisible(true);
-    }
-
-
     public static void launchParser(String[] outputFileAndDirectory) {
         System.out.println("Hello world from launch parser, output file: " + outputFileAndDirectory[0] + "\nAnd output repertory: " + outputFileAndDirectory[1]);
         IDFMNetworkExtractor.parse(outputFileAndDirectory);
     }
-    /*
-    public static void launchParserForScheduleData(String[] outputDirectory) {
-    	File directory = new File(outputDirectory);
-    	IDFMNetworkExtractor.parseScheduleData(directory);
-    	System.out.println("You will find the csv files for "
-    			+ "departures at every terminal in the repertory " + DIRECTORY_NAME);
-    }*/
+
 }
