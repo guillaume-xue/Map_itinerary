@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Properties;
 
+import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
+import fr.u_paris.gla.project.utils.CSVExtractor;
 import fr.u_paris.gla.project.views.Launcher;
 
 /**
@@ -34,6 +36,14 @@ public class App {
                     new Launcher();
                     return;
                 }
+                if ("--parse".equals(string)) {
+                    if ( args.length < 2 ){
+                        errorLog("Missing parsing mode");
+                        return;
+                    }
+                    launchParser( args );
+                    return;
+                }
             }
         }
     }
@@ -55,5 +65,57 @@ public class App {
             throw new RuntimeException("Unable to read application informations", e); //$NON-NLS-1$
         }
         return props;
+    }
+
+    /** Shows the logo in an image. */
+    public static void showLogo() {
+        Properties props = readApplicationProperties();
+
+        JFrame frame = new JFrame(props.getProperty("app.name")); //$NON-NLS-1$
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        JLabel container = new JLabel();
+
+        try (InputStream is = App.class.getResourceAsStream(LOGO_NAME)) {
+            if (is == null) {
+                container.setText("Image Not Found");
+            } else {
+                BufferedImage img = ImageIO.read(is);
+                ImageIcon icon = new ImageIcon(img);
+                ImageIcon resized = new ImageIcon(
+                        getScaledImage(icon.getImage(), WIDTH, HEIGHT));
+
+                container.setIcon(resized);
+            }
+        } catch (IOException e) {
+            container.setText("Image Not Read: " + e.getLocalizedMessage());
+        }
+
+        frame.getContentPane().add(container);
+
+        frame.pack();
+        frame.setVisible(true);
+    }
+
+    public static void errorLog(String log){
+        System.out.println("Error: Invalid command line for parser. " + log + ".");
+        System.out.println("Usage: --parse <URL|CSV> <target-file.csv|input-file.csv>");
+    }
+
+    public static void launchParser(String[] args) {
+        if ( args.length != 3 ){
+            errorLog("Missing target file");
+            return;
+        }
+
+        if ( "URL".equals(args[1]) ){
+            IDFMNetworkExtractor.parse(args[2]);
+        } else if ( "CSV".equals(args[1]) ){
+            CSVExtractor.makeOjectsFromCSV(args[2]);
+        } else {
+            errorLog("Wrong argument for parser");
+            return;
+
+        }
     }
 }

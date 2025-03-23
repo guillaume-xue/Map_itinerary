@@ -29,3 +29,7 @@ java -jar target/project-2024.1.0.0-SNAPSHOT-jar-with-dependencies.jar
 L'option de lancement `--info` causera l'affichage dans la console d'informations de l'application.
 
 L'option de lancement `--gui` causera l'ouverture d'une fenêtre affichant le logo de l'Université de Paris.
+
+L'option de lancement `--parse` permet d'analyser un fichier CSV ou une URL fournie en paramètre grâce au parser:  
+`Usage: --parse <URL|CSV> <target-file.csv|input-file.csv>`  
+`Example: --parse URL target-file.csv`  
