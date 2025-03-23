@@ -132,11 +132,11 @@ public class IDFMNetworkExtractor {
         CSVStreamProvider provider = new CSVStreamProvider(traces.values().iterator());
 
         try {
-            CSVTools.writeCSVToFile(args[0], Stream.iterate(provider.next(),
+            CSVTools.writeCSVToFile(destinationFile, Stream.iterate(provider.next(),
                     t -> provider.hasNext(), t -> provider.next()));
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, e,
-                    () -> MessageFormat.format("Could not write in file {0}", args[0]));
+                    () -> MessageFormat.format("Could not write in file {0}", destinationFile));
         }
         return traces;
     }

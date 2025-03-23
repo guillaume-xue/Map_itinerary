@@ -10,21 +10,27 @@ public class Subline {
     //The first Stop should ALWAYS be the departure Stop.
     private ArrayList<Stop> listOfStops = new ArrayList<>();
     private ArrayList<LocalTime> departureTimesAtStartOfSubline = new ArrayList<>();
+    
 
-
-    public Subline(String name, Stop departureStop){
+    public Subline(String name){
         this.name = name;
     }
 
     public void addNextStop(Stop Stop){
         listOfStops.add(Stop);
     }
+    
     //Stop should be the departure Stop. 
     public void addDepartureTimes(Stop Stop, ArrayList<LocalTime> departureTimes) throws Exception{
         if(!Stop.equals(listOfStops.get(0))){
             throw new Exception("The departure Stop indicated does not match the first Stop in the list of Stops.");
         }
         departureTimesAtStartOfSubline.addAll(departureTimes);
+    }
+
+    @Override
+    public String toString(){
+        return listOfStops.toString();
     }
 }
 

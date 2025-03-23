@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
@@ -50,6 +51,28 @@ public final class CSVTools {
                 while (csv.peek() != null) {
                     line = csv.readNext();
                     contentLineConsumer.accept(line);
+                }
+            }
+        } catch (CsvValidationException e) {
+            throw new IOException("Invalid csv file", e); //$NON-NLS-1$
+        }
+    }
+
+    public static void readCSVFromFile(String path, Consumer<String[]> contentLineConsumer) 
+            throws IOException {
+        ICSVParser parser = new CSVParserBuilder().withSeparator(';').build();
+        try (InputStream is = new FileInputStream(path);
+                Reader reader = new BufferedReader(
+                        new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            CSVReaderBuilder csvBuilder = new CSVReaderBuilder(reader)
+                    .withCSVParser(parser);
+            try (CSVReader csv = csvBuilder.build()) {
+                String[] line;
+                int count = 0;
+                while (csv.peek() != null /*&& count <= 100*/ ) {
+                    line = csv.readNext();
+                    contentLineConsumer.accept(line);
+                    //count++;
                 }
             }
         } catch (CsvValidationException e) {

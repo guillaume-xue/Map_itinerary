@@ -12,16 +12,19 @@ import java.net.URL;
 
 /** Simple application model.
  *
- * @author Emmanuel Bigeon */
+ * @author Emmanuel Bigeon
+ */
 public class App {
     /**
-     * 
+     * Unspecified value.
      */
-    private static final String UNSPECIFIED = "Unspecified";         //$NON-NLS-1$
+    private static final String UNSPECIFIED = "Unspecified"; //$NON-NLS-1$
 
-    /** Application entry point.
+    /**
+     * Application entry point.
      *
-     * @param args launching arguments */
+     * @param args launching arguments
+     */
     public static void main(String[] args) {
         if (args.length > 0) {
             for (String string : args) {
@@ -31,6 +34,14 @@ public class App {
                 }
                 if ("--gui".equals(string)) { //$NON-NLS-1$
                     new Launcher();
+                    return;
+                }
+                if ("--parse".equals(string)) {
+                    if ( args.length < 2 ){
+                        errorLog("Missing parsing mode");
+                        return;
+                    }
+                    launchParser( args );
                     return;
                 }
                 if ("--parse".equals(string)) {
@@ -70,9 +81,25 @@ public class App {
         return props;
     }
 
-    public static void launchParser(String[] outputFileAndDirectory) {
-        System.out.println("Hello world from launch parser, output file: " + outputFileAndDirectory[0] + "\nAnd output repertory: " + outputFileAndDirectory[1]);
-        IDFMNetworkExtractor.parse(outputFileAndDirectory);
+    public static void errorLog(String log){
+        System.out.println("Error: Invalid command line for parser. " + log + ".");
+        System.out.println("Usage: --parse <URL|CSV> <target-file.csv|input-file.csv>");
     }
 
+    public static void launchParser(String[] args) {
+        if ( args.length != 3 ){
+            errorLog("Missing target file");
+            return;
+        }
+
+        if ( "URL".equals(args[1]) ){
+            IDFMNetworkExtractor.parse(args[2]);
+        } else if ( "CSV".equals(args[1]) ){
+            CSVExtractor.makeOjectsFromCSV(args[2]);
+        } else {
+            errorLog("Wrong argument for parser");
+            return;
+
+        }
+    }
 }
