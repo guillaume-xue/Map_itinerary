@@ -66,11 +66,11 @@ public class App {
                     showLogo();
                 }
                 if ("--parse".equals(string)) {
-                    if ( args.length != 3 ){
-                        System.out.println("Invalid command line for parser. Needs a target file and a target repertory.");
+                    if ( args.length != 4 ){
+                        System.out.println("Invalid command line for parser. Needs two target files and a target repertory.");
                         return;
                     }
-                    launchParser( new String[] { args[1], args[2]} );
+                    launchParser( new String[] { args[1], args[2], args[3]} );
                     return;
                 }
                 //possiblement faire le parsing pour le schedule avec l'option précédente directement

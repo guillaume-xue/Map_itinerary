@@ -34,8 +34,8 @@ public class StopEntry implements Comparable<StopEntry> {
 
     @Override
     public String toString() {
-        return MessageFormat.format("{0} [{1}, {2}]", this.lname, this.longitude, //$NON-NLS-1$
-                this.latitude);
+        return MessageFormat.format("{0}, {3} [{1}, {2}]", this.lname, this.longitude, //$NON-NLS-1$
+                this.latitude, this.stopId);
     }
 
     @Override
@@ -72,6 +72,6 @@ public class StopEntry implements Comparable<StopEntry> {
         return Double.doubleToLongBits(latitude) == Double
                 .doubleToLongBits(other.latitude) && Objects.equals(lname, other.lname)
                 && Double.doubleToLongBits(longitude) == Double
-                        .doubleToLongBits(other.longitude);
+                        .doubleToLongBits(other.longitude) && Objects.equals(stopId, other.stopId);
     }
 }
