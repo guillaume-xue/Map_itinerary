@@ -12,7 +12,7 @@ public class Subline {
     private ArrayList<LocalTime> departureTimesAtStartOfSubline = new ArrayList<>();
 
 
-    public Subline(String name, Stop departureStop, ArrayList<LocalTime> departureTimesAtStartOfSubline){
+    public Subline(String name, Stop departureStop){
         this.name = name;
     }
 
@@ -25,15 +25,6 @@ public class Subline {
             throw new Exception("The departure Stop indicated does not match the first Stop in the list of Stops.");
         }
         departureTimesAtStartOfSubline.addAll(departureTimes);
-    }
-
-    @Override
-    public String toString() {
-        return "Subline{" +
-                "name='" + name + '\'' +
-                ", listOfStops=" + listOfStops +
-                ", departureTimesAtStartOfSubline=" + departureTimesAtStartOfSubline +
-                '}';
     }
 }
 
