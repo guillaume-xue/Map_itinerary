@@ -1,10 +1,10 @@
 package fr.u_paris.gla.project.graph;
 
+import org.apache.commons.lang3.tuple.MutablePair;
+
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import org.apache.commons.lang3.tuple.MutablePair;
 
 
 public class Stop {
@@ -46,6 +46,21 @@ public class Stop {
 
     public void addDeparture(Subline subline, ArrayList<LocalTime> times){
         departures.put(subline, times);
+    }
+
+    public float distanceBetweenTwoStops(Stop s1, Stop s2){
+        return Math.abs(s2.gpsCoordX - s1.gpsCoordX) + Math.abs(s2.gpsCoordY - s1.gpsCoordY);
+    }
+
+    @Override
+    public String toString() {
+        return "Stop{" +
+                "gpsCoordX=" + gpsCoordX +
+                ", gpsCoordY=" + gpsCoordY +
+                ", nameOfAssociatedStation='" + nameOfAssociatedStation + '\'' +
+                ", timeDistancePerAdjacentStop=" + timeDistancePerAdjacentStop +
+                ", departures=" + departures +
+                '}';
     }
 }
 
