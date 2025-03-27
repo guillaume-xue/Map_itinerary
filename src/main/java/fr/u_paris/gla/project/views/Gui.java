@@ -8,6 +8,9 @@ import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import javax.swing.*;
 import javax.swing.border.Border;
 
@@ -29,6 +32,7 @@ public class Gui extends JFrame {
   private static final Color bordeColor = new Color(88, 88, 88);
   private static final Color primaryBackgroundColor = new Color(240, 240, 240);
   private static final Color accentColor = new Color(76, 175, 80);
+  private Point lastDragPoint; // Add this variable to track the last drag position
 
   /**
    * Constructor.
@@ -40,6 +44,8 @@ public class Gui extends JFrame {
     setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
     setMinimumSize(new Dimension(MIN_SCREEN_WIDTH, MIN_SCREEN_HEIGHT)); // Set minimum size
     setLocationRelativeTo(null);
+
+    this.lastDragPoint = new Point();
 
     // Create text areas for the start and end
     this.textStart = createTextArea("From");
@@ -99,6 +105,7 @@ public class Gui extends JFrame {
 
     // Create a map panel
     this.mapViewer = createMapViewer();
+    addMouseController();
     JPanel mapPanel = new JPanel();
     mapPanel.setLayout(new java.awt.BorderLayout());
     mapPanel.add(this.mapViewer, java.awt.BorderLayout.CENTER);
@@ -117,7 +124,7 @@ public class Gui extends JFrame {
    * 
    * @return the map viewer panel
    */
-  private static JMapViewer createMapViewer() {
+  private JMapViewer createMapViewer() {
     JMapViewer mapViewer = new JMapViewer();
     mapViewer.setTileSource(new OsmTileSource.Mapnik());
 
@@ -126,6 +133,40 @@ public class Gui extends JFrame {
         new org.openstreetmap.gui.jmapviewer.Coordinate(48.8566, 2.3522), 10);
 
     return mapViewer;
+  }
+
+  private void addMouseController() {
+    // Add mouse listener for panning with left click
+    mapViewer.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mousePressed(MouseEvent e) {
+        if (SwingUtilities.isLeftMouseButton(e)) {
+          Gui.this.lastDragPoint = e.getPoint(); // Use Gui.this to access the enclosing class field
+        }
+      }
+
+      @Override
+      public void mouseReleased(MouseEvent e) {
+        Gui.this.lastDragPoint = null; // Use Gui.this to access the enclosing class field
+      }
+    });
+
+    mapViewer.addMouseMotionListener(new MouseMotionAdapter() {
+      @Override
+      public void mouseDragged(MouseEvent e) {
+        if (SwingUtilities.isLeftMouseButton(e) && Gui.this.lastDragPoint != null) {
+          Point currentPoint = e.getPoint();
+          int dx = Gui.this.lastDragPoint.x - currentPoint.x; // Reverse direction
+          int dy = Gui.this.lastDragPoint.y - currentPoint.y; // Reverse direction
+
+          // Move the map
+          mapViewer.moveMap(dx, dy);
+
+          // Update the last drag position
+          Gui.this.lastDragPoint = currentPoint; // Use Gui.this to access the enclosing class field
+        }
+      }
+    });
   }
 
   /**
