@@ -59,4 +59,16 @@ public class TestLine {
             System.out.println(subline);
         }
     }
+
+    @Test
+    public void addLine(){
+        ArrayList<Line> listOfLines = new ArrayList<>();
+        Line line = new Line("B");
+        listOfLines.add(line);
+        for (Line l : listOfLines){
+            System.out.println(l);
+        }
+    }
+
+
 }
