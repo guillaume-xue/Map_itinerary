@@ -1,12 +1,12 @@
 package fr.u_paris.gla.project.graph;
 
+import org.apache.commons.lang3.tuple.MutablePair;
+
+import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
-import java.time.Duration;
-
-import org.apache.commons.lang3.tuple.MutablePair;
 
 
 public class Stop implements Comparable<Stop>{
@@ -42,12 +42,24 @@ public class Stop implements Comparable<Stop>{
         return nameOfAssociatedStation;
     }
 
+    public HashMap<Stop, MutablePair<Duration, Float>> getTimeDistancePerAdjacentStop() {
+        return timeDistancePerAdjacentStop;
+    }
+
+    public HashMap<Subline, ArrayList<LocalTime>> getDepartures() {
+        return departures;
+    }
+
     public void addAdjacentStop(Stop adjacentStop, Duration timeToNextStation, Float distanceToNextStation){
         timeDistancePerAdjacentStop.put(adjacentStop, new MutablePair<>(timeToNextStation, distanceToNextStation));
     }
 
     public void addDeparture(Subline subline, ArrayList<LocalTime> times){
         departures.put(subline, times);
+    }
+
+    public double distanceBetweenAdjacentStop(Stop stop) {
+        return Math.abs(this.latitude - stop.latitude) + Math.abs(this.longitude - stop.longitude);
     }
 
     @Override
@@ -86,5 +98,7 @@ public class Stop implements Comparable<Stop>{
                 && Double.doubleToLongBits(longitude) == Double
                         .doubleToLongBits(other.longitude);
     }
+
+
 }
 
