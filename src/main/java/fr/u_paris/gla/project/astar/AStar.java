@@ -72,7 +72,7 @@ public class AStar {
         listOfStops.add(new Stop(0F,0F,"Gare du Nord"));
 
         gScore.put(startStop, 0.0);
-        fScore.put(startStop, (double) startStop.distanceBetweenTwoStops(startStop, finishStop));
+        fScore.put(startStop, (double) startStop.distanceBetweenAdjacentStop(finishStop));
         openSet.add(startStop);
 
         while (!openSet.isEmpty()) {
@@ -91,7 +91,7 @@ public class AStar {
                         if (tentativeGScore < gScore.getOrDefault(neighbor, Double.MAX_VALUE)) {
                             cameFrom.put(neighbor, current);
                             gScore.put(neighbor, tentativeGScore);
-                            fScore.put(neighbor, tentativeGScore + neighbor.distanceBetweenTwoStops(neighbor,finishStop));
+                            fScore.put(neighbor, tentativeGScore + neighbor.distanceBetweenAdjacentStop(finishStop));
                             openSet.add(neighbor);
                         }
                     }
@@ -123,10 +123,10 @@ public class AStar {
     }
 
     public int heuristic(Stop startStop, Stop finishStop) {
-        float x1 = startStop.getGpsCoordX();
-        float y1 = startStop.getGpsCoordY();
-        float x2 = finishStop.getGpsCoordX();
-        float y2 = finishStop.getGpsCoordX();
+        double x1 = startStop.getLongitude();
+        double y1 = startStop.getLatitude();
+        double x2 = finishStop.getLongitude();
+        double y2 = finishStop.getLatitude();
         return (int) (Math.abs(x1 - x2) + Math.abs(y1 - y2)); // Distance de Manhattan
     }
 

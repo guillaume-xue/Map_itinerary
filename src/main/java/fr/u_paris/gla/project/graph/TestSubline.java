@@ -16,8 +16,8 @@ public class TestSubline {
         Stop stop3 = new Stop(0F, 0F, "Fontenay aux Roses");
         Stop stop4 = new Stop(0F, 0F, "Robinson");
 
-        Subline subline1 = new Subline("B1", stop1, departureTimesAtStartOfSubline);
-        Subline subline2 = new Subline("B2", stop2, departureTimesAtStartOfSubline);
+        Subline subline1 = new Subline("B1");
+        Subline subline2 = new Subline("B2");
 
 
         subline1.addNextStop(stop1);
@@ -45,10 +45,10 @@ public class TestSubline {
         Stop stop3 = new Stop(0F, 0F, "Fontenay aux Roses");
         Stop stop4 = new Stop(0F, 0F, "Robinson");
 
-        Subline subline1 = new Subline("B1", stop1, departureTimesAtStartOfSubline);
-        Subline subline2 = new Subline("B2", stop2, departureTimesAtStartOfSubline);
-        Subline subline3 = new Subline("B2", stop3, departureTimesAtStartOfSubline);
-        Subline subline4 = new Subline("B2", stop4, departureTimesAtStartOfSubline);
+        Subline subline1 = new Subline("B1");
+        Subline subline2 = new Subline("B2");
+        Subline subline3 = new Subline("B2");
+        Subline subline4 = new Subline("B2");
 
         departureTimes.add(LocalTime.of(14,00));
         departureTimes.add(LocalTime.of(14,15));
