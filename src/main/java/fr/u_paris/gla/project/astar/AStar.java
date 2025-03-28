@@ -26,49 +26,6 @@ public class AStar {
         ArrayList<Line> listOfLines = new ArrayList();
         ArrayList<Stop> listOfStops = new ArrayList();
 
-        // Lignes de Train (RER et transilien) :
-
-        listOfLines.add(new Line("RER A"));
-        listOfLines.add(new Line("RER B"));
-        listOfLines.add(new Line("RER C"));
-        listOfLines.add(new Line("RER D"));
-        listOfLines.add(new Line("RER E"));
-
-        listOfLines.add(new Line("Ligne H"));
-        listOfLines.add(new Line("Ligne J"));
-        listOfLines.add(new Line("Ligne K"));
-        listOfLines.add(new Line("Ligne L"));
-        listOfLines.add(new Line("Ligne N"));
-        listOfLines.add(new Line("Ligne P"));
-        listOfLines.add(new Line("Ligne R"));
-        listOfLines.add(new Line("Ligne U"));
-
-
-
-        // Lignes de Métro :
-
-        for (int i=1; i<=14; i++){
-            if(i == 3 || i == 7){
-                listOfLines.add(new Line("Métro " + String.valueOf(i)));
-                listOfLines.add(new Line("Métro " + String.valueOf(i) + "bis"));
-            }
-            else{
-                listOfLines.add(new Line("Métro " + String.valueOf(i)));
-            }
-        }
-
-        // Lignes de Tramway :
-
-        for (int i=1; i<=14; i++){
-            if(i == 3){
-                listOfLines.add(new Line("T" + String.valueOf(i) + "a"));
-                listOfLines.add(new Line("T" + String.valueOf(i) + "b"));
-            }
-            else{
-                listOfLines.add(new Line("T" + String.valueOf(i)));
-            }
-        }
-
         listOfStops.add(new Stop(0F,0F,"Gare du Nord"));
 
         gScore.put(startStop, 0.0);
