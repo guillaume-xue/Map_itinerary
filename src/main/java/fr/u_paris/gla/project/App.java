@@ -1,54 +1,30 @@
 package fr.u_paris.gla.project;
 
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Map;
 import java.util.Properties;
 
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.WindowConstants;
+import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
+import java.io.File;
+import java.net.URL;
 
 /** Simple application model.
  *
- * @author Emmanuel Bigeon */
+ * @author Emmanuel Bigeon
+ */
 public class App {
     /**
-     * 
+     * Unspecified value.
      */
-    private static final String UNSPECIFIED = "Unspecified";         //$NON-NLS-1$
-    /** The logo image name. */
-    private static final String LOGO_NAME   = "uparis_logo_rvb.png"; //$NON-NLS-1$
-    /** Image height. */
-    private static final int    HEIGHT      = 256;
-    /** Image width. */
-    private static final int    WIDTH       = HEIGHT;
+    private static final String UNSPECIFIED = "Unspecified"; //$NON-NLS-1$
 
-    /** Resizes an image.
+    /**
+     * Application entry point.
      *
-     * @param src source image
-     * @param w width
-     * @param h height
-     * @return the resized image */
-    private static Image getScaledImage(Image src, int w, int h) {
-        BufferedImage resizedImg = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = resizedImg.createGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g2d.drawImage(src, 0, 0, w, h, null);
-        g2d.dispose();
-        return resizedImg;
-    }
-
-    /** Application entry point.
-     *
-     * @param args launching arguments */
+     * @param args launching arguments
+     */
     public static void main(String[] args) {
         if (args.length > 0) {
             for (String string : args) {
@@ -57,8 +33,31 @@ public class App {
                     return;
                 }
                 if ("--gui".equals(string)) { //$NON-NLS-1$
-                    showLogo();
+                    new Launcher();
+                    return;
                 }
+                if ("--parse".equals(string)) {
+                    if ( args.length < 2 ){
+                        errorLog("Missing parsing mode");
+                        return;
+                    }
+                    launchParser( args );
+                    return;
+                }
+                if ("--parse".equals(string)) {
+                    if ( args.length != 4 ){
+                        System.out.println("Invalid command line for parser. Needs two target files and a target repertory.");
+                        return;
+                    }
+                    launchParser( new String[] { args[1], args[2], args[3]} );
+                    return;
+                }
+                //possiblement faire le parsing pour le schedule avec l'option précédente directement
+                //si on fait cette option on met en argument le nom du dossier ds lequel on mettra les csv horaire
+                /*if ("--parseScheduleData".equals(string)) {
+                	launchParserForScheduleData(new String[] { args[1]});
+                	return;
+                }*/
             }
         }
     }
@@ -82,33 +81,25 @@ public class App {
         return props;
     }
 
-    /** Shows the logo in an image. */
-    public static void showLogo() {
-        Properties props = readApplicationProperties();
+    public static void errorLog(String log){
+        System.out.println("Error: Invalid command line for parser. " + log + ".");
+        System.out.println("Usage: --parse <URL|CSV> <target-file.csv|input-file.csv>");
+    }
 
-        JFrame frame = new JFrame(props.getProperty("app.name")); //$NON-NLS-1$
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-        JLabel container = new JLabel();
-
-        try (InputStream is = App.class.getResourceAsStream(LOGO_NAME)) {
-            if (is == null) {
-                container.setText("Image Not Found");
-            } else {
-                BufferedImage img = ImageIO.read(is);
-                ImageIcon icon = new ImageIcon(img);
-                ImageIcon resized = new ImageIcon(
-                        getScaledImage(icon.getImage(), WIDTH, HEIGHT));
-
-                container.setIcon(resized);
-            }
-        } catch (IOException e) {
-            container.setText("Image Not Read: " + e.getLocalizedMessage());
+    public static void launchParser(String[] args) {
+        if ( args.length != 3 ){
+            errorLog("Missing target file");
+            return;
         }
 
-        frame.getContentPane().add(container);
+        if ( "URL".equals(args[1]) ){
+            IDFMNetworkExtractor.parse(args[2]);
+        } else if ( "CSV".equals(args[1]) ){
+            CSVExtractor.makeOjectsFromCSV(args[2]);
+        } else {
+            errorLog("Wrong argument for parser");
+            return;
 
-        frame.pack();
-        frame.setVisible(true);
+        }
     }
 }

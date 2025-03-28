@@ -12,13 +12,21 @@ public class Graph {
         this.listOfStops = listOfStops;
     }
 
-    public Stop getStop(Float gpsCoordX, Float gpsCoordY) throws Exception{
+    public Stop getStop(double longitude, double latitude) throws Exception{
         for(Stop st : listOfStops){
-            if(st.getGpsCoordX() == gpsCoordX && st.getGpsCoordY() == gpsCoordY){
+            if(st.getLongitude() == longitude && st.getLatitude() == latitude){
                 return st;
             }
         }
-        throw new Exception(String.format("Stop was not found at coordinates x = %f, y = %f", gpsCoordX, gpsCoordY));
+        throw new Exception(String.format("Stop was not found at coordinates x = %f, y = %f", longitude, latitude));
+    }
+
+    @Override
+    public String toString(){
+        return "--- List of Stops: ---\n" +
+        listOfStops.toString() + 
+        "\n--- List of Lines: ---\n" +
+        listOfLines.toString();
     }
 }
 

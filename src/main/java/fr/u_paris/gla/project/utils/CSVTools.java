@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
@@ -21,6 +22,11 @@ import com.opencsv.CSVWriterBuilder;
 import com.opencsv.ICSVParser;
 import com.opencsv.ICSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
+
+import java.io.FileNotFoundException;
+import java.io.FileInputStream;
+
+
 
 /** A CSV tool class.
  * 
@@ -52,6 +58,28 @@ public final class CSVTools {
         }
     }
 
+    public static void readCSVFromFile(String path, Consumer<String[]> contentLineConsumer) 
+            throws IOException {
+        ICSVParser parser = new CSVParserBuilder().withSeparator(';').build();
+        try (InputStream is = new FileInputStream(path);
+                Reader reader = new BufferedReader(
+                        new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            CSVReaderBuilder csvBuilder = new CSVReaderBuilder(reader)
+                    .withCSVParser(parser);
+            try (CSVReader csv = csvBuilder.build()) {
+                String[] line;
+                int count = 0;
+                while (csv.peek() != null /*&& count <= 100*/ ) {
+                    line = csv.readNext();
+                    contentLineConsumer.accept(line);
+                    //count++;
+                }
+            }
+        } catch (CsvValidationException e) {
+            throw new IOException("Invalid csv file", e); //$NON-NLS-1$
+        }
+    }
+
     public static void writeCSVToFile(String filename,
             Stream<String[]> contentLineConsumer) throws IOException {
         try (FileWriter writer = new FileWriter(filename, StandardCharsets.UTF_8)) {
@@ -60,6 +88,37 @@ public final class CSVTools {
                 contentLineConsumer.forEachOrdered(csv::writeNext);
             }
         }
+    }
+    
+    //quasiment meme code que readCSVFromURL sauf pour le parser qui est différent et la façon de récuperer le fichier source
+    public static void readCSVFromFile(String resource, Consumer<String[]> contentLineConsumer) 
+    		throws IOException {
+    	
+    	URL fileUrl = CSVTools.class.getClassLoader().getResource(resource);
+    	if (fileUrl == null) {
+            throw new FileNotFoundException("Resource not found: " + resource);
+        }
+    	
+    	ICSVParser parser = new CSVParserBuilder().withSeparator(',').build();
+    	try (InputStream is = fileUrl.openStream(); Reader reader = new 
+    			BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            // Configuration du parser CSV
+            
+            CSVReaderBuilder csvReaderBuilder = new CSVReaderBuilder(reader)
+            		.withCSVParser(parser);
+            try (CSVReader csv = csvReaderBuilder.build()) {
+                // Ignorer la première ligne (header)
+                String[] line = csv.readNextSilently();
+                // Lire les lignes suivantes
+                while (csv.peek() != null) {
+                	line = csv.readNext();
+                    contentLineConsumer.accept(line);
+                }
+            }
+        } catch (CsvValidationException e) {
+            throw new IOException("Invalid csv file", e); //$NON-NLS-1$
+        }
+    	
     }
 
 }
