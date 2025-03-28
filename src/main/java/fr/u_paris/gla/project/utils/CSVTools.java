@@ -26,7 +26,8 @@ import com.opencsv.exceptions.CsvValidationException;
 import java.io.FileNotFoundException;
 import java.io.FileInputStream;
 
-
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipEntry;
 
 /** A CSV tool class.
  * 
@@ -89,36 +90,36 @@ public final class CSVTools {
             }
         }
     }
+
     
-    //quasiment meme code que readCSVFromURL sauf pour le parser qui est différent et la façon de récuperer le fichier source
-    public static void readCSVFromFile(String resource, Consumer<String[]> contentLineConsumer) 
-    		throws IOException {
-    	
-    	URL fileUrl = CSVTools.class.getClassLoader().getResource(resource);
-    	if (fileUrl == null) {
-            throw new FileNotFoundException("Resource not found: " + resource);
+    public static void readCSVFromZip(String zipFilePath, String csvFileName, Consumer<String[]> contentLineConsumer) throws IOException {
+        URL zipUrl = CSVTools.class.getClassLoader().getResource(zipFilePath);
+        if (zipUrl == null) {
+            throw new FileNotFoundException("Fichier ZIP introuvable: " + zipFilePath);
         }
-    	
-    	ICSVParser parser = new CSVParserBuilder().withSeparator(',').build();
-    	try (InputStream is = fileUrl.openStream(); Reader reader = new 
-    			BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-            // Configuration du parser CSV
-            
-            CSVReaderBuilder csvReaderBuilder = new CSVReaderBuilder(reader)
-            		.withCSVParser(parser);
-            try (CSVReader csv = csvReaderBuilder.build()) {
-                // Ignorer la première ligne (header)
-                String[] line = csv.readNextSilently();
-                // Lire les lignes suivantes
-                while (csv.peek() != null) {
-                	line = csv.readNext();
-                    contentLineConsumer.accept(line);
+        try (InputStream zipInputStream = zipUrl.openStream(); ZipInputStream zis = new ZipInputStream(zipInputStream)) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                if (entry.getName().equals(csvFileName)) {
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(zis, StandardCharsets.UTF_8))) {
+                        ICSVParser parser = new CSVParserBuilder().withSeparator(',').build();
+                        CSVReader csvReader = new CSVReaderBuilder(reader)
+                            .withCSVParser(parser)
+                            .build();
+                        String[] line;
+                        while ((line = csvReader.readNext()) != null) {
+                            contentLineConsumer.accept(line);
+                        }
+                    } catch (CsvValidationException e) {
+                        throw new IOException("Erreur de validation CSV", e);
+                    }
+                    break; 
                 }
+                zis.closeEntry();
             }
-        } catch (CsvValidationException e) {
-            throw new IOException("Invalid csv file", e); //$NON-NLS-1$
         }
-    	
     }
+
+
 
 }

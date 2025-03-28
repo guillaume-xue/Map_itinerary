@@ -40,15 +40,12 @@ public class App {
                     return;
                 }
                 if ("--parse".equals(string)) {
-                    if ( args.length < 2 ){
-                        errorLog("Missing parsing mode");
-                        return;
-                    }
                     launchParser( args );
                     return;
                 }
-                if ("--schedule".equals(string)) {
-                    launchSchedule( new String[] { args[1], args[2], args[3]} );
+                if ("--createfiles".equals(string)) {
+                	launchMakingFilesParser( new String[] { args[1], args[2], args[3]} );
+                	return;
                 }
             }
         }
@@ -78,15 +75,20 @@ public class App {
         System.out.println("Usage: --parse <URL|CSV> <target-file.csv|input-file.csv>");
     }
 
-    public static void launchSchedule(String[] args){
-        IDFMNetworkExtractor.parseSchedule(args);     
+    public static void launchMakingFilesParser(String[] args){
+    	if (args.length != 3) {
+            errorLog("Needs two target files and a target repertory.");
+            return;
+        }
+        IDFMNetworkExtractor.parse(args);     
     }
 
     public static void launchParser(String[] args) {
-        if ( args.length != 3 ){
+    	if ( args.length != 2 ){
             errorLog("Missing target file");
             return;
         }
+<<<<<<< HEAD
 
         if ( "URL".equals(args[1]) ){
             IDFMNetworkExtractor.parse(new String[]{args[2]});
@@ -96,5 +98,8 @@ public class App {
             errorLog("Wrong argument for parser");
             return;
         }
+=======
+        CSVExtractor.makeOjectsFromCSV(args[1]);
+>>>>>>> 64b3069 (refactor de la création des fichiers)
     }
 }

@@ -31,5 +31,8 @@ L'option de lancement `--info` causera l'affichage dans la console d'information
 L'option de lancement `--gui` causera l'ouverture d'une fenêtre affichant le logo de l'Université de Paris.
 
 L'option de lancement `--parse` permet d'analyser un fichier CSV ou une URL fournie en paramètre grâce au parser:  
-`Usage: --parse <URL|CSV> <target-file.csv|input-file.csv>`  
-`Example: --parse URL target-file.csv`  
+`Usage: --parse source_file.csv` 
+`Exemple: --parse output.csv`
+
+L'option de lancement `--createfiles` permet de créer les 3 types de fichiers client pour créer les objets de notre graphe:
+`Exemple d'usage: --createfiles mapData.csv junctionsData.csv Schedule` où on pourra retrouver les fichiers horaires dans le répertoire Schedule, les données de cartes dans le fichier mapData.csv et les données de bifurcations dans junctionsData.csv

@@ -1,35 +1,68 @@
 package fr.u_paris.gla.project.idfm;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.function.Supplier;
-import org.apache.commons.lang3.tuple.Pair;
+
+
 
 public class CSVStreamProviderForJunctions implements Supplier<String[]> {
+    private final Iterator<Map.Entry<String, TraceEntry>> tracesIterator; // Premier itérateur
+    private Iterator<Map.Entry<String, List<StopEntry>>> pathsIterator = Collections.emptyIterator(); // Deuxième itérateur
 
-    private final Iterator<Map.Entry<Pair<String, String>, List<String>>> iterator;
-    private String[] line = new String[3]; // 3 colonnes : nomLigne, numBifurcation, stops
+    private String currentLineName;
+    private String currentLineType;
 
-    public CSVStreamProviderForJunctions(Map<Pair<String, String>, List<String>> bifurcationStops) {
-        this.iterator = bifurcationStops.entrySet().iterator();
+    private final String[] line = new String[4]; // 4 colonnes : nomLigne, typeLigne, numBifurcation, stops
+
+    public CSVStreamProviderForJunctions(Map<String, TraceEntry> traces) {
+        this.tracesIterator = traces.entrySet().iterator();
+        advanceToNextValidTrace(); // Initialise le premier TraceEntry et son itérateur de paths
     }
 
     @Override
     public String[] get() {
-        if (iterator.hasNext()) {
-            Map.Entry<Pair<String, String>, List<String>> entry = iterator.next();
-            Pair<String, String> key = entry.getKey();
-            List<String> stops = entry.getValue();
+        while (true) {
+            if (pathsIterator.hasNext()) {
+                // On récupère une bifurcation (numéro et liste de stops)
+                Map.Entry<String, List<StopEntry>> entry = pathsIterator.next();
+                String bifurcationNumber = entry.getKey();
+                List<StopEntry> stops = entry.getValue();
 
-            String lineName = key.getLeft();       // Nom de la ligne
-            String bifurcationNumber = key.getRight(); // Numéro de bifurcation sous forme de String
-            String stopsString = String.join(",", stops); // Transformation de la liste en une chaîne de stops séparés par ";"
+                // Transforme stops en une liste de stopName
+                String stopsString = stops.stream()
+                        .map(StopEntry::getStopName)
+                        .collect(Collectors.joining(";"));
 
-            line[0] = lineName;
-            line[1] = bifurcationNumber;
-            line[2] = "[" + stopsString + "]";
+                line[0] = currentLineName;
+                line[1] = currentLineType;
+                line[2] = bifurcationNumber;
+                line[3] = "[" + stopsString + "]";
 
-            return line;
+                return line;
+            } else if (!advanceToNextValidTrace()) {
+                return null; // Plus d'éléments à traiter
+            }
         }
-        return null;
+    }
+
+    /**
+     * Passe au prochain `TraceEntry` et initialise son itérateur `pathsIterator`.
+     * @return `true` si un nouveau `TraceEntry` a été trouvé, `false` si tous sont épuisés.
+     */
+    private boolean advanceToNextValidTrace() {
+        while (tracesIterator.hasNext()) {
+            Map.Entry<String, TraceEntry> traceEntry = tracesIterator.next();
+            currentLineName = traceEntry.getValue().getLineName();
+            currentLineType = traceEntry.getValue().getLineType(); 
+            pathsIterator = traceEntry.getValue().getPaths().entrySet().iterator(); // Initialise le deuxième itérateur
+
+            if (pathsIterator.hasNext()) {
+                return true; 
+            }
+        }
+        return false; 
     }
 }
+
+
