@@ -1,14 +1,12 @@
 package fr.u_paris.gla.project;
 
+import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
+import fr.u_paris.gla.project.utils.CSVExtractor;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.Map;
 import java.util.Properties;
-
-import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
-import java.io.File;
-import java.net.URL;
 
 /** Simple application model.
  *
@@ -33,7 +31,7 @@ public class App {
                     return;
                 }
                 if ("--gui".equals(string)) { //$NON-NLS-1$
-                    new Launcher();
+                    //new Launcher();
                     return;
                 }
                 if ("--parse".equals(string)) {
@@ -93,7 +91,7 @@ public class App {
         }
 
         if ( "URL".equals(args[1]) ){
-            IDFMNetworkExtractor.parse(args[2]);
+            IDFMNetworkExtractor.parse(new String[]{args[2]});
         } else if ( "CSV".equals(args[1]) ){
             CSVExtractor.makeOjectsFromCSV(args[2]);
         } else {

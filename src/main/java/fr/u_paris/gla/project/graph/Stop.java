@@ -15,6 +15,11 @@ public class Stop implements Comparable<Stop>{
     private double latitude;
     private String nameOfAssociatedStation;
 
+    private int f;
+    private int g;
+    private int h;
+
+
     //A list of all adjacent stations, with the associated time and distance to get from current station to adjacent station. 
     private HashMap<Stop, MutablePair<Duration, Float>> timeDistancePerAdjacentStop = new HashMap<>();
 
@@ -29,6 +34,17 @@ public class Stop implements Comparable<Stop>{
         this.latitude = latitude;
         this.nameOfAssociatedStation = nameOfAssociatedStation;
     }
+
+    public Stop(double longitude, double latitude, String nameOfAssociatedStation, int f, int g, int h){
+        this.longitude = longitude;
+        this.latitude = latitude;
+        this.nameOfAssociatedStation = nameOfAssociatedStation;
+        this.f = f;
+        this.g = g;
+        this.h = h;
+    }
+
+
 
     public double getLongitude() {
         return longitude;
@@ -60,6 +76,30 @@ public class Stop implements Comparable<Stop>{
 
     public double distanceBetweenAdjacentStop(Stop stop) {
         return Math.abs(this.latitude - stop.latitude) + Math.abs(this.longitude - stop.longitude);
+    }
+
+    public ArrayList<Stop> getAdjacentStops() {
+        return new ArrayList<>(timeDistancePerAdjacentStop.keySet());
+    }
+
+    public double getG() {
+        return 0;
+    }
+
+    public void setCameFrom(Stop currentStop) {
+        currentStop = currentStop;
+    }
+
+    public void setG(double tentativeGScore) {
+        tentativeGScore = g;
+    }
+
+    public void setH(double heuristic) {
+
+    }
+
+    public Stop getCameFrom() {
+        return null;
     }
 
     @Override
@@ -98,6 +138,7 @@ public class Stop implements Comparable<Stop>{
                 && Double.doubleToLongBits(longitude) == Double
                         .doubleToLongBits(other.longitude);
     }
+
 
 
 }
