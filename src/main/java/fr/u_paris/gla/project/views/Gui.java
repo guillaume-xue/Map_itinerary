@@ -20,7 +20,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
 import javax.swing.*;
-import javax.swing.border.Border;
+import javax.swing.border.AbstractBorder;
 
 import java.util.ArrayList;
 
@@ -33,8 +33,8 @@ public class Gui extends JFrame {
   private static final int RESEARCH_PANEL_WIDTH = 350;
   private static final int MIN_SCREEN_WIDTH = 600;
   private static final int MIN_SCREEN_HEIGHT = 300;
-  private JTextArea textStart;
-  private JTextArea textEnd;
+  private JScrollPane textStart;
+  private JScrollPane textEnd;
   private JPanel contentPanel;
   private JMapViewer mapViewer;
   private static final Color textColor = new Color(11, 22, 44);
@@ -57,13 +57,13 @@ public class Gui extends JFrame {
     this.lastDragPoint = new Point();
 
     // Create text areas for the start and end
-    this.textStart = createTextArea("From");
+    this.textStart = createTextAreaInput("From");
     JPanel startPanel = new JPanel();
     startPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
     startPanel.setBackground(primaryBackgroundColor);
     startPanel.add(textStart);
 
-    this.textEnd = createTextArea("To");
+    this.textEnd = createTextAreaInput("To");
     JPanel endPanel = new JPanel();
     endPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
     endPanel.setBackground(primaryBackgroundColor);
@@ -79,11 +79,9 @@ public class Gui extends JFrame {
     researchPanel.setBackground(primaryBackgroundColor);
     researchPanel.setLayout(new BoxLayout(researchPanel, BoxLayout.Y_AXIS));
     researchPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
-    researchPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+    researchPanel.add(Box.createRigidArea(new Dimension(0, 5)));
     researchPanel.add(startPanel);
-    researchPanel.add(Box.createRigidArea(new Dimension(0, 10)));
     researchPanel.add(endPanel);
-    researchPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
     // Create a container for the button to center it
     JPanel buttonPanel = new JPanel();
@@ -93,9 +91,9 @@ public class Gui extends JFrame {
 
     // Add the button panel to the research panel
     researchPanel.add(buttonPanel);
-    researchPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+    researchPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
-    // Create a content panel for displaying JSON content
+    // Create a content panel for displaying content
     contentPanel = new JPanel();
     contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
     contentPanel.setBackground(primaryBackgroundColor);
@@ -226,47 +224,124 @@ public class Gui extends JFrame {
    * Adds focus listeners to text areas to clear default text on focus.
    */
   private void addFocusListenerToTextArea() {
-    textStart.addFocusListener(new java.awt.event.FocusAdapter() {
+    ((JTextArea) textStart.getViewport().getView()).addFocusListener(new java.awt.event.FocusAdapter() {
       public void focusGained(java.awt.event.FocusEvent evt) {
-        if (textStart.getText().equals("From")) {
-          textStart.setText("");
+        JTextArea textStartArea = (JTextArea) textStart.getViewport().getView();
+        JTextArea textEndArea = (JTextArea) textEnd.getViewport().getView();
+        if (textStartArea.getText().equals("From")) {
+          textStartArea.setText("");
         }
-        if (textEnd.getText().equals("")) {
-          textEnd.setText("To");
+        if (textEndArea.getText().equals("")) {
+          textEndArea.setText("To");
         }
       }
     });
 
-    textEnd.addFocusListener(new java.awt.event.FocusAdapter() {
+    ((JTextArea) textEnd.getViewport().getView()).addFocusListener(new java.awt.event.FocusAdapter() {
       public void focusGained(java.awt.event.FocusEvent evt) {
-        if (textEnd.getText().equals("To")) {
-          textEnd.setText("");
+        JTextArea textStartArea = (JTextArea) textStart.getViewport().getView();
+        JTextArea textEndArea = (JTextArea) textEnd.getViewport().getView();
+        if (textEndArea.getText().equals("To")) {
+          textEndArea.setText("");
         }
-        if (textStart.getText().equals("")) {
-          textStart.setText("From");
+        if (textStartArea.getText().equals("")) {
+          textStartArea.setText("From");
         }
       }
     });
   }
 
   /**
-   * Creates a styled JTextArea with rounded edges.
-   * 
-   * @return the text area
+   * Creates a styled JTextAreaInput with rounded edges.
+   *
+   * @return the scroll pane containing the text area
    */
-  private JTextArea createTextArea(String text) {
+  private JScrollPane createTextAreaInput(String text) {
     JTextArea textArea = new JTextArea(text);
     textArea.setFont(new Font("Segoe UI", Font.BOLD, 14)); // Set text to bold
     textArea.setForeground(textColor);
     textArea.setBackground(primaryBackgroundColor);
-    textArea.setPreferredSize(new Dimension(RESEARCH_PANEL_WIDTH, 52));
+    textArea.setAlignmentX(Component.CENTER_ALIGNMENT);
+    textArea.setAlignmentY(Component.CENTER_ALIGNMENT);
     textArea.setCaretColor(Color.BLACK);
-    textArea.setLineWrap(true);
-    textArea.setWrapStyleWord(true);
+    textArea.setLineWrap(false); // Disable line wrapping
+    textArea.setWrapStyleWord(false); // Disable word wrapping
     textArea.setEditable(true);
-    textArea.setBorder(createBorder(15)); // Rounded border
-    textArea.setAlignmentX(Component.CENTER_ALIGNMENT); // Align text to center
+
+    // Prevent newlines by intercepting key events
+    // Add a key listener to prevent newlines
+    textArea.addKeyListener(new java.awt.event.KeyAdapter() {
+      @Override
+      public void keyPressed(java.awt.event.KeyEvent e) {
+        if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+          e.consume(); // Prevent the Enter key from inserting a newline
+        }
+      }
+    });
+
+    // Wrap the JTextArea in a JScrollPane for horizontal scrolling
+    JScrollPane scrollPane = new JScrollPane(textArea);
+    scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    scrollPane.setPreferredSize(new Dimension(RESEARCH_PANEL_WIDTH, 60)); // Fixed preferred size
+    scrollPane.setMaximumSize(new Dimension(RESEARCH_PANEL_WIDTH, 60)); // Fixed maximum size
+    scrollPane.setBackground(primaryBackgroundColor);
+    scrollPane.setBorder(new RoundedBorder(20)); // Use custom rounded border
+
+    return scrollPane;
+  }
+
+  /**
+   * Creates a styled JTextAreaOutput with rounded edges.
+   * 
+   * @return the text area
+   */
+  private JTextArea createTextAreaOutput(String text) {
+    JTextArea textArea = new JTextArea(text);
+    textArea.setFont(new Font("Segoe UI", Font.BOLD, 14)); // Set text to bold
+    textArea.setForeground(textColor);
+    textArea.setBackground(primaryBackgroundColor);
+    textArea.setCaretColor(Color.BLACK);
+    textArea.setLineWrap(false); // Disable line wrapping
+    textArea.setWrapStyleWord(false); // Disable word wrapping
+    textArea.setEditable(true);
+    textArea.setPreferredSize(new Dimension(RESEARCH_PANEL_WIDTH, 50)); // Fixed preferred size
+    textArea.setMaximumSize(new Dimension(RESEARCH_PANEL_WIDTH, 50)); // Fixed maximum size
+    textArea.setBorder(new RoundedBorder(20)); // Use custom rounded border
+    textArea.setFocusable(false); // Make the text area non-focusable
     return textArea;
+  }
+
+  // Custom rounded border class
+  private static class RoundedBorder extends AbstractBorder {
+    private final int radius;
+
+    public RoundedBorder(int radius) {
+      this.radius = radius; // Increase this value to make the corners more rounded
+    }
+
+    @Override
+    public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+      Graphics2D g2d = (Graphics2D) g;
+      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+      g2d.setColor(bordeColor); // Border color
+      g2d.drawRoundRect(x + 4, y + 4, width - 8, height - 8, radius * 2, radius * 2); // Larger radius for more
+      // rounded corners
+    }
+
+    @Override
+    public Insets getBorderInsets(Component c) {
+      return new Insets(radius, radius, radius, radius);
+    }
+
+    @Override
+    public Insets getBorderInsets(Component c, Insets insets) {
+      insets.left = radius;
+      insets.right = radius;
+      insets.top = radius;
+      insets.bottom = radius;
+      return insets;
+    }
   }
 
   /**
@@ -280,7 +355,7 @@ public class Gui extends JFrame {
     buttonSearch.setBackground(accentColor);
     buttonSearch.setForeground(textColor);
     buttonSearch.setFocusPainted(false);
-    buttonSearch.setBorder(createBorder(20)); // Rounded border
+    buttonSearch.setBorder(new RoundedBorder(10)); // Rounded border
     buttonSearch.setPreferredSize(new Dimension(200, 50));
     buttonSearch.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
@@ -294,8 +369,8 @@ public class Gui extends JFrame {
       mapViewer.removeAllMapPolygons();
 
       // Get the addresses from the text areas
-      String startAddress = textStart.getText();
-      String endAddress = textEnd.getText();
+      String startAddress = ((JTextArea) textStart.getViewport().getView()).getText();
+      String endAddress = ((JTextArea) textEnd.getViewport().getView()).getText();
 
       // Get the coordinates from the addresses
       // Use the Nominatim API to get the coordinates
@@ -310,6 +385,7 @@ public class Gui extends JFrame {
 
         // Display the path on the map
         contentPanel.add(displayPath(stops));
+        contentPanel.add(new JPanel());
         contentPanel.revalidate();
         contentPanel.repaint();
       } else {
@@ -320,17 +396,6 @@ public class Gui extends JFrame {
     });
 
     return buttonSearch;
-  }
-
-  /**
-   * Creates a rounded border with the given radius.
-   * 
-   * @return the border
-   */
-  private Border createBorder(int radius) {
-    return BorderFactory.createCompoundBorder(
-        BorderFactory.createLineBorder(bordeColor, 2),
-        BorderFactory.createEmptyBorder(radius, radius, radius, radius));
   }
 
   /**
@@ -346,8 +411,8 @@ public class Gui extends JFrame {
 
     // initialize the first stop
     Stop stop = stops.get(0);
-    JTextArea textArea = createTextArea(stop.getNameOfAssociatedStation());
-    pathPanel.add(textArea);
+    JTextArea stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
+    pathPanel.add(stopTextArea);
     Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
     mapViewer.setDisplayPosition(mStart, 12);
     MapMarkerDot parisMarker = new MapMarkerDot(mStart);
@@ -357,8 +422,8 @@ public class Gui extends JFrame {
     for (int i = 1; i < stops.size(); i++) {
       stop = stops.get(i);
       // add TextArea for the stop
-      textArea = createTextArea(stop.getNameOfAssociatedStation());
-      pathPanel.add(textArea);
+      stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
+      pathPanel.add(stopTextArea);
       // draw the path
       Coordinate mEnd = new Coordinate(stop.getLongitude(), stop.getLatitude()); // Paris center
       MapPolygon mLine = new MapPolygonImpl(mStart, mEnd, mStart);
