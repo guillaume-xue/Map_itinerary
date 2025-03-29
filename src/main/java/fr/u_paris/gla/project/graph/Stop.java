@@ -14,10 +14,11 @@ public class Stop implements Comparable<Stop>{
     private double longitude;
     private double latitude;
     private String nameOfAssociatedStation;
+    private Stop cameFrom;
 
-    private int f;
-    private int g;
-    private int h;
+    private double f;
+    private double g;
+    private double h;
 
 
     //A list of all adjacent stations, with the associated time and distance to get from current station to adjacent station. 
@@ -33,6 +34,8 @@ public class Stop implements Comparable<Stop>{
         this.longitude = longitude;
         this.latitude = latitude;
         this.nameOfAssociatedStation = nameOfAssociatedStation;
+        this.f = Double.POSITIVE_INFINITY;
+        this.g = Double.POSITIVE_INFINITY;
     }
 
     public Stop(double longitude, double latitude, String nameOfAssociatedStation, int f, int g, int h){
@@ -82,24 +85,34 @@ public class Stop implements Comparable<Stop>{
         return new ArrayList<>(timeDistancePerAdjacentStop.keySet());
     }
 
+    public double getF(){
+        return f;
+    }
+
     public double getG() {
-        return 0;
+        return g;
     }
 
-    public void setCameFrom(Stop currentStop) {
-        currentStop = currentStop;
+    public double getH() {
+        return h;
     }
 
-    public void setG(double tentativeGScore) {
-        tentativeGScore = g;
+    public void setCameFrom(Stop cameFrom) {
+        this.cameFrom = cameFrom;
     }
 
-    public void setH(double heuristic) {
-        heuristic = h;
+    public void setG(double g) {
+        this.g = g;
+        this.f = g+h;
+    }
+
+    public void setH(double h) {
+        this.h = h;
+        this.f = g+h;
     }
 
     public Stop getCameFrom() {
-        return null;
+        return cameFrom;
     }
 
     @Override
@@ -117,6 +130,11 @@ public class Stop implements Comparable<Stop>{
     @Override
     public int compareTo(Stop o) {
         return nameOfAssociatedStation.compareTo(o.nameOfAssociatedStation);
+    }
+
+
+    public int compateTo(Stop o) {
+        return Double.compare(f, o.f);
     }
 
     @Override
