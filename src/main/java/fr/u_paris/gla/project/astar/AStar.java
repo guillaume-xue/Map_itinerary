@@ -4,12 +4,13 @@ import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.PriorityQueue;
 
 public class AStar {
     private Graph graph;
-    Stop departStop;
-    Stop finishStop;
+    private Stop departStop;
+    private Stop finishStop;
 
     public AStar(Graph graph, Stop departStop, Stop finishStop){
         this.graph = graph;
@@ -17,47 +18,57 @@ public class AStar {
         this.finishStop = finishStop;
     }
 
-    public ArrayList<Stop> findPath(Graph graph, Stop departStop, Stop finishStop){
+    public ArrayList<Stop> findPath(){
         PriorityQueue<Stop> openSet = new PriorityQueue<>();
         ArrayList<Stop> closedSet = new ArrayList<>();
+
+        departStop.setG(0);
+        departStop.setH(getHeuristic(departStop, finishStop));
         openSet.add(departStop);
 
         while(!openSet.isEmpty()){
             Stop currentStop = openSet.poll();
-            closedSet.add(currentStop);
+
             if(currentStop.equals(finishStop)){
                 return reconstructPath(currentStop);
             }
-            for(Stop adjacentStop : currentStop.getAdjacentStops()){
-                if(closedSet.contains(adjacentStop)){
+
+            closedSet.add(currentStop);
+
+            for(Stop neighbor : currentStop.getAdjacentStops()){
+                if(closedSet.contains(neighbor)){
                     continue;
                 }
-                double tentativeGScore = currentStop.getG() + currentStop.distanceBetweenAdjacentStop(adjacentStop);
-                if(!openSet.contains(adjacentStop) || tentativeGScore < adjacentStop.getG()){
-                    adjacentStop.setCameFrom(currentStop);
-                    adjacentStop.setG(tentativeGScore);
-                    adjacentStop.setH(getHeuristic(adjacentStop, finishStop));
-                    if(!openSet.contains(adjacentStop)){
-                        openSet.add(adjacentStop);
-                    }
+                double tentativeGScore = currentStop.getG() + currentStop.distanceBetweenAdjacentStop(neighbor);
+
+                if(!openSet.contains(neighbor)){
+                    openSet.add(neighbor);
+                } else if(tentativeGScore >= neighbor.getG()){
+                    continue;
                 }
+                neighbor.setCameFrom(currentStop);
+                neighbor.setG(tentativeGScore);
+                neighbor.setH(getHeuristic(neighbor, finishStop));
             }
         }
-        return closedSet;
+        return new ArrayList<>(); // No path found
 
     }
 
     private ArrayList<Stop> reconstructPath(Stop currentStop) {
-        ArrayList<Stop> totalPath = new ArrayList<>();
-        totalPath.add(currentStop);
+        ArrayList<Stop> path = new ArrayList<>();
         while(currentStop.getCameFrom() != null){
+            path.add(currentStop);
             currentStop = currentStop.getCameFrom();
-            totalPath.add(currentStop);
         }
-        return totalPath;
+        Collections.reverse(path);
+        return path;
     }
 
     public double getHeuristic(Stop startStop, Stop finishStop) {
-        return startStop.distanceBetweenAdjacentStop(finishStop); // Distance de Manhattan
+        // Distance euclidienne pour avoir une meilleure estimation
+        double dx = startStop.getLongitude() - finishStop.getLongitude();
+        double dy = startStop.getLatitude() - finishStop.getLatitude();
+        return Math.sqrt(dx*dx + dy*dy);
     }
 }
