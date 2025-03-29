@@ -1,5 +1,8 @@
 package fr.u_paris.gla.project.views;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
@@ -7,14 +10,20 @@ import org.openstreetmap.gui.jmapviewer.MapPolygonImpl;
 import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 
 import java.util.ArrayList;
+
 import fr.u_paris.gla.project.graph.Stop;
 
 public class Gui extends JFrame {
@@ -135,6 +144,50 @@ public class Gui extends JFrame {
     return mapViewer;
   }
 
+  /**
+   * Retrieves the coordinates of an address using the Nominatim API.
+   * 
+   * @param address the address to search for
+   * @return the coordinates as an array [latitude, longitude]
+   */
+  private double[] getCoordinatesFromAddress(String address) {
+    String url = "https://nominatim.openstreetmap.org/search?q=" + address.replace(" ", "+")
+        + "&format=json&addressdetails=1&limit=1";
+    OkHttpClient client = new OkHttpClient();
+
+    Request request = new Request.Builder()
+        .url(url)
+        .header("User-Agent", "Mozilla/5.0 (compatible; MyApp/1.0)")
+        .build();
+
+    // Execute the request and parse the response
+    try (Response response = client.newCall(request).execute()) {
+      if (response.isSuccessful()) {
+        String responseBody = response.body().string();
+        JSONArray jsonArray = new JSONArray(responseBody);
+
+        if (jsonArray.length() > 0) {
+          // Get the first result
+          JSONObject location = jsonArray.getJSONObject(0);
+          JSONObject addressDetails = location.optJSONObject("address");
+
+          // Verify if the address is in France
+          if (addressDetails != null && "France".equalsIgnoreCase(addressDetails.optString("country"))) {
+            double latitude = location.getDouble("lat");
+            double longitude = location.getDouble("lon");
+            return new double[] { latitude, longitude };
+          } else {
+            System.out.println("Adresse hors de France : " + address);
+          }
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    return null; // Return null if the address is not found
+  }
+
   private void addMouseController() {
     // Add mouse listener for panning with left click
     mapViewer.addMouseListener(new MouseAdapter() {
@@ -233,17 +286,37 @@ public class Gui extends JFrame {
 
     // Add action listener to add displayJsonContent to contentPanel
     buttonSearch.addActionListener(e -> {
+
       contentPanel.removeAll();
-      ArrayList<Stop> stops = new ArrayList<Stop>();// replace by the algorithm to find the path
-      stops.add(new Stop(48.37960363189276, 2.942541935520315, "Montereau"));
-      stops.add(new Stop(48.37863280606578, 2.896902458012003, "La Grande-Paroisse"));
-      stops.add(new Stop(48.38667549692297, 2.8421499951400837, "Vernou-sur-Seine"));
-      stops.add(new Stop(48.40726498958356, 2.798915755216375, "Champagne-sur-Seine"));
-      stops.add(new Stop(48.430461048527036, 2.752898337073854, "Vulaines-sur-Seine - Samoreau"));
-      stops.add(new Stop(48.44272124429534, 2.7607507689116346, "Héricy"));
-      contentPanel.add(displayPath(stops));
-      contentPanel.revalidate();
-      contentPanel.repaint();
+
+      // Remove all markers and polygons from the map
+      mapViewer.removeAllMapMarkers();
+      mapViewer.removeAllMapPolygons();
+
+      // Get the addresses from the text areas
+      String startAddress = textStart.getText();
+      String endAddress = textEnd.getText();
+
+      // Get the coordinates from the addresses
+      // Use the Nominatim API to get the coordinates
+      double[] startCoordinates = getCoordinatesFromAddress(startAddress);
+      double[] endCoordinates = getCoordinatesFromAddress(endAddress);
+
+      if (startCoordinates != null && endCoordinates != null) {
+        // Create stops with coordinates and addresses
+        ArrayList<Stop> stops = new ArrayList<>();
+        stops.add(new Stop(startCoordinates[0], startCoordinates[1], startAddress));
+        stops.add(new Stop(endCoordinates[0], endCoordinates[1], endAddress));
+
+        // Display the path on the map
+        contentPanel.add(displayPath(stops));
+        contentPanel.revalidate();
+        contentPanel.repaint();
+      } else {
+        // Show an error message if the coordinates are not found
+        JOptionPane.showMessageDialog(this, "Impossible de trouver les coordonnées pour l'une des adresses.", "Erreur",
+            JOptionPane.ERROR_MESSAGE);
+      }
     });
 
     return buttonSearch;
