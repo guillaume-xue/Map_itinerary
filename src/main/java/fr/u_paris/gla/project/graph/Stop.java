@@ -95,7 +95,7 @@ public class Stop implements Comparable<Stop>{
     }
 
     public void setH(double heuristic) {
-
+        heuristic = h;
     }
 
     public Stop getCameFrom() {
