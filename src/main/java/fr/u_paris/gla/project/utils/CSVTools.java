@@ -59,7 +59,7 @@ public final class CSVTools {
         }
     }
 
-    public static void readCSVFromFileBis(String path, Consumer<String[]> contentLineConsumer) 
+    public static void readCSVFromFile(String path, Consumer<String[]> contentLineConsumer) 
             throws IOException {
         ICSVParser parser = new CSVParserBuilder().withSeparator(';').build();
         try (InputStream is = new FileInputStream(path);
@@ -73,7 +73,7 @@ public final class CSVTools {
                 while (csv.peek() != null /*&& count <= 100*/ ) {
                     line = csv.readNext();
                     contentLineConsumer.accept(line);
-                    //count++;
+                    //ount++;
                 }
             }
         } catch (CsvValidationException e) {

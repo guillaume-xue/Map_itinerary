@@ -48,7 +48,6 @@ public class Stop implements Comparable<Stop>{
     }
 
 
-
     public double getLongitude() {
         return longitude;
     }
@@ -85,6 +84,10 @@ public class Stop implements Comparable<Stop>{
         return new ArrayList<>(timeDistancePerAdjacentStop.keySet());
     }
 
+    public HashMap<Stop, MutablePair<Duration, Float>> getTimeDistancePerAdjacentStop(){
+        return this.timeDistancePerAdjacentStop;
+    }
+
     public double getF(){
         return f;
     }
@@ -113,7 +116,7 @@ public class Stop implements Comparable<Stop>{
 
     public Stop getCameFrom() {
         return cameFrom;
-    }
+
 
     @Override
     public String toString() {
@@ -127,12 +130,13 @@ public class Stop implements Comparable<Stop>{
         );    
     }
 
+    //FIXME
     @Override
     public int compareTo(Stop o) {
         return nameOfAssociatedStation.compareTo(o.nameOfAssociatedStation);
     }
 
-
+    //FIXME
     public int compateTo(Stop o) {
         return Double.compare(f, o.f);
     }

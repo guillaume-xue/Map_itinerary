@@ -6,14 +6,18 @@ import java.util.Objects;
 public class Line implements Comparable<Line>{
     
     private String name;
+    private String type;
     private ArrayList<Subline> listOfSublines = new ArrayList<>();
+
     
     public Line(String name){
         this.name = name;
     }
 
     public Line(String name, ArrayList<Subline> listOfSublines ){
-        this.name = name;
+        String[] tmp = name.split("_");
+        this.name = tmp[0];
+        this.type = tmp[1];
         this.listOfSublines = listOfSublines;
     }
 
@@ -23,6 +27,10 @@ public class Line implements Comparable<Line>{
 
     public String getName() {
         return name;
+    }
+
+    public String getType(){
+        return type;
     }
 
     public ArrayList<Subline> getListOfSublines() {
