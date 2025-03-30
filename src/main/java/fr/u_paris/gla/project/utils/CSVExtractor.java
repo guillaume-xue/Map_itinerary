@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -30,15 +31,17 @@ public final class CSVExtractor {
     private static final int STOPS_DATA_ID = 1;
     private static final int JUNCTIONS_DATA_ID = 2;
 
-    private static final Logger LOGGER = Logger
-            .getLogger(CSVExtractor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CSVExtractor.class.getName());
 
     /** Hidden constructor of tool class */
     private CSVExtractor() {
         // Parser class
     }
 
-    // 
+    /** Convert a degree angle value in a radian angle one.
+     * 
+     * @param args The list of files to parse
+     */
     public static void makeOjectsFromCSV(String[] args){
         // --parse <stops_data.csv> <junctions_data.csv>
 
@@ -56,33 +59,32 @@ public final class CSVExtractor {
             CSVTools.readCSVFromFile(args[STOPS_DATA_ID],(String[] line) -> 
                 readStops(line, mapOfLines, mapOfStopEntry, mapOfStops));
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error while reading the file", e);
+            LOGGER.log(Level.SEVERE, "Error while reading the Stops data file", e);
         }
 
-        // On read le junctionsData pour faire la liste de lignes et leurs sous-lignes
+        // On read le junctionsData pour ajouter les sous-lignes
         try{
             CSVTools.readCSVFromFile(args[JUNCTIONS_DATA_ID],(String[] line) -> 
                 readJunctions(line, mapOfLines, mapOfStopEntry, mapOfStops));
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error while reading the file", e);
+            LOGGER.log(Level.SEVERE, "Error while reading the Junctions data file", e);
         }
 
         ArrayList<Stop> listOfStops = new ArrayList<>(mapOfStops.values());
-        //Collections.sort(listOfStops);
-        System.out.println("Nombre d'arrêts (quais) uniques trouvés: " + mapOfStops.size());
-        System.out.println("Nombre d'arrêts (quais) uniques trouvés: " + listOfStops.size());
-        System.out.println("Nombre de lignes trouvées: " + mapOfLines.size());
 
         ArrayList<Line> listOfLines = new ArrayList<>();
         for (Map.Entry<String, ArrayList<Subline>> entry : mapOfLines.entrySet()) {
             listOfLines.add(new Line(entry.getKey(), entry.getValue()));
         }
-        //Collections.sort(listOfLines);
 
+        //Collections.sort(listOfStops);
+        //Collections.sort(listOfLines);
         Graph graph = new Graph(listOfStops, listOfLines);
 
-        System.out.println("Nombre de sous-lignes n'ayant pas trouvé leur chemin associé:" + errorCpt);
-        //System.out.println(graph.toString());
+        System.out.println("Nombre d'arrêts (quais) uniques trouvés: " + listOfStops.size());
+        System.out.println("Nombre de lignes trouvées: " + mapOfLines.size());
+        System.out.println("Nombre de sous-lignes trouvées: " + mapOfLines.get("7_Subway").size());
+        System.out.println("Nombre de sous-lignes n'ayant pas trouvé leur chemin associé: " + errorCpt);
     }
 
     public static void readStops(
@@ -104,26 +106,27 @@ public final class CSVExtractor {
         Map<String,ArrayList<Stop>> mapOfStopEntry, 
         Map<ImmutablePair<Double,Double>,Stop> mapOfStops
     ){
+        // La ligne sur laquelle on travaille, avec son index et son type concaténé
         String ligne = line[LINE_INDEX] + "_" + line[TYPE_INDEX];
-        Subline variantSubline = new Subline(line[VARIANT_INDEX]);
-        // La liste de string représentant les stations issu des jonctions
+        Subline variantSubline = new Subline(line[VARIANT_INDEX]); // La sous-ligne
+        // La liste de string représentant les stations de la sous-ligne
         String[] stops = line[LIST_INDEX].replaceAll("[\\[\\]]", "").split(";");
 
-        // Les stations potentiels issu de la mapOfStopsEntry
+        // Les stations potentielles recontrées précédemment pour la ligne
         ArrayList<Stop> listOfStopsEntry = mapOfStopEntry.get(ligne);
         if ( listOfStopsEntry == null ){
             LOGGER.warning("Liste des arrêts potentiels vide pour la ligne:" + ligne + ", passage à la prochaine");
             return;
         } 
 
-        // La liste de station finale à ajouter à la subline
-        ArrayList<Stop> listOfStops = buildPotentialLine(stops, listOfStopsEntry);
+        // La liste de stations finale à ajouter à la subline
+        ArrayList<Stop> listOfStops = buildPotentialLine(stops, listOfStopsEntry, ligne, line[VARIANT_INDEX]);
 
         variantSubline.setListOfStops(listOfStops);
         mapOfLines.get(ligne).add(variantSubline);
     }
 
-    public static ArrayList<Stop> buildPotentialLine(String[] stops, ArrayList<Stop> listOfStopsEntry) {
+    public static ArrayList<Stop> buildPotentialLine(String[] stops, ArrayList<Stop> listOfStopsEntry, String ligne, String variant) {
         ArrayList<Stop> result = new ArrayList<>();
         if (stops.length == 0 || listOfStopsEntry.isEmpty()) {
             LOGGER.warning("Liste des arrêts vide, impossible de reconstruire la ligne");
@@ -144,43 +147,49 @@ public final class CSVExtractor {
         }
 
         // On lance un parcours en profondeur sur chaque départ potentiel
-        for (Stop start : listOfPotentialDeparture) {
-            HashSet<Stop> visited = new HashSet<>();
-            if (dfsSearch(start, stops, 1, /*visited,*/ result)) {
+        for (Stop departure : listOfPotentialDeparture) {
+            if (dfsSearch(departure, stops, 1, listOfStopsEntry ,result)) {
                 return result;
             }
         }
 
         errorCpt++;
-        LOGGER.warning("Pas de chemin potentiel trouvé pour la sous-ligne: " + String.join(", ", stops) + "\n\n\n" );
+        LOGGER.warning("Pas de chemin potentiel trouvé pour la sous-ligne " + ligne + ", variant " + variant + ": " + String.join(", ", stops) + "\n\n\n" );
         return new ArrayList<>();
     }
 
     // On parcours les chemins potentiels comme un arbre avec un parcours en profondeur
     private static boolean dfsSearch(
-        Stop currentStop, 
-        String[] stops, 
-        int index, 
-        //HashSet<Stop> visited, 
-        ArrayList<Stop> path) 
-    {
-        path.add(currentStop);
-        //visited.add(currentStop);
+        Stop currentStop,
+        String[] stops,
+        int index,
+        ArrayList<Stop> listOfStopsEntry,      
+        ArrayList<Stop> potentialPath
+    ){
+        potentialPath.add(currentStop);
 
         if (index == stops.length) {
             return true;
         }
 
-        for (Stop adjacent : currentStop.getTimeDistancePerAdjacentStop().keySet()) {
-            if (/*!visited.contains(adjacent) &&*/ adjacent.getNameOfAssociatedStation().equals(stops[index])) {
-                if (dfsSearch(adjacent, stops, index + 1, /*visited,*/ path)) {
+        // Set<Stop> potentialAdjacent = currentStop.getTimeDistancePerAdjacentStop().keySet();
+
+        // for ( Stop st : listOfStopsEntry ){
+        //     if (!potentialAdjacent.contains(st)){
+        //         potentialAdjacent.remove(st);
+        //     }
+        // } 
+
+        // currentStop.getTimeDistancePerAdjacentStop().keySet()
+        for ( Stop adjacent : currentStop.getTimeDistancePerAdjacentStop().keySet() ){
+            if ( adjacent.getNameOfAssociatedStation().equals(stops[index]) ){
+                if ( dfsSearch(adjacent, stops, index + 1, listOfStopsEntry, potentialPath) ){
                     return true;
                 }
             }
         }
 
-        path.remove(path.size() - 1);
-        //visited.remove(currentStop);
+        potentialPath.remove(potentialPath.size() - 1);
         return false;
     }
 
