@@ -1,5 +1,8 @@
 package fr.u_paris.gla.project.views;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
@@ -7,11 +10,20 @@ import org.openstreetmap.gui.jmapviewer.MapPolygonImpl;
 import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+
 import javax.swing.*;
-import javax.swing.border.Border;
+import javax.swing.border.AbstractBorder;
 
 import java.util.ArrayList;
+
 import fr.u_paris.gla.project.graph.Stop;
 
 public class Gui extends JFrame {
@@ -21,14 +33,15 @@ public class Gui extends JFrame {
   private static final int RESEARCH_PANEL_WIDTH = 350;
   private static final int MIN_SCREEN_WIDTH = 600;
   private static final int MIN_SCREEN_HEIGHT = 300;
-  private JTextArea textStart;
-  private JTextArea textEnd;
+  private JScrollPane textStart;
+  private JScrollPane textEnd;
   private JPanel contentPanel;
   private JMapViewer mapViewer;
   private static final Color textColor = new Color(11, 22, 44);
   private static final Color bordeColor = new Color(88, 88, 88);
   private static final Color primaryBackgroundColor = new Color(240, 240, 240);
   private static final Color accentColor = new Color(76, 175, 80);
+  private Point lastDragPoint; // Add this variable to track the last drag position
 
   /**
    * Constructor.
@@ -41,14 +54,16 @@ public class Gui extends JFrame {
     setMinimumSize(new Dimension(MIN_SCREEN_WIDTH, MIN_SCREEN_HEIGHT)); // Set minimum size
     setLocationRelativeTo(null);
 
+    this.lastDragPoint = new Point();
+
     // Create text areas for the start and end
-    this.textStart = createTextArea("From");
+    this.textStart = createTextAreaInput("From");
     JPanel startPanel = new JPanel();
     startPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
     startPanel.setBackground(primaryBackgroundColor);
     startPanel.add(textStart);
 
-    this.textEnd = createTextArea("To");
+    this.textEnd = createTextAreaInput("To");
     JPanel endPanel = new JPanel();
     endPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
     endPanel.setBackground(primaryBackgroundColor);
@@ -64,11 +79,9 @@ public class Gui extends JFrame {
     researchPanel.setBackground(primaryBackgroundColor);
     researchPanel.setLayout(new BoxLayout(researchPanel, BoxLayout.Y_AXIS));
     researchPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
-    researchPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+    researchPanel.add(Box.createRigidArea(new Dimension(0, 5)));
     researchPanel.add(startPanel);
-    researchPanel.add(Box.createRigidArea(new Dimension(0, 10)));
     researchPanel.add(endPanel);
-    researchPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
     // Create a container for the button to center it
     JPanel buttonPanel = new JPanel();
@@ -78,9 +91,9 @@ public class Gui extends JFrame {
 
     // Add the button panel to the research panel
     researchPanel.add(buttonPanel);
-    researchPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+    researchPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
-    // Create a content panel for displaying JSON content
+    // Create a content panel for displaying content
     contentPanel = new JPanel();
     contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
     contentPanel.setBackground(primaryBackgroundColor);
@@ -99,6 +112,7 @@ public class Gui extends JFrame {
 
     // Create a map panel
     this.mapViewer = createMapViewer();
+    addMouseController();
     JPanel mapPanel = new JPanel();
     mapPanel.setLayout(new java.awt.BorderLayout());
     mapPanel.add(this.mapViewer, java.awt.BorderLayout.CENTER);
@@ -117,7 +131,7 @@ public class Gui extends JFrame {
    * 
    * @return the map viewer panel
    */
-  private static JMapViewer createMapViewer() {
+  private JMapViewer createMapViewer() {
     JMapViewer mapViewer = new JMapViewer();
     mapViewer.setTileSource(new OsmTileSource.Mapnik());
 
@@ -129,50 +143,205 @@ public class Gui extends JFrame {
   }
 
   /**
-   * Adds focus listeners to text areas to clear default text on focus.
+   * Retrieves the coordinates of an address using the Nominatim API.
+   * 
+   * @param address the address to search for
+   * @return the coordinates as an array [latitude, longitude]
    */
-  private void addFocusListenerToTextArea() {
-    textStart.addFocusListener(new java.awt.event.FocusAdapter() {
-      public void focusGained(java.awt.event.FocusEvent evt) {
-        if (textStart.getText().equals("From")) {
-          textStart.setText("");
+  private double[] getCoordinatesFromAddress(String address) {
+    String url = "https://nominatim.openstreetmap.org/search?q=" + address.replace(" ", "+")
+        + "&format=json&addressdetails=1&limit=1";
+    OkHttpClient client = new OkHttpClient();
+
+    Request request = new Request.Builder()
+        .url(url)
+        .header("User-Agent", "Mozilla/5.0 (compatible; MyApp/1.0)")
+        .build();
+
+    // Execute the request and parse the response
+    try (Response response = client.newCall(request).execute()) {
+      if (response.isSuccessful()) {
+        String responseBody = response.body().string();
+        JSONArray jsonArray = new JSONArray(responseBody);
+
+        if (jsonArray.length() > 0) {
+          // Get the first result
+          JSONObject location = jsonArray.getJSONObject(0);
+          JSONObject addressDetails = location.optJSONObject("address");
+
+          // Verify if the address is in France
+          if (addressDetails != null && "France".equalsIgnoreCase(addressDetails.optString("country"))) {
+            double latitude = location.getDouble("lat");
+            double longitude = location.getDouble("lon");
+            return new double[] { latitude, longitude };
+          } else {
+            System.out.println("Adresse hors de France : " + address);
+          }
         }
-        if (textEnd.getText().equals("")) {
-          textEnd.setText("To");
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    return null; // Return null if the address is not found
+  }
+
+  private void addMouseController() {
+    // Add mouse listener for panning with left click
+    mapViewer.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mousePressed(MouseEvent e) {
+        if (SwingUtilities.isLeftMouseButton(e)) {
+          Gui.this.lastDragPoint = e.getPoint(); // Use Gui.this to access the enclosing class field
         }
+      }
+
+      @Override
+      public void mouseReleased(MouseEvent e) {
+        Gui.this.lastDragPoint = null; // Use Gui.this to access the enclosing class field
       }
     });
 
-    textEnd.addFocusListener(new java.awt.event.FocusAdapter() {
-      public void focusGained(java.awt.event.FocusEvent evt) {
-        if (textEnd.getText().equals("To")) {
-          textEnd.setText("");
-        }
-        if (textStart.getText().equals("")) {
-          textStart.setText("From");
+    mapViewer.addMouseMotionListener(new MouseMotionAdapter() {
+      @Override
+      public void mouseDragged(MouseEvent e) {
+        if (SwingUtilities.isLeftMouseButton(e) && Gui.this.lastDragPoint != null) {
+          Point currentPoint = e.getPoint();
+          int dx = Gui.this.lastDragPoint.x - currentPoint.x; // Reverse direction
+          int dy = Gui.this.lastDragPoint.y - currentPoint.y; // Reverse direction
+
+          // Move the map
+          mapViewer.moveMap(dx, dy);
+
+          // Update the last drag position
+          Gui.this.lastDragPoint = currentPoint; // Use Gui.this to access the enclosing class field
         }
       }
     });
   }
 
   /**
-   * Creates a styled JTextArea with rounded edges.
-   * 
-   * @return the text area
+   * Adds focus listeners to text areas to clear default text on focus.
    */
-  private JTextArea createTextArea(String text) {
+  private void addFocusListenerToTextArea() {
+    ((JTextArea) textStart.getViewport().getView()).addFocusListener(new java.awt.event.FocusAdapter() {
+      public void focusGained(java.awt.event.FocusEvent evt) {
+        JTextArea textStartArea = (JTextArea) textStart.getViewport().getView();
+        JTextArea textEndArea = (JTextArea) textEnd.getViewport().getView();
+        if (textStartArea.getText().equals("From")) {
+          textStartArea.setText("");
+        }
+        if (textEndArea.getText().equals("")) {
+          textEndArea.setText("To");
+        }
+      }
+    });
+
+    ((JTextArea) textEnd.getViewport().getView()).addFocusListener(new java.awt.event.FocusAdapter() {
+      public void focusGained(java.awt.event.FocusEvent evt) {
+        JTextArea textStartArea = (JTextArea) textStart.getViewport().getView();
+        JTextArea textEndArea = (JTextArea) textEnd.getViewport().getView();
+        if (textEndArea.getText().equals("To")) {
+          textEndArea.setText("");
+        }
+        if (textStartArea.getText().equals("")) {
+          textStartArea.setText("From");
+        }
+      }
+    });
+  }
+
+  /**
+   * Creates a styled JTextAreaInput with rounded edges.
+   *
+   * @return the scroll pane containing the text area
+   */
+  private JScrollPane createTextAreaInput(String text) {
     JTextArea textArea = new JTextArea(text);
     textArea.setFont(new Font("Segoe UI", Font.BOLD, 14)); // Set text to bold
     textArea.setForeground(textColor);
     textArea.setBackground(primaryBackgroundColor);
-    textArea.setPreferredSize(new Dimension(RESEARCH_PANEL_WIDTH, 52));
+    textArea.setAlignmentX(Component.CENTER_ALIGNMENT);
+    textArea.setAlignmentY(Component.CENTER_ALIGNMENT);
     textArea.setCaretColor(Color.BLACK);
-    textArea.setLineWrap(true);
-    textArea.setWrapStyleWord(true);
+    textArea.setLineWrap(false); // Disable line wrapping
+    textArea.setWrapStyleWord(false); // Disable word wrapping
     textArea.setEditable(true);
-    textArea.setBorder(createBorder(15)); // Rounded border
-    textArea.setAlignmentX(Component.CENTER_ALIGNMENT); // Align text to center
+
+    // Prevent newlines by intercepting key events
+    // Add a key listener to prevent newlines
+    textArea.addKeyListener(new java.awt.event.KeyAdapter() {
+      @Override
+      public void keyPressed(java.awt.event.KeyEvent e) {
+        if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+          e.consume(); // Prevent the Enter key from inserting a newline
+        }
+      }
+    });
+
+    // Wrap the JTextArea in a JScrollPane for horizontal scrolling
+    JScrollPane scrollPane = new JScrollPane(textArea);
+    scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    scrollPane.setPreferredSize(new Dimension(RESEARCH_PANEL_WIDTH, 60)); // Fixed preferred size
+    scrollPane.setMaximumSize(new Dimension(RESEARCH_PANEL_WIDTH, 60)); // Fixed maximum size
+    scrollPane.setBackground(primaryBackgroundColor);
+    scrollPane.setBorder(new RoundedBorder(20)); // Use custom rounded border
+
+    return scrollPane;
+  }
+
+  /**
+   * Creates a styled JTextAreaOutput with rounded edges.
+   * 
+   * @return the text area
+   */
+  private JTextArea createTextAreaOutput(String text) {
+    JTextArea textArea = new JTextArea(text);
+    textArea.setFont(new Font("Segoe UI", Font.BOLD, 14)); // Set text to bold
+    textArea.setForeground(textColor);
+    textArea.setBackground(primaryBackgroundColor);
+    textArea.setCaretColor(Color.BLACK);
+    textArea.setLineWrap(false); // Disable line wrapping
+    textArea.setWrapStyleWord(false); // Disable word wrapping
+    textArea.setEditable(true);
+    textArea.setPreferredSize(new Dimension(RESEARCH_PANEL_WIDTH, 50)); // Fixed preferred size
+    textArea.setMaximumSize(new Dimension(RESEARCH_PANEL_WIDTH, 50)); // Fixed maximum size
+    textArea.setBorder(new RoundedBorder(20)); // Use custom rounded border
+    textArea.setFocusable(false); // Make the text area non-focusable
     return textArea;
+  }
+
+  // Custom rounded border class
+  private static class RoundedBorder extends AbstractBorder {
+    private final int radius;
+
+    public RoundedBorder(int radius) {
+      this.radius = radius; // Increase this value to make the corners more rounded
+    }
+
+    @Override
+    public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+      Graphics2D g2d = (Graphics2D) g;
+      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+      g2d.setColor(bordeColor); // Border color
+      g2d.drawRoundRect(x + 4, y + 4, width - 8, height - 8, radius * 2, radius * 2); // Larger radius for more
+      // rounded corners
+    }
+
+    @Override
+    public Insets getBorderInsets(Component c) {
+      return new Insets(radius, radius, radius, radius);
+    }
+
+    @Override
+    public Insets getBorderInsets(Component c, Insets insets) {
+      insets.left = radius;
+      insets.right = radius;
+      insets.top = radius;
+      insets.bottom = radius;
+      return insets;
+    }
   }
 
   /**
@@ -186,37 +355,47 @@ public class Gui extends JFrame {
     buttonSearch.setBackground(accentColor);
     buttonSearch.setForeground(textColor);
     buttonSearch.setFocusPainted(false);
-    buttonSearch.setBorder(createBorder(20)); // Rounded border
+    buttonSearch.setBorder(new RoundedBorder(10)); // Rounded border
     buttonSearch.setPreferredSize(new Dimension(200, 50));
     buttonSearch.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
     // Add action listener to add displayJsonContent to contentPanel
     buttonSearch.addActionListener(e -> {
+
       contentPanel.removeAll();
-      ArrayList<Stop> stops = new ArrayList<Stop>();// replace by the algorithm to find the path
-      stops.add(new Stop(48.37960363189276, 2.942541935520315, "Montereau"));
-      stops.add(new Stop(48.37863280606578, 2.896902458012003, "La Grande-Paroisse"));
-      stops.add(new Stop(48.38667549692297, 2.8421499951400837, "Vernou-sur-Seine"));
-      stops.add(new Stop(48.40726498958356, 2.798915755216375, "Champagne-sur-Seine"));
-      stops.add(new Stop(48.430461048527036, 2.752898337073854, "Vulaines-sur-Seine - Samoreau"));
-      stops.add(new Stop(48.44272124429534, 2.7607507689116346, "Héricy"));
-      contentPanel.add(displayPath(stops));
-      contentPanel.revalidate();
-      contentPanel.repaint();
+
+      // Remove all markers and polygons from the map
+      mapViewer.removeAllMapMarkers();
+      mapViewer.removeAllMapPolygons();
+
+      // Get the addresses from the text areas
+      String startAddress = ((JTextArea) textStart.getViewport().getView()).getText();
+      String endAddress = ((JTextArea) textEnd.getViewport().getView()).getText();
+
+      // Get the coordinates from the addresses
+      // Use the Nominatim API to get the coordinates
+      double[] startCoordinates = getCoordinatesFromAddress(startAddress);
+      double[] endCoordinates = getCoordinatesFromAddress(endAddress);
+
+      if (startCoordinates != null && endCoordinates != null) {
+        // Create stops with coordinates and addresses
+        ArrayList<Stop> stops = new ArrayList<>();
+        stops.add(new Stop(startCoordinates[0], startCoordinates[1], startAddress));
+        stops.add(new Stop(endCoordinates[0], endCoordinates[1], endAddress));
+
+        // Display the path on the map
+        contentPanel.add(displayPath(stops));
+        contentPanel.add(new JPanel());
+        contentPanel.revalidate();
+        contentPanel.repaint();
+      } else {
+        // Show an error message if the coordinates are not found
+        JOptionPane.showMessageDialog(this, "Impossible de trouver les coordonnées pour l'une des adresses.", "Erreur",
+            JOptionPane.ERROR_MESSAGE);
+      }
     });
 
     return buttonSearch;
-  }
-
-  /**
-   * Creates a rounded border with the given radius.
-   * 
-   * @return the border
-   */
-  private Border createBorder(int radius) {
-    return BorderFactory.createCompoundBorder(
-        BorderFactory.createLineBorder(bordeColor, 2),
-        BorderFactory.createEmptyBorder(radius, radius, radius, radius));
   }
 
   /**
@@ -232,8 +411,8 @@ public class Gui extends JFrame {
 
     // initialize the first stop
     Stop stop = stops.get(0);
-    JTextArea textArea = createTextArea(stop.getNameOfAssociatedStation());
-    pathPanel.add(textArea);
+    JTextArea stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
+    pathPanel.add(stopTextArea);
     Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
     mapViewer.setDisplayPosition(mStart, 12);
     MapMarkerDot parisMarker = new MapMarkerDot(mStart);
@@ -243,8 +422,8 @@ public class Gui extends JFrame {
     for (int i = 1; i < stops.size(); i++) {
       stop = stops.get(i);
       // add TextArea for the stop
-      textArea = createTextArea(stop.getNameOfAssociatedStation());
-      pathPanel.add(textArea);
+      stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
+      pathPanel.add(stopTextArea);
       // draw the path
       Coordinate mEnd = new Coordinate(stop.getLongitude(), stop.getLatitude()); // Paris center
       MapPolygon mLine = new MapPolygonImpl(mStart, mEnd, mStart);
