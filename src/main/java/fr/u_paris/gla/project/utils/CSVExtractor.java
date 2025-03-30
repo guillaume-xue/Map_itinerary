@@ -42,12 +42,12 @@ public final class CSVExtractor {
      * 
      * @param args The list of files to parse
      */
-    public static void makeOjectsFromCSV(String[] args){
+    public static Graph makeOjectsFromCSV(String[] args){
         // --parse <stops_data.csv> <junctions_data.csv>
 
         if (args == null) {
             LOGGER.severe("Invalid command line for parsing CSV. Missing target path.");
-            return;
+            return null;
         }
 
         Map<String,ArrayList<Subline>> mapOfLines = new HashMap<>();
@@ -85,6 +85,8 @@ public final class CSVExtractor {
         System.out.println("Nombre de lignes trouvées: " + mapOfLines.size());
         System.out.println("Nombre de sous-lignes trouvées: " + mapOfLines.get("7_Subway").size());
         System.out.println("Nombre de sous-lignes n'ayant pas trouvé leur chemin associé: " + errorCpt);
+
+        return graph;
     }
 
     public static void readStops(
