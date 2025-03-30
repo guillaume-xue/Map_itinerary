@@ -60,10 +60,6 @@ public class Stop implements Comparable<Stop>{
         return nameOfAssociatedStation;
     }
 
-    public HashMap<Stop, MutablePair<Duration, Float>> getTimeDistancePerAdjacentStop() {
-        return timeDistancePerAdjacentStop;
-    }
-
     public HashMap<Subline, ArrayList<LocalTime>> getDepartures() {
         return departures;
     }
@@ -116,7 +112,7 @@ public class Stop implements Comparable<Stop>{
 
     public Stop getCameFrom() {
         return cameFrom;
-
+    }
 
     @Override
     public String toString() {

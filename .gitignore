@@ -10,3 +10,4 @@ target/
 Makefile
 *.csv
 dependency-reduced-pom.xml
+**/.DS_Store
