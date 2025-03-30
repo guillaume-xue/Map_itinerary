@@ -1,12 +1,12 @@
 package fr.u_paris.gla.project.graph;
 
+import org.apache.commons.lang3.tuple.MutablePair;
+
+import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
-import java.time.Duration;
-
-import org.apache.commons.lang3.tuple.MutablePair;
 
 
 public class Stop implements Comparable<Stop>{
@@ -14,6 +14,12 @@ public class Stop implements Comparable<Stop>{
     private double longitude;
     private double latitude;
     private String nameOfAssociatedStation;
+    private Stop cameFrom;
+
+    private double f;
+    private double g;
+    private double h;
+
 
     //A list of all adjacent stations, with the associated time and distance to get from current station to adjacent station. 
     private HashMap<Stop, MutablePair<Duration, Float>> timeDistancePerAdjacentStop = new HashMap<>();
@@ -28,7 +34,19 @@ public class Stop implements Comparable<Stop>{
         this.longitude = longitude;
         this.latitude = latitude;
         this.nameOfAssociatedStation = nameOfAssociatedStation;
+        this.f = Double.POSITIVE_INFINITY;
+        this.g = Double.POSITIVE_INFINITY;
     }
+
+    public Stop(double longitude, double latitude, String nameOfAssociatedStation, int f, int g, int h){
+        this.longitude = longitude;
+        this.latitude = latitude;
+        this.nameOfAssociatedStation = nameOfAssociatedStation;
+        this.f = f;
+        this.g = g;
+        this.h = h;
+    }
+
 
     public double getLongitude() {
         return longitude;
@@ -42,12 +60,58 @@ public class Stop implements Comparable<Stop>{
         return nameOfAssociatedStation;
     }
 
+    public HashMap<Subline, ArrayList<LocalTime>> getDepartures() {
+        return departures;
+    }
+
     public void addAdjacentStop(Stop adjacentStop, Duration timeToNextStation, Float distanceToNextStation){
         timeDistancePerAdjacentStop.put(adjacentStop, new MutablePair<>(timeToNextStation, distanceToNextStation));
     }
 
     public void addDeparture(Subline subline, ArrayList<LocalTime> times){
         departures.put(subline, times);
+    }
+
+    public double distanceBetweenAdjacentStop(Stop stop) {
+        return Math.abs(this.latitude - stop.latitude) + Math.abs(this.longitude - stop.longitude);
+    }
+
+    public ArrayList<Stop> getAdjacentStops() {
+        return new ArrayList<>(timeDistancePerAdjacentStop.keySet());
+    }
+
+    public HashMap<Stop, MutablePair<Duration, Float>> getTimeDistancePerAdjacentStop(){
+        return this.timeDistancePerAdjacentStop;
+    }
+
+    public double getF(){
+        return f;
+    }
+
+    public double getG() {
+        return g;
+    }
+
+    public double getH() {
+        return h;
+    }
+
+    public void setCameFrom(Stop cameFrom) {
+        this.cameFrom = cameFrom;
+    }
+
+    public void setG(double g) {
+        this.g = g;
+        this.f = g+h;
+    }
+
+    public void setH(double h) {
+        this.h = h;
+        this.f = g+h;
+    }
+
+    public Stop getCameFrom() {
+        return cameFrom;
     }
 
     @Override
@@ -62,9 +126,15 @@ public class Stop implements Comparable<Stop>{
         );    
     }
 
+    //FIXME
     @Override
     public int compareTo(Stop o) {
         return nameOfAssociatedStation.compareTo(o.nameOfAssociatedStation);
+    }
+
+    //FIXME
+    public int compateTo(Stop o) {
+        return Double.compare(f, o.f);
     }
 
     @Override
@@ -86,5 +156,8 @@ public class Stop implements Comparable<Stop>{
                 && Double.doubleToLongBits(longitude) == Double
                         .doubleToLongBits(other.longitude);
     }
+
+
+
 }
 

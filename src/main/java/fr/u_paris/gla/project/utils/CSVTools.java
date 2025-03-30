@@ -23,6 +23,12 @@ import com.opencsv.ICSVParser;
 import com.opencsv.ICSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
 
+import java.io.FileNotFoundException;
+import java.io.FileInputStream;
+
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipEntry;
+
 /** A CSV tool class.
  * 
  * @author Emmanuel Bigeon */
@@ -67,7 +73,7 @@ public final class CSVTools {
                 while (csv.peek() != null /*&& count <= 100*/ ) {
                     line = csv.readNext();
                     contentLineConsumer.accept(line);
-                    //count++;
+                    //ount++;
                 }
             }
         } catch (CsvValidationException e) {
@@ -84,5 +90,36 @@ public final class CSVTools {
             }
         }
     }
+
+    
+    public static void readCSVFromZip(String zipFilePath, String csvFileName, Consumer<String[]> contentLineConsumer) throws IOException {
+        URL zipUrl = CSVTools.class.getClassLoader().getResource(zipFilePath);
+        if (zipUrl == null) {
+            throw new FileNotFoundException("Fichier ZIP introuvable: " + zipFilePath);
+        }
+        try (InputStream zipInputStream = zipUrl.openStream(); ZipInputStream zis = new ZipInputStream(zipInputStream)) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                if (entry.getName().equals(csvFileName)) {
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(zis, StandardCharsets.UTF_8))) {
+                        ICSVParser parser = new CSVParserBuilder().withSeparator(',').build();
+                        CSVReader csvReader = new CSVReaderBuilder(reader)
+                            .withCSVParser(parser)
+                            .build();
+                        String[] line;
+                        while ((line = csvReader.readNext()) != null) {
+                            contentLineConsumer.accept(line);
+                        }
+                    } catch (CsvValidationException e) {
+                        throw new IOException("Erreur de validation CSV", e);
+                    }
+                    break; 
+                }
+                zis.closeEntry();
+            }
+        }
+    }
+
+
 
 }

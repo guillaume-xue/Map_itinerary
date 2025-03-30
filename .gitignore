@@ -8,4 +8,6 @@ target/
 
 #Misc
 Makefile
-output.csv
+*.csv
+dependency-reduced-pom.xml
+**/.DS_Store

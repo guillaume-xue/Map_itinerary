@@ -19,6 +19,10 @@ public class Subline {
     public void addNextStop(Stop Stop){
         listOfStops.add(Stop);
     }
+
+    public void setListOfStops(ArrayList<Stop> listOfStops){
+        this.listOfStops = listOfStops;
+    }
     
     //Stop should be the departure Stop. 
     public void addDepartureTimes(Stop Stop, ArrayList<LocalTime> departureTimes) throws Exception{

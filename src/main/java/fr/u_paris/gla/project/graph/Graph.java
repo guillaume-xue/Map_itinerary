@@ -21,6 +21,15 @@ public class Graph {
         throw new Exception(String.format("Stop was not found at coordinates x = %f, y = %f", longitude, latitude));
     }
 
+    public Line getLine(String name) throws Exception{
+        for(Line l : listOfLines){
+            if(l.getName().equals(name)){
+                return l;
+            }
+        }
+        throw new Exception(String.format("Line was not found with name %s", name));
+    }
+
     @Override
     public String toString(){
         return "--- List of Stops: ---\n" +

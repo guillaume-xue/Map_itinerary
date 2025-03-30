@@ -3,14 +3,16 @@ package fr.u_paris.gla.project;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Map;
 import java.util.Properties;
 
 import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
 import fr.u_paris.gla.project.utils.CSVExtractor;
 import fr.u_paris.gla.project.views.Launcher;
+import java.io.File;
+import java.net.URL;
 
-/**
- * Simple application model.
+/** Simple application model.
  *
  * @author Emmanuel Bigeon
  */
@@ -37,11 +39,11 @@ public class App {
                     return;
                 }
                 if ("--parse".equals(string)) {
-                    if ( args.length < 2 ){
-                        errorLog("Missing parsing mode");
-                        return;
-                    }
                     launchParser( args );
+                    return;
+                }
+                if ("--createfiles".equals(string)) {
+                    launchMakingFilesParser( new String[] { args[1], args[2], args[3]} );
                     return;
                 }
             }
@@ -67,25 +69,38 @@ public class App {
         return props;
     }
 
-    public static void errorLog(String log){
-        System.out.println("Error: Invalid command line for parser. " + log + ".");
-        System.out.println("Usage: --parse <URL|CSV> <target-file.csv|input-file.csv>");
+    public static void errorLog(String command, String log){
+    
+        // TODO ? Remplacer les System.out.prinln par un Logger
+        switch ( command ){
+            case "parser":                
+                System.out.println("Error: Invalid command line for objects parser. " + log + ".");
+                System.out.println("Usage: --parse <stops_data.csv> <junctions_data.csv>");
+                break;
+            case "generator":
+                System.out.println("Error: Invalid command line for IDFM parser. " + log + ".");
+                // FIXME
+                System.out.println("Usage: --createfiles mapData.csv junctionsData.csv Schedule/");
+                break;
+            default:
+                System.out.println("Error: Unknown");
+                break;
+        }
+    }
+
+    public static void launchMakingFilesParser(String[] args){
+        if (args.length != 3) {
+            errorLog("generator","Needs two target files and a target directory.");
+            return;
+        }
+        IDFMNetworkExtractor.parse(args);     
     }
 
     public static void launchParser(String[] args) {
         if ( args.length != 3 ){
-            errorLog("Missing target file");
+            errorLog("parser","Missing inputs files");
             return;
         }
-
-        if ( "URL".equals(args[1]) ){
-            IDFMNetworkExtractor.parse(args[2]);
-        } else if ( "CSV".equals(args[1]) ){
-            CSVExtractor.makeOjectsFromCSV(args[2]);
-        } else {
-            errorLog("Wrong argument for parser");
-            return;
-
-        }
+        CSVExtractor.makeOjectsFromCSV(args);
     }
 }

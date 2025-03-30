@@ -1,0 +1,80 @@
+
+package fr.u_paris.gla.project.io;
+
+import java.text.NumberFormat;
+import java.time.Duration;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
+import java.util.Locale;
+
+public class UpgradedNetworkFormat {
+
+	public static final int NUMBER_COLUMNS = 9;
+    public static final int GPS_PRECISION  = 18;
+    
+    //vitesses des différents type de transport, en km/h
+    public static final int RAIL_AVG_SPEED = 50;
+    public static final int BUS_AVG_SPEED = 20;
+    public static final int SUBWAY_AVG_SPEED = 28;
+    public static final int TRAM_AVG_SPEED = 25;
+    
+    public static final int OTHER_AVG_SPEED = 10;
+	
+    /** The index of the line name in the network format */
+    public static final int LINE_INDEX     = 0;
+    /** The index of the type of the line of the segment in the network format */
+    public static final int TYPE_INDEX  = 1;
+    /** The index of the color of the transport line*/
+    public static final int COLOR_INDEX = 2;
+    /** The index of the segment starting stop name in the network format */
+    public static final int START_INDEX    = 3;
+    /** The index of the segment end stop name in the network format */
+    public static final int STOP_INDEX     = 5;
+    /** The index of the segment trip duration in the network format */
+    public static final int DURATION_INDEX = 7;
+    /** The index of the segment distance in the network format */
+    public static final int DISTANCE_INDEX = 8;
+    
+    private static final DateTimeFormatter DURATION_FORMATTER         = DateTimeFormatter
+            .ofPattern("HH:mm:ss");
+    private static final NumberFormat      DURATION_SECONDS_FORMATTER = NumberFormat
+            .getIntegerInstance(Locale.ENGLISH);
+    static {
+        DURATION_SECONDS_FORMATTER.setMinimumIntegerDigits(2);
+    }
+    private static final Temporal ZERO = LocalTime.parse("00:00:00");
+    
+    /** Hidden constructor for utility class */
+    private UpgradedNetworkFormat() {
+        // Tool class
+    }
+
+    public static Duration parseDuration(String duration) {
+        LocalTime time = LocalTime.parse("00:" + duration, DURATION_FORMATTER);
+        return Duration.between(time, ZERO);
+    }
+
+    public static Duration parseLargeDuration(String duration) {
+        String[] parts = duration.split(":");
+        long minutes = Long.parseLong(parts[0]);
+        long seconds = Long.parseLong(parts[1]);
+        return Duration.ofMinutes(minutes).plusSeconds(seconds);
+    }
+
+    public static String formatDuration(Duration duration) {
+        return Long.toString(duration.toMinutes()) + ":"
+                + DURATION_SECONDS_FORMATTER.format(duration.toSecondsPart());
+    }
+
+    /** Get a formatter for the numbers in a GPS coordinate pair
+     * 
+     * @return the formatter for numbers in a GPS coordinate pair */
+    public static NumberFormat getGPSFormatter() {
+        NumberFormat instance = NumberFormat.getNumberInstance(Locale.ENGLISH);
+        instance.setMaximumFractionDigits(GPS_PRECISION);
+        return instance;
+    }
+
+    
+}
