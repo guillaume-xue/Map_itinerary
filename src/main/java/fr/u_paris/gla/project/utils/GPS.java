@@ -26,6 +26,7 @@ public final class GPS {
         return degree / FLAT_ANGLE_DEGREE * Math.PI;
     }
 
+    // TESTME
     /** Compute the flying distance between two GPS positions.
      * 
      * @param latitude1 the latitude of the first position
