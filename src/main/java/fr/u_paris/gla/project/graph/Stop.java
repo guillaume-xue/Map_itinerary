@@ -1,6 +1,5 @@
 package fr.u_paris.gla.project.graph;
 
-import java.awt.geom.Point2D;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -8,6 +7,8 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import org.apache.commons.lang3.tuple.MutablePair;
+
+import fr.u_paris.gla.project.utils.GPS;
 
 
 public class Stop implements Comparable<Stop>{
@@ -167,16 +168,14 @@ public class Stop implements Comparable<Stop>{
                         .doubleToLongBits(other.longitude);
     }
 
-    //TODO: test this ( or use utils.GPS.distance method )
     //calculates the distance between two stops
     public Double calculateDistance(Stop s){
-        return Point2D.distance(this.longitude, this.latitude, s.longitude, s.latitude);
+        return GPS.distance(this.longitude, this.latitude, s.longitude, s.latitude);
     }
     
-    //TODO: test this ( or use utils.GPS.distance method )
     //calculates the distance between a stop and the given coordinates
     public Double calculateDistance(double targetLongitude, double targetLatitude){
-        return Point2D.distance(this.longitude, this.latitude, targetLongitude, targetLatitude);
+        return GPS.distance(this.longitude, this.latitude, targetLongitude, targetLatitude);
     }
 }
 
