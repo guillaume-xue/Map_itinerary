@@ -1,9 +1,12 @@
-package fr.u_paris.gla.project.graph;
-
-import org.junit.jupiter.api.Test;
+package fr.u_paris.gla.project;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+
+import org.junit.jupiter.api.Test;
+
+import fr.u_paris.gla.project.graph.Stop;
+import fr.u_paris.gla.project.graph.Subline;
 
 public class TestSubline {
     @Test
