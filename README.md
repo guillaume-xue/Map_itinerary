@@ -34,18 +34,21 @@ L'option de lancement `--parse` permet d'analyser un fichier CSV ou une URL four
 `Usage: --parse source_file.csv` 
 `Exemple: --parse output.csv`
 
-L'option de lancement `--createfiles` permet de créer les 3 types de fichiers client pour créer les objets de notre graphe:
-`Exemple d'usage: --createfiles mapData.csv junctionsData.csv Schedule` où on pourra retrouver les fichiers horaires dans le répertoire Schedule, les données de cartes dans le fichier mapData.csv et les données de bifurcations dans junctionsData.csv
+L'option de lancement `--createfiles` permet de créer les 3 types de fichiers client pour créer les objets de notre graphe:  
+`Exemple d'usage: --createfiles mapData.csv junctionsData.csv Schedule`  
+où on pourra retrouver les fichiers horaires dans le répertoire Schedule, les données de cartes dans le fichier mapData.csv et les données de bifurcations dans junctionsData.csv
 
-Suggestion d'usage pour démonstration du gui : 
-`mvn clean package` 
-`mvn verify` 
-`java -jar target/project-2024.1.0.0-SNAPSHOT-jar-with-dependencies.jar --createfiles mapData.csv junctionsData.csv Schedule/` 
-`java -jar target/project-2024.1.0.0-SNAPSHOT-jar-with-dependencies.jar --gui` 
+Suggestion d'usage pour démonstration du gui :  
+```
+mvn clean package
+mvn verify  
+java -jar target/project-2024.1.0.0-SNAPSHOT-jar-with-dependencies.jar --createfiles mapData.csv junctionsData.csv Schedule/
+java -jar target/project-2024.1.0.0-SNAPSHOT-jar-with-dependencies.jar --gui 
+```
 
-Pour simuler un trajet depuis Olympiades jusqu'à Saint Ouen, rentrer les coordonnées suivantes dans les champs From et To
-From: 48.826944, 2.367034
-To: 48.905170, 2.322756
+Pour simuler un trajet depuis Olympiades jusqu'à Saint Ouen, rentrer les coordonnées suivantes dans les champs From et To:  
+From: 48.826944, 2.367034  
+To: 48.905170, 2.322756  
 
 
 
