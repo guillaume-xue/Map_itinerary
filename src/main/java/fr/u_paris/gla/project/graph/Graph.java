@@ -49,8 +49,8 @@ public class Graph {
 
     @Override
     public String toString(){
-        return /*"--- List of Stops: ---\n" +
-        listOfStops.toString() + */
+        return "--- List of Stops: ---\n" +
+        listOfStops.toString() + 
         "\n--- List of Lines: ---\n" +
         listOfLines.toString();
     }
