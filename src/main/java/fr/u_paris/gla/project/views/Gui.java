@@ -388,9 +388,6 @@ public class Gui extends JFrame {
     Graph graph = CSVExtractor.makeOjectsFromCSV(args);
     AStar astar = new AStar(graph);
 
-    //TODO : Remove graph printing
-    System.out.println(graph);
-
     buttonSearch.addActionListener(e -> {
 
       contentPanel.removeAll();
@@ -405,19 +402,25 @@ public class Gui extends JFrame {
 
       // Get the coordinates from the addresses
       // Use the Nominatim API to get the coordinates
-      //double[] startCoordinates = getCoordinatesFromAddress(startAddress);
-      //double[] endCoordinates = getCoordinatesFromAddress(endAddress);
+
+      double[] startCoordinates = getCoordinatesFromAddress(startAddress);
+      double[] endCoordinates = getCoordinatesFromAddress(endAddress);
+
       String[] p1 = startAddress.split(",\\s*"); 
+      /*
       double[] startCoordinates = new double[] {
         Double.parseDouble(p1[0]),
         Double.parseDouble(p1[1])
       };
+      */
       
       String[] p2 = endAddress.split(",\\s*"); 
+      /*
       double[] endCoordinates = new double[] {
         Double.parseDouble(p2[0]),
         Double.parseDouble(p2[1])
       };
+      */
 
       if (startCoordinates != null && endCoordinates != null) {
         // Create stops with coordinates and addresses
@@ -432,13 +435,15 @@ public class Gui extends JFrame {
 
           ArrayList<Stop> stops = astar.findPath();
 
+          
+
           // Display the path on the map
           contentPanel.add(displayPath(stops));
           contentPanel.add(new JPanel());
           contentPanel.revalidate();
           contentPanel.repaint();
         } catch ( Exception except ){
-          System.err.println(except.getMessage());
+          System.out.println("No path was found between these two points");
         }
       } else {
         // Show an error message if the coordinates are not found
