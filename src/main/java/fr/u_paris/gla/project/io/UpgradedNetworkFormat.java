@@ -18,7 +18,8 @@ public class UpgradedNetworkFormat {
     public static final int BUS_AVG_SPEED = 20;
     public static final int SUBWAY_AVG_SPEED = 28;
     public static final int TRAM_AVG_SPEED = 25;
-    
+    public static final int WALK_AVG_SPEED = 5;
+
     public static final int OTHER_AVG_SPEED = 10;
 	
     /** The index of the line name in the network format */
