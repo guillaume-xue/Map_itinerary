@@ -97,6 +97,9 @@ public class IDFMNetworkExtractor {
         
         addPathsAndDeparturesToTraces(traces, tripsByRoutes, itinerariesByTrip);
         
+        System.out.println("Le nombre de lignes avant création des fichiers est " + traces.size() +"\n");
+        printNumberOfStops(traces);
+        
         File directory = new File(args[2]);
         if (!directory.exists()) {
             directory.mkdirs();
@@ -108,6 +111,17 @@ public class IDFMNetworkExtractor {
         
     }
     
+    
+    private static void printNumberOfStops(Map<String, TraceEntry> traces) {
+    	int cptrStops = 0;
+    	for (Map.Entry<String, TraceEntry> entry : traces.entrySet()) {
+    		TraceEntry trace = entry.getValue();
+    		for (StopEntry stop : trace.getAllStops()) {
+    			cptrStops +=1;
+    		}
+    	}
+    	System.out.println("Le nombre de quais avant création des fichiers est "+cptrStops +"\n");
+    }
     
     private static void fillMapDataFile(String file, Map<String, TraceEntry> traces) {
     	CSVStreamProviderForMapData provider = new CSVStreamProviderForMapData(traces);
