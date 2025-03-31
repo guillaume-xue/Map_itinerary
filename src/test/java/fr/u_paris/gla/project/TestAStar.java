@@ -1,14 +1,15 @@
-package fr.u_paris.gla.project.astar;
-
-import fr.u_paris.gla.project.graph.Graph;
-import fr.u_paris.gla.project.graph.Line;
-import fr.u_paris.gla.project.graph.Stop;
-import fr.u_paris.gla.project.graph.Subline;
-import org.junit.jupiter.api.Test;
+package fr.u_paris.gla.project;
 
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+
+import fr.u_paris.gla.project.astar.AStar;
+import fr.u_paris.gla.project.graph.Graph;
+import fr.u_paris.gla.project.graph.Line;
+import fr.u_paris.gla.project.graph.Stop;
+import fr.u_paris.gla.project.graph.Subline;
 
 public class TestAStar {
     @Test

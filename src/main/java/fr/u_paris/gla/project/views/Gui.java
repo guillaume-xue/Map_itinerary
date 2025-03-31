@@ -1,8 +1,39 @@
 package fr.u_paris.gla.project.views;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.util.ArrayList;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+import javax.swing.border.AbstractBorder;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
@@ -10,24 +41,13 @@ import org.openstreetmap.gui.jmapviewer.MapPolygonImpl;
 import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
+import fr.u_paris.gla.project.astar.AStar;
+import fr.u_paris.gla.project.graph.Graph;
+import fr.u_paris.gla.project.graph.Stop;
+import fr.u_paris.gla.project.utils.CSVExtractor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
-
-import javax.swing.*;
-import javax.swing.border.AbstractBorder;
-
-import java.util.ArrayList;
-
-import fr.u_paris.gla.project.graph.Stop;
-import fr.u_paris.gla.project.graph.Graph;
-import fr.u_paris.gla.project.astar.AStar;
-import fr.u_paris.gla.project.utils.CSVExtractor;
 
 public class Gui extends JFrame {
 
@@ -367,6 +387,7 @@ public class Gui extends JFrame {
     String[] args = {"--parse","mapData.csv","junctionsData.csv"};
     Graph graph = CSVExtractor.makeOjectsFromCSV(args);
     AStar astar = new AStar(graph);
+
     buttonSearch.addActionListener(e -> {
 
       contentPanel.removeAll();
@@ -381,32 +402,40 @@ public class Gui extends JFrame {
 
       // Get the coordinates from the addresses
       // Use the Nominatim API to get the coordinates
-      //double[] startCoordinates = getCoordinatesFromAddress(startAddress);
-      //double[] endCoordinates = getCoordinatesFromAddress(endAddress);
+
+      double[] startCoordinates = getCoordinatesFromAddress(startAddress);
+      double[] endCoordinates = getCoordinatesFromAddress(endAddress);
+
       String[] p1 = startAddress.split(",\\s*"); 
+      /*
       double[] startCoordinates = new double[] {
         Double.parseDouble(p1[0]),
         Double.parseDouble(p1[1])
       };
+      */
       
       String[] p2 = endAddress.split(",\\s*"); 
+      /*
       double[] endCoordinates = new double[] {
         Double.parseDouble(p2[0]),
         Double.parseDouble(p2[1])
       };
+      */
 
       if (startCoordinates != null && endCoordinates != null) {
         // Create stops with coordinates and addresses
         //ArrayList<Stop> stops = new ArrayList<>();
         
         try{
-          Stop stopA = graph.getStop(startCoordinates[0], startCoordinates[1]);
-          Stop stopB = graph.getStop(endCoordinates[0], endCoordinates[1]);
+          Stop stopA = graph.getClosestStop(startCoordinates[0], startCoordinates[1]);
+          Stop stopB = graph.getClosestStop(endCoordinates[0], endCoordinates[1]);
 
           astar.setDepartStop(stopA);
           astar.setFinishStop(stopB);
 
           ArrayList<Stop> stops = astar.findPath();
+
+          
 
           // Display the path on the map
           contentPanel.add(displayPath(stops));
@@ -414,7 +443,7 @@ public class Gui extends JFrame {
           contentPanel.revalidate();
           contentPanel.repaint();
         } catch ( Exception except ){
-          System.err.println(except.getMessage());
+          System.out.println("No path was found between these two points");
         }
       } else {
         // Show an error message if the coordinates are not found
