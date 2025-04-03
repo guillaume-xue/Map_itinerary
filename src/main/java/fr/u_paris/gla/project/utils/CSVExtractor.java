@@ -21,7 +21,9 @@ import java.time.Duration;
 import java.time.LocalTime;
 
 /**
- * A CSV Extractor class in order to generate the objects from the CSV to our Model. 
+ * A tool class to extract and convert CSV data provided into our model objects.
+ * This class expects to read the data with the Upgraded Network Format. 
+ *
  */
 public final class CSVExtractor {
 
@@ -38,15 +40,21 @@ public final class CSVExtractor {
         // Parser class
     }
 
-    /** Convert a degree angle value in a radian angle one.
+    /** 
+     * Main entry point of the parser. 
      * 
-     * @param args The list of files to parse
+     * @param args The String array of file paths. Expects:
+     * index 1 being the file for stops data and
+     * index 2 being the file for junctions data.
+     *             
+     * @return The generated Graph object representing the transport network, 
+     * null if parsing fails.
+     * 
      */
     public static Graph makeOjectsFromCSV(String[] args){
-        // --parse <stops_data.csv> <junctions_data.csv>
 
         if (args == null) {
-            LOGGER.severe("Invalid command line for parsing CSV. Missing target path.");
+            LOGGER.severe("Error: Objects parsing failed. Missing targets paths in the arguments");
             return null;
         }
 
@@ -96,32 +104,102 @@ public final class CSVExtractor {
 
         System.out.println("Nombre d'arrêts (quais) uniques trouvés: " + listOfStops.size());
         System.out.println("Nombre de lignes trouvées: " + mapOfLines.size());
-        System.out.println("Nombre de sous-lignes trouvées: " + mapOfLines.get("7_Subway").size());
         System.out.println("Nombre de sous-lignes n'ayant pas trouvé leur chemin associé: " + errorCpt);
 
         return graph;
     }
 
+    /**
+     * Adds the transport line from the tuple using data from the provided stops CSV file.
+     * Then calls the function to add the stops.
+     *
+     * @param      line            The text line from csv being read
+     * @param      mapOfLines      The map of lines
+     * @param      mapOfStopEntry  The map of stop entry
+     * @param      mapOfStops      The map of stops
+     */
     public static void readStops(
         String[] line, 
         Map<String,ArrayList<Subline>> mapOfLines,
         Map<String,ArrayList<Stop>> mapOfStopEntry,
         Map<ImmutablePair<Double,Double>,Stop> mapOfStops
     ){
-        // On ajoute la ligne du tuple si elle est nouvelle
+        // On ajoute la ligne de transport du tuple si elle est nouvelle
         mapOfLines.putIfAbsent(line[LINE_INDEX] + "_" + line[TYPE_INDEX], new ArrayList<>());
         mapOfStopEntry.putIfAbsent(line[LINE_INDEX] + "_" + line[TYPE_INDEX], new ArrayList<>());
         // On ajoute les deux stations à la map
         addStops(line, mapOfStopEntry, mapOfStops);
     }
 
+    /**
+     * Adds the stops of the tuple being read. 
+     *
+     * @param      line            The text line from csv being read
+     * @param      mapOfStopEntry  The map of stop entry
+     * @param      mapOfStops      The map of stops
+     */
+    public static void addStops(
+        String[] line, 
+        Map<String,ArrayList<Stop>> mapOfStopEntry, 
+        Map<ImmutablePair<Double,Double>,Stop> mapOfStops
+    ){
+
+        // On lit les coordonnées du premiet arrêt
+        String[] stopACoordString = line[START_INDEX+1].split(",");
+        double stopAlon = Double.parseDouble(stopACoordString[0]);
+        double stopAlat = Double.parseDouble(stopACoordString[1]);
+        // On en fait une paire qui sert de clef primaoire
+        ImmutablePair<Double,Double> stopACoord = new ImmutablePair<>(stopAlon,stopAlat);
+
+        // On ajoute l'arrêt si il n'a pas déjà été rencontré
+        mapOfStops.putIfAbsent(stopACoord, new Stop(stopAlon,stopAlat,line[START_INDEX]));
+
+        // Pareil avec le deuxième arrêt
+        String[] stopBCoordString = line[STOP_INDEX+1].split(",");
+        double stopBlon = Double.parseDouble(stopBCoordString[0]);
+        double stopBlat = Double.parseDouble(stopBCoordString[1]);
+        ImmutablePair<Double,Double> stopBCoord = new ImmutablePair<>(stopBlon,stopBlat);
+
+        mapOfStops.putIfAbsent(stopBCoord, new Stop(stopBlon,stopBlat,line[STOP_INDEX]));
+
+        // On recupère les objets Stop à partir de la map pour avoir la bonne référence
+        Stop stopA = mapOfStops.get(stopACoord);
+        Stop stopB = mapOfStops.get(stopBCoord);
+
+        Duration timeToNextStation = parseLargeDuration(line[DURATION_INDEX]);
+        Float distanceToNextStation = Float.parseFloat(line[DISTANCE_INDEX]);
+
+        // On ajoute l'arrêt B à la liste d'adjacence de l'arrêt A avec la 
+        // durée/distance de transport
+        stopA.addAdjacentStop(stopB, timeToNextStation, distanceToNextStation);
+        
+        // On ajoute les deux arrêts à la map qui associe une ligne à tout ses 
+        // arrêts rencontrés
+        String ligne = line[LINE_INDEX] + "_" + line[TYPE_INDEX];
+        if (!mapOfStopEntry.get(ligne).contains(stopA)) {
+            mapOfStopEntry.get(ligne).add(stopA);
+        }
+        if (!mapOfStopEntry.get(ligne).contains(stopB)) {
+            mapOfStopEntry.get(ligne).add(stopB);
+        }
+    }
+
+    /**
+     * Reads a line from the junctions data CSV and adds the potential path to the
+     * transport line.
+     * 
+     * @param      line            The text line from csv being read
+     * @param      mapOfLines      The map of lines
+     * @param      mapOfStopEntry  The map of stop entry
+     * @param      mapOfStops      The map of stops
+     */
     public static void readJunctions(
         String[] line,
         Map<String,ArrayList<Subline>> mapOfLines,
         Map<String,ArrayList<Stop>> mapOfStopEntry, 
         Map<ImmutablePair<Double,Double>,Stop> mapOfStops
     ){
-        // La ligne sur laquelle on travaille, avec son index et son type concaténé
+        // La ligne de transport sur laquelle on travaille, avec son index et son type concaténé
         String ligne = line[LINE_INDEX] + "_" + line[TYPE_INDEX];
         Subline variantSubline = new Subline(line[VARIANT_INDEX]); // La sous-ligne
         // La liste de string représentant les stations de la sous-ligne
@@ -141,6 +219,16 @@ public final class CSVExtractor {
         mapOfLines.get(ligne).add(variantSubline);
     }
 
+    /**
+     * Builds a potential line.
+     *
+     * @param      stops             The stops
+     * @param      listOfStopsEntry  The list of stops entry
+     * @param      ligne             The transport line
+     * @param      variant           The variant
+     *
+     * @return     The list of stops representing the Subline.
+     */
     public static ArrayList<Stop> buildPotentialLine(String[] stops, ArrayList<Stop> listOfStopsEntry, String ligne, String variant) {
         ArrayList<Stop> result = new ArrayList<>();
         if (stops.length == 0 || listOfStopsEntry.isEmpty()) {
@@ -156,6 +244,7 @@ public final class CSVExtractor {
             }
         }
 
+        // Si on n'a pas trouvé de départs potentiels
         if (listOfPotentialDeparture.isEmpty()) {
             LOGGER.warning("Pas de terminus de départ trouvé correspondant à: " + stops[0]);
             return result;
@@ -173,7 +262,17 @@ public final class CSVExtractor {
         return new ArrayList<>();
     }
 
-    // On parcours les chemins potentiels comme un arbre avec un parcours en profondeur
+    /**
+     * Depth-first search to find a potential path for the subline. 
+     *
+     * @param      currentStop       The current stop
+     * @param      stops             The stops
+     * @param      index             The index
+     * @param      listOfStopsEntry  The list of stops entry
+     * @param      potentialPath     The potential path
+     *
+     * @return     True if a path has been found, false otherwise.
+     */
     private static boolean dfsSearch(
         Stop currentStop,
         String[] stops,
@@ -195,7 +294,6 @@ public final class CSVExtractor {
         //     }
         // } 
 
-        // currentStop.getTimeDistancePerAdjacentStop().keySet()
         for ( Stop adjacent : currentStop.getTimeDistancePerAdjacentStop().keySet() ){
             if ( adjacent.getNameOfAssociatedStation().equals(stops[index]) ){
                 if ( dfsSearch(adjacent, stops, index + 1, listOfStopsEntry, potentialPath) ){
@@ -207,48 +305,17 @@ public final class CSVExtractor {
         potentialPath.remove(potentialPath.size() - 1);
         return false;
     }
-
-    // On ajoute les deux stations du tuple aux différents objets en ayant besoin
-    public static void addStops(
-        String[] line, 
-        Map<String,ArrayList<Stop>> mapOfStopEntry, 
-        Map<ImmutablePair<Double,Double>,Stop> mapOfStops
-    ){
-        String[] stopACoordString = line[START_INDEX+1].split(",");
-        double stopAlon = Double.parseDouble(stopACoordString[0]);
-        double stopAlat = Double.parseDouble(stopACoordString[1]);
-        ImmutablePair<Double,Double> stopACoord = new ImmutablePair<>(stopAlon,stopAlat);
-
-        mapOfStops.putIfAbsent(stopACoord, new Stop(stopAlon,stopAlat,line[START_INDEX]));
-
-        String[] stopBCoordString = line[STOP_INDEX+1].split(",");
-        double stopBlon = Double.parseDouble(stopBCoordString[0]);
-        double stopBlat = Double.parseDouble(stopBCoordString[1]);
-        ImmutablePair<Double,Double> stopBCoord = new ImmutablePair<>(stopBlon,stopBlat);
-
-        mapOfStops.putIfAbsent(stopBCoord, new Stop(stopBlon,stopBlat,line[STOP_INDEX]));
-
-        Stop stopA = mapOfStops.get(stopACoord);
-        Stop stopB = mapOfStops.get(stopBCoord);
-
-        Duration timeToNextStation = parseLargeDuration(line[DURATION_INDEX]);
-
-        Float distanceToNextStation = Float.parseFloat(line[DISTANCE_INDEX]);
-
-        stopA.addAdjacentStop(stopB, timeToNextStation, distanceToNextStation);
-        String ligne = line[LINE_INDEX] + "_" + line[TYPE_INDEX];
-        if (!mapOfStopEntry.get(ligne).contains(stopA)) {
-            mapOfStopEntry.get(ligne).add(stopA);
-        }
-        if (!mapOfStopEntry.get(ligne).contains(stopB)) {
-            mapOfStopEntry.get(ligne).add(stopB);
-        }
-    }
-
-    // Relie tout les quais d'une station entre eux pour permettre de changer de ligne à pied.
-    // maxDistance est une valeur arbitraire, en mètres, pour définir le rayon dans lequel un quai est considéré
-    // comme appartenant à une même station. Probablement à affiner pour les cas ( comme chatelet ) où
-    // un quai peut-être éloigné des autres.
+    
+    /**
+     * Links all platforms of a station to allow passengers to change lines on foot.  
+     * 'maxDistance' is an arbitrary value, in meters, defining the radius within a platform  
+     * is considered part of the same station.
+     * 
+     * FIXME: probably needs a better solution than an arbitrary value ( 150 meters right now )
+     *
+     * @param      mapOfStops   The map of stops
+     * @param      maxDistance  The maximum distance in meters
+     */
     public static void linkStops(Map<ImmutablePair<Double,Double>,Stop> mapOfStops, double maxDistance){
         // On regroupe les stations par nom
         Map<String, ArrayList<Stop>> stopsByName = new HashMap<>();
@@ -265,9 +332,11 @@ public final class CSVExtractor {
                     Stop stopA = stops.get(i);
                     Stop stopB = stops.get(j);
                     
+                    // En km
                     double distance = GPS.distance(stopA.getLatitude(), stopA.getLongitude(),
                                                    stopB.getLatitude(), stopB.getLongitude());
 
+                    // En mètre
                     if ( distance * 1000 <= maxDistance ){
                         // Calcul issu de CSVStreamProviderForMapData -> get()
                         Duration duration = Duration.ofSeconds((long) Math.ceil( (distance / WALK_AVG_SPEED) * 3600));
@@ -280,8 +349,5 @@ public final class CSVExtractor {
         }
 
     }
-
-
-
 
 }
