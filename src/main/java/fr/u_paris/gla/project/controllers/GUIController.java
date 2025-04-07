@@ -124,6 +124,32 @@ public class GUIController {
    */
   private void initActionListenner() {
     gui.getResearchButton().addActionListener(e -> {
+      if (gui.getTextStart().getText().equals("From") || gui.getTextEnd().getText().equals("To")) {
+        JOptionPane.showMessageDialog(this.gui, "Veuillez entrer une adresse de départ et d'arrivée.",
+            "Erreur",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+      } else if (gui.getTextStart().getText().equals("From")) {
+        JOptionPane.showMessageDialog(this.gui, "Veuillez entrer une adresse de départ.",
+            "Erreur",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+      } else if (gui.getTextEnd().getText().equals("To")) {
+        JOptionPane.showMessageDialog(this.gui, "Veuillez entrer une adresse d'arrivée.",
+            "Erreur",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+      } else if (gui.getTextStart().getText().equals(gui.getTextEnd().getText())) {
+        JOptionPane.showMessageDialog(this.gui, "Les adresses de départ et d'arrivée sont identiques.",
+            "Erreur",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+      } else if (gui.getTextStart().getText().equals("") || gui.getTextEnd().getText().equals("")) {
+        JOptionPane.showMessageDialog(this.gui, "Veuillez entrer une adresse de départ et d'arrivée.",
+            "Erreur",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+      }
 
       // Add action listener to add displayJsonContent to contentPanel
       // FIXME ASAP
