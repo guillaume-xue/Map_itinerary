@@ -34,7 +34,7 @@ public class GUIController {
       this.gui = new Gui();
       new KeyboardController(gui.getTextStart());
       new KeyboardController(gui.getTextEnd());
-      new MouseController(gui.getMapViewer());
+      new MouseController(gui.getMapViewer(), gui.getTextStart(), gui.getTextEnd());
       initFocusListenerToTextArea();
       initActionListenner();
       this.gui.launch();

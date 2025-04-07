@@ -158,7 +158,10 @@ public class Gui extends JFrame {
   private JMapViewer createMapViewer() {
     JMapViewer mapViewer = new JMapViewer();
     mapViewer.setTileSource(new OsmTileSource.Mapnik());
-
+    // Supprimer tous les écouteurs existants liés à la souris
+    for (var listener : mapViewer.getMouseListeners()) {
+      mapViewer.removeMouseListener(listener);
+    }
     // Center the map on Paris (latitude: 48.8566, longitude: 2.3522)
     mapViewer.setDisplayPosition(
         new org.openstreetmap.gui.jmapviewer.Coordinate(48.8566, 2.3522), 10);
