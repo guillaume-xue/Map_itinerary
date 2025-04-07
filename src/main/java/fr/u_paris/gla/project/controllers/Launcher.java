@@ -1,9 +1,9 @@
-package fr.u_paris.gla.project.views;
+package fr.u_paris.gla.project.controllers;
 
 import javax.swing.BorderFactory;
 import javax.swing.JRootPane;
 import javax.swing.JWindow;
-import javax.swing.SwingUtilities;
+
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import java.awt.BorderLayout;
@@ -24,18 +24,13 @@ public class Launcher {
     // Create and display the splash screen
     JWindow splashScreen = createSplashScreen();
     splashScreen.setVisible(true);
-
     // Close the splash screen
     fadeOut(splashScreen);
     splashScreen.dispose();
-
+    // Set the system property for the user agent
     System.setProperty("http.agent", "MyCustomApp/1.0 (https://example.com)");
-
-    SwingUtilities.invokeLater(() -> {
-      // Create the main window
-      Gui gui = new Gui();
-      gui.setVisible(true);
-    });
+    // Initialize the GUI
+    new GUIController();
   }
 
   /**
