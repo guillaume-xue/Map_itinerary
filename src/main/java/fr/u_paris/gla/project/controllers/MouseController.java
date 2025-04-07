@@ -91,8 +91,9 @@ public class MouseController {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-      if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+      if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e) && (startTextArea.isFocusOwner() || endTextArea.isFocusOwner())) {
         mapViewer.removeAllMapMarkers();
+        mapViewer.removeAllMapPolygons();
         Point clickPoint = e.getPoint();
         Coordinate coord = new Coordinate(mapViewer.getPosition(clickPoint).getLat(),
             mapViewer.getPosition(clickPoint).getLon());
