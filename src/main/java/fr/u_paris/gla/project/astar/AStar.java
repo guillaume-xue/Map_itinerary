@@ -18,6 +18,18 @@ public class AStar {
         this.finishStop = finishStop;
     }
 
+    public AStar(Graph graph){
+        this.graph = graph;
+    }
+
+    public void setDepartStop(Stop departStop){
+        this.departStop = departStop;
+    }
+
+    public void setFinishStop(Stop finishStop){
+        this.finishStop = finishStop;
+    }
+
     public ArrayList<Stop> findPath(){
         PriorityQueue<Stop> openSet = new PriorityQueue<>();
         ArrayList<Stop> closedSet = new ArrayList<>();
@@ -61,6 +73,7 @@ public class AStar {
             path.add(currentStop);
             currentStop = currentStop.getCameFrom();
         }
+        path.add(currentStop);
         Collections.reverse(path);
         return path;
     }

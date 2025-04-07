@@ -3,16 +3,14 @@ package fr.u_paris.gla.project;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.Map;
 import java.util.Properties;
 
+import fr.u_paris.gla.project.controllers.Launcher;
 import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
 import fr.u_paris.gla.project.utils.CSVExtractor;
-import fr.u_paris.gla.project.views.Launcher;
-import java.io.File;
-import java.net.URL;
 
-/** Simple application model.
+/**
+ * Simple application model.
  *
  * @author Emmanuel Bigeon
  */
@@ -39,11 +37,11 @@ public class App {
                     return;
                 }
                 if ("--parse".equals(string)) {
-                    launchParser( args );
+                    launchParser(args);
                     return;
                 }
                 if ("--createfiles".equals(string)) {
-                    launchMakingFilesParser( new String[] { args[1], args[2], args[3]} );
+                    launchMakingFilesParser(new String[] { args[1], args[2], args[3] });
                     return;
                 }
             }
@@ -69,11 +67,11 @@ public class App {
         return props;
     }
 
-    public static void errorLog(String command, String log){
-    
+    public static void errorLog(String command, String log) {
+
         // TODO ? Remplacer les System.out.prinln par un Logger
-        switch ( command ){
-            case "parser":                
+        switch (command) {
+            case "parser":
                 System.out.println("Error: Invalid command line for objects parser. " + log + ".");
                 System.out.println("Usage: --parse <stops_data.csv> <junctions_data.csv>");
                 break;
@@ -88,17 +86,17 @@ public class App {
         }
     }
 
-    public static void launchMakingFilesParser(String[] args){
+    public static void launchMakingFilesParser(String[] args) {
         if (args.length != 3) {
-            errorLog("generator","Needs two target files and a target directory.");
+            errorLog("generator", "Needs two target files and a target directory.");
             return;
         }
-        IDFMNetworkExtractor.parse(args);     
+        IDFMNetworkExtractor.parse(args);
     }
 
     public static void launchParser(String[] args) {
-        if ( args.length != 3 ){
-            errorLog("parser","Missing inputs files");
+        if (args.length != 3) {
+            errorLog("parser", "Missing inputs files");
             return;
         }
         CSVExtractor.makeOjectsFromCSV(args);

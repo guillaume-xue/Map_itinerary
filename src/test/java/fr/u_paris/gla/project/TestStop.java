@@ -1,10 +1,12 @@
-package fr.u_paris.gla.project.graph;
+package fr.u_paris.gla.project;
+
+import java.time.LocalTime;
+import java.util.HashMap;
 
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalTime;
-import java.util.HashMap;
+import fr.u_paris.gla.project.graph.Stop;
 
 
 public class TestStop {

@@ -42,19 +42,22 @@ public final class CSVExtractor {
      * 
      * @param args The list of files to parse
      */
-    public static void makeOjectsFromCSV(String[] args){
+    public static Graph makeOjectsFromCSV(String[] args){
         // --parse <stops_data.csv> <junctions_data.csv>
 
         if (args == null) {
             LOGGER.severe("Invalid command line for parsing CSV. Missing target path.");
-            return;
+            return null;
         }
 
+        // Associe le nom de la ligne à ses sous-lignes
         Map<String,ArrayList<Subline>> mapOfLines = new HashMap<>();
+        // Asssocie le nom de la ligne à toutes les stations rencontrées dessus
         Map<String,ArrayList<Stop>> mapOfStopEntry = new HashMap<>();
+        // Associe des coordonnées à une station
         Map<ImmutablePair<Double,Double>,Stop> mapOfStops = new HashMap<>();
 
-        // On ajoute les stops et les lignes ( sans les sous-lignes ) à leur map respectives.
+        // On ajoute les stations et les lignes ( sans les sous-lignes ) à leur map respectives.
         try{
             CSVTools.readCSVFromFile(args[STOPS_DATA_ID],(String[] line) -> 
                 readStops(line, mapOfLines, mapOfStopEntry, mapOfStops));
@@ -62,7 +65,7 @@ public final class CSVExtractor {
             LOGGER.log(Level.SEVERE, "Error while reading the Stops data file", e);
         }
 
-        // On read le junctionsData pour ajouter les sous-lignes
+        // On read le junctionsData pour associer les sous-lignes à leur ligne
         try{
             CSVTools.readCSVFromFile(args[JUNCTIONS_DATA_ID],(String[] line) -> 
                 readJunctions(line, mapOfLines, mapOfStopEntry, mapOfStops));
@@ -70,14 +73,24 @@ public final class CSVExtractor {
             LOGGER.log(Level.SEVERE, "Error while reading the Junctions data file", e);
         }
 
+        // (Ticket #20) Une fois qu'on a rempli la mapOfStops on doit ajouter les quais de
+        // chaque station entre elles pour permettre de changer de ligne, à pied,
+        // sur une même station.
+        linkStops(mapOfStops, 150);
+
+        // Une fois qu'on a trouvé toutes les stations uniques on fait de la mapOfStops
+        // une liste pour l'objet Graph
         ArrayList<Stop> listOfStops = new ArrayList<>(mapOfStops.values());
 
+        // Pareil pour les lignes
         ArrayList<Line> listOfLines = new ArrayList<>();
         for (Map.Entry<String, ArrayList<Subline>> entry : mapOfLines.entrySet()) {
             listOfLines.add(new Line(entry.getKey(), entry.getValue()));
         }
 
         //Collections.sort(listOfStops);
+        //System.out.println(listOfStops.toString());
+
         //Collections.sort(listOfLines);
         Graph graph = new Graph(listOfStops, listOfLines);
 
@@ -85,6 +98,8 @@ public final class CSVExtractor {
         System.out.println("Nombre de lignes trouvées: " + mapOfLines.size());
         System.out.println("Nombre de sous-lignes trouvées: " + mapOfLines.get("7_Subway").size());
         System.out.println("Nombre de sous-lignes n'ayant pas trouvé leur chemin associé: " + errorCpt);
+
+        return graph;
     }
 
     public static void readStops(
@@ -193,6 +208,7 @@ public final class CSVExtractor {
         return false;
     }
 
+    // On ajoute les deux stations du tuple aux différents objets en ayant besoin
     public static void addStops(
         String[] line, 
         Map<String,ArrayList<Stop>> mapOfStopEntry, 
@@ -221,7 +237,51 @@ public final class CSVExtractor {
 
         stopA.addAdjacentStop(stopB, timeToNextStation, distanceToNextStation);
         String ligne = line[LINE_INDEX] + "_" + line[TYPE_INDEX];
-        mapOfStopEntry.get(ligne).add(stopA);
-        mapOfStopEntry.get(ligne).add(stopB);
+        if (!mapOfStopEntry.get(ligne).contains(stopA)) {
+            mapOfStopEntry.get(ligne).add(stopA);
+        }
+        if (!mapOfStopEntry.get(ligne).contains(stopB)) {
+            mapOfStopEntry.get(ligne).add(stopB);
+        }
     }
+
+    // Relie tout les quais d'une station entre eux pour permettre de changer de ligne à pied.
+    // maxDistance est une valeur arbitraire, en mètres, pour définir le rayon dans lequel un quai est considéré
+    // comme appartenant à une même station. Probablement à affiner pour les cas ( comme chatelet ) où
+    // un quai peut-être éloigné des autres.
+    public static void linkStops(Map<ImmutablePair<Double,Double>,Stop> mapOfStops, double maxDistance){
+        // On regroupe les stations par nom
+        Map<String, ArrayList<Stop>> stopsByName = new HashMap<>();
+        for (Stop stop : mapOfStops.values()) {
+            stopsByName.putIfAbsent(stop.getNameOfAssociatedStation(), new ArrayList<>());
+            stopsByName.get(stop.getNameOfAssociatedStation()).add(stop);
+        }
+
+        // On parcours les listes de quais de même nom et si leur distance est infieure à la 
+        // valeur arbitraire choisie on les ajoute entre-eux dans leur liste d'adjacence.
+        for ( ArrayList<Stop> stops : stopsByName.values() ){
+            for ( int i = 0; i < stops.size(); i++) {
+                for ( int j = i + 1; j < stops.size(); j++ ){
+                    Stop stopA = stops.get(i);
+                    Stop stopB = stops.get(j);
+                    
+                    double distance = GPS.distance(stopA.getLatitude(), stopA.getLongitude(),
+                                                   stopB.getLatitude(), stopB.getLongitude());
+
+                    if ( distance * 1000 <= maxDistance ){
+                        // Calcul issu de CSVStreamProviderForMapData -> get()
+                        Duration duration = Duration.ofSeconds((long) Math.ceil( (distance / WALK_AVG_SPEED) * 3600));
+                        
+                        stopA.addAdjacentStop(stopB, duration, (float) distance);
+                        stopB.addAdjacentStop(stopA, duration, (float) distance);
+                    }
+                }
+            }
+        }
+
+    }
+
+
+
+
 }

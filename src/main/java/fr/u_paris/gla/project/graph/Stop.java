@@ -1,12 +1,14 @@
 package fr.u_paris.gla.project.graph;
 
-import org.apache.commons.lang3.tuple.MutablePair;
-
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+
+import org.apache.commons.lang3.tuple.MutablePair;
+
+import fr.u_paris.gla.project.utils.GPS;
 
 
 public class Stop implements Comparable<Stop>{
@@ -121,9 +123,18 @@ public class Stop implements Comparable<Stop>{
             "name: '%s'," +
             " longitude: %.6f," +
             " latitude: %.6f" +
+            " connecting stops : %s" +
             "]\n",
-            nameOfAssociatedStation, longitude, latitude
+            nameOfAssociatedStation, longitude, latitude, getAllConnections()
         );    
+    }
+
+    public String getAllConnections(){
+
+        ArrayList<String> temp = new ArrayList<>();
+
+        timeDistancePerAdjacentStop.forEach((k,v) -> temp.add(k.getNameOfAssociatedStation()));
+        return String.join(", ", temp);
     }
 
     //FIXME
@@ -157,7 +168,14 @@ public class Stop implements Comparable<Stop>{
                         .doubleToLongBits(other.longitude);
     }
 
-
-
+    //calculates the distance between two stops
+    public Double calculateDistance(Stop s){
+        return GPS.distance(this.longitude, this.latitude, s.longitude, s.latitude);
+    }
+    
+    //calculates the distance between a stop and the given coordinates
+    public Double calculateDistance(double targetLongitude, double targetLatitude){
+        return GPS.distance(this.longitude, this.latitude, targetLongitude, targetLatitude);
+    }
 }
 

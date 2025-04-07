@@ -34,7 +34,7 @@ public class Subline {
 
     @Override
     public String toString(){
-        return listOfStops.toString();
+        return "\nSubline : " + name  + " " + listOfStops.toString();
     }
 }
 
