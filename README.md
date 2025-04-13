@@ -38,6 +38,10 @@ L'option de lancement `--createfiles` permet de créer les 3 types de fichiers c
 `Exemple d'usage: --createfiles mapData.csv junctionsData.csv Schedule`  
 où on pourra retrouver les fichiers horaires dans le répertoire Schedule, les données de cartes dans le fichier mapData.csv et les données de bifurcations dans junctionsData.csv
 
+Pour le test du déterminisme sur la génération des fichiers :
+utiliser la commande `mvn test -DrunDeterminismTest=true` car le test est 
+volontairement skipped avec les autres commandes
+
 Suggestion d'usage pour démonstration du gui :  
 ```
 mvn clean package

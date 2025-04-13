@@ -3,10 +3,13 @@
  */
 package fr.u_paris.gla.project.idfm;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
 import org.apache.commons.lang3.tuple.Pair;
 import java.util.HashMap;
 import java.util.Set;
@@ -59,6 +62,25 @@ public final class TraceEntry {
     
     public String getLineColor() {
     	return colorLine;
+    }
+    
+    @Override
+    public String toString() {
+    	return MessageFormat.format("{0}, {1}, {2}, {3}", this.lineName, this.lineId, //$NON-NLS-1$
+                this.typeLine, this.colorLine);
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+        TraceEntry other = (TraceEntry) obj;
+        return Objects.equals(lineId, other.lineId) && 
+        		Objects.equals(lineName, other.lineName) && 
+        		Objects.equals(typeLine, other.typeLine) && 
+        		Objects.equals(colorLine, other.colorLine);
     }
     
     //inmodifiable depuis l'extérieur, on en a besoin que pour avoir le nombre de quais ou bien le nom des stations

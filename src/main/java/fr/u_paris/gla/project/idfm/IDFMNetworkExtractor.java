@@ -38,7 +38,7 @@ import java.util.Iterator;
 
 /** Code of an extractor for the data from IDF mobilite.
  * 
- * @author Emmanuel Bigeon */
+ */
 public class IDFMNetworkExtractor {
 
     /** The logger for information on the process */
@@ -354,8 +354,10 @@ public class IDFMNetworkExtractor {
     		}
     	}
     	for (String string : toRemove) {
+    		System.out.println(string);
             traces.remove(string);
         }
+    	System.out.println("Nombre de lignes supprimées car ne possèdent aucun stops : " + toRemove.size() + "\n");
     }
 
     
@@ -370,10 +372,18 @@ public class IDFMNetworkExtractor {
     	}
     }
 
-    
-    private static void addLine(String[] line, Map<String, TraceEntry> traces) {
-    	TraceEntry entry = new TraceEntry(line[IDFM_TRACE_SNAME_INDEX], line[IDFM_TRACE_ID_INDEX], line[IDFM_TRACE_TYPE_INDEX], line[IDFM_TRACE_COLOR_INDEX]);
-    	traces.put(line[IDFM_TRACE_ID_INDEX], entry);
+    //remettre en private
+    public static void addLine(String[] line, Map<String, TraceEntry> traces) {
+    	String id = line[IDFM_TRACE_ID_INDEX];
+        TraceEntry newEntry = new TraceEntry(line[IDFM_TRACE_SNAME_INDEX], id, line[IDFM_TRACE_TYPE_INDEX], line[IDFM_TRACE_COLOR_INDEX]);
+        
+        if (traces.containsKey(id)) {
+            System.out.println("Attention : Un doublon a été détecté pour l'ID " + id);
+            System.out.println("Ancienne entrée : " + traces.get(id));
+            System.out.println("Nouvelle entrée : " + newEntry);
+        }
+        
+        traces.put(id, newEntry);
     }
 
 }

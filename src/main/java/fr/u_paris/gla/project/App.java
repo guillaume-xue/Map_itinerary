@@ -43,6 +43,7 @@ public class App {
                     return;
                 }
                 if ("--createfiles".equals(string)) {
+                	System.out.println("Création des fichiers en cours...");
                     launchMakingFilesParser( new String[] { args[1], args[2], args[3]} );
                     return;
                 }
