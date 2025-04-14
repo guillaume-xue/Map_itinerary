@@ -16,7 +16,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import fr.u_paris.gla.project.graph.*;
 import static fr.u_paris.gla.project.io.UpgradedNetworkFormat.*;
-import static fr.u_paris.gla.project.io.junctionFormat.*;
+import static fr.u_paris.gla.project.io.JunctionsFormat.*;
 import java.time.Duration;
 import java.time.LocalTime;
 
@@ -109,8 +109,8 @@ public final class CSVExtractor {
         Map<ImmutablePair<Double,Double>,Stop> mapOfStops
     ){
         // On ajoute la ligne du tuple si elle est nouvelle
-        mapOfLines.putIfAbsent(line[LINE_INDEX] + "_" + line[TYPE_INDEX], new ArrayList<>());
-        mapOfStopEntry.putIfAbsent(line[LINE_INDEX] + "_" + line[TYPE_INDEX], new ArrayList<>());
+        mapOfLines.putIfAbsent(line[LINE_ID_INDEX], new ArrayList<>());
+        mapOfStopEntry.putIfAbsent(line[LINE_ID_INDEX], new ArrayList<>());
         // On ajoute les deux stations à la map
         addStops(line, mapOfStopEntry, mapOfStops);
     }
@@ -122,7 +122,7 @@ public final class CSVExtractor {
         Map<ImmutablePair<Double,Double>,Stop> mapOfStops
     ){
         // La ligne sur laquelle on travaille, avec son index et son type concaténé
-        String ligne = line[LINE_INDEX] + "_" + line[TYPE_INDEX];
+        String ligne = line[LINE_ID];
         Subline variantSubline = new Subline(line[VARIANT_INDEX]); // La sous-ligne
         // La liste de string représentant les stations de la sous-ligne
         String[] stops = line[LIST_INDEX].replaceAll("[\\[\\]]", "").split(";");
@@ -236,7 +236,7 @@ public final class CSVExtractor {
         Float distanceToNextStation = Float.parseFloat(line[DISTANCE_INDEX]);
 
         stopA.addAdjacentStop(stopB, timeToNextStation, distanceToNextStation);
-        String ligne = line[LINE_INDEX] + "_" + line[TYPE_INDEX];
+        String ligne = line[LINE_ID_INDEX];
         if (!mapOfStopEntry.get(ligne).contains(stopA)) {
             mapOfStopEntry.get(ligne).add(stopA);
         }

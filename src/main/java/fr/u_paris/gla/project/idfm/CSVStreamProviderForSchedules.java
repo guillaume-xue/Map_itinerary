@@ -12,13 +12,13 @@ import java.util.List;
 public class CSVStreamProviderForSchedules implements Supplier<String[]> {
 
     private final Iterator<Pair<String, String>> timeIterator;
-    private final String lineName;
+    private final String lineId;
     private final String stopName;
     private String[] line = new String[ScheduleFormat.NUMBER_COLUMNS];
 
-    public CSVStreamProviderForSchedules(List<Pair<String, String>> times, String lineName, String stopName) {
+    public CSVStreamProviderForSchedules(List<Pair<String, String>> times, String lineId, String stopName) {
         this.timeIterator = times.iterator();
-        this.lineName = lineName;
+        this.lineId = lineId;
         this.stopName = stopName;
     }
 
@@ -31,7 +31,7 @@ public class CSVStreamProviderForSchedules implements Supplier<String[]> {
 
             String heureNormalisee = normalizeTime(heurePassage);
 
-            this.line[ScheduleFormat.LINE_INDEX] = lineName;
+            this.line[ScheduleFormat.LINE_INDEX] = lineId;
             this.line[ScheduleFormat.TRIP_SEQUENCE_INDEX] = "["+ numBifurcation +"]"; // On met le numéro de bifurcation
             this.line[ScheduleFormat.TERMINUS_INDEX] = stopName;
             this.line[ScheduleFormat.TIME_INDEX] = heureNormalisee;

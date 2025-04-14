@@ -52,6 +52,10 @@ public final class TraceEntry {
         this.colorLine = colorLine;
     }
 
+    public String getLineId() {
+    	return lineId;
+    }
+    
     public String getLineName() {
     	return lineName;
     }
