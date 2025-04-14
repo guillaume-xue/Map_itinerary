@@ -2,6 +2,7 @@ package fr.u_paris.gla.project.controllers;
 
 import java.util.ArrayList;
 
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -23,6 +24,7 @@ import fr.u_paris.gla.project.views.Gui;
 public class GUIController {
 
   private Gui gui;
+  private Graph graph;
 
   /**
    * Constructor for GUIController.
@@ -35,8 +37,11 @@ public class GUIController {
       new KeyboardController(gui.getTextStart());
       new KeyboardController(gui.getTextEnd());
       new MouseController(gui.getMapViewer(), gui.getTextStart(), gui.getTextEnd());
+      String[] args = { "--parse", "mapData.csv", "junctionsData.csv" };
+      this.graph = CSVExtractor.makeOjectsFromCSV(args);
       initFocusListenerToTextArea();
       initActionListenner();
+      initMenuBar();
       this.gui.launch();
     });
   }
@@ -151,10 +156,6 @@ public class GUIController {
         return;
       }
 
-      // Add action listener to add displayJsonContent to contentPanel
-      // FIXME ASAP
-      String[] args = { "--parse", "mapData.csv", "junctionsData.csv" };
-      Graph graph = CSVExtractor.makeOjectsFromCSV(args);
       AStar astar = new AStar(graph);
 
       gui.getContentPanel().removeAll();
@@ -217,6 +218,29 @@ public class GUIController {
             JOptionPane.ERROR_MESSAGE);
       }
     });
+  }
+
+  private void initMenuBar() {
+    // Add action listeners to toggle checkmark icons
+    JMenuItem metroMenuItem = gui.getMenuItem(0, 0);
+    metroMenuItem.addActionListener(e -> {
+      gui.toggleCheckmark(metroMenuItem);
+      if (gui.isCheckmarkEnabled(metroMenuItem)) {
+        gui.viewAllMetro(graph);
+      } else {
+        gui.cleanMap();
+      }
+    });
+    JMenuItem busMenuItem = gui.getMenuItem(0, 1);
+    busMenuItem.addActionListener(e -> {
+      gui.toggleCheckmark(busMenuItem);
+      if (gui.isCheckmarkEnabled(busMenuItem)) {
+        gui.viewAllBus(graph);
+      } else {
+        gui.cleanMap();
+      }
+    });
+
   }
 
 }

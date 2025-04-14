@@ -29,6 +29,7 @@ public class Launcher {
     splashScreen.dispose();
     // Set the system property for the user agent
     System.setProperty("http.agent", "MyCustomApp/1.0 (https://example.com)");
+    System.setProperty("apple.laf.useScreenMenuBar", "true");
     // Initialize the GUI
     new GUIController();
   }
