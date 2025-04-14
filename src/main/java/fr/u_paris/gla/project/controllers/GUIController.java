@@ -257,25 +257,24 @@ public class GUIController {
    */
   private void initMenuBar() {
     // Add action listeners to toggle checkmark icons
-    JMenuItem metroMenuItem = gui.getMenuItem(0, 0);
-    metroMenuItem.addActionListener(e -> {
-      gui.toggleCheckmark(metroMenuItem);
-      if (gui.isCheckmarkEnabled(metroMenuItem)) {
-        gui.viewAllMetro(graph);
-      } else {
-        gui.cleanMap();
-      }
-    });
-    JMenuItem busMenuItem = gui.getMenuItem(0, 1);
+    JMenuItem busMenuItem = gui.getMenuItem(0, 0);
     busMenuItem.addActionListener(e -> {
       gui.toggleCheckmark(busMenuItem);
       if (gui.isCheckmarkEnabled(busMenuItem)) {
-        gui.viewAllBus(graph);
+        gui.viewLine(graph, "Bus");
       } else {
         gui.cleanMap();
       }
     });
-
+    JMenuItem metroMenuItem = gui.getMenuItem(0, 1);
+    metroMenuItem.addActionListener(e -> {
+      gui.toggleCheckmark(metroMenuItem);
+      if (gui.isCheckmarkEnabled(metroMenuItem)) {
+        gui.viewLine(graph, "Subway");
+      } else {
+        gui.cleanMap();
+      }
+    });
   }
 
 }

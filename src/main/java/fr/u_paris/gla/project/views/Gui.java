@@ -8,6 +8,7 @@ import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
 import java.awt.*;
+import java.lang.reflect.Array;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
@@ -15,7 +16,9 @@ import javax.swing.border.AbstractBorder;
 import java.util.ArrayList;
 
 import fr.u_paris.gla.project.graph.Graph;
+import fr.u_paris.gla.project.graph.Line;
 import fr.u_paris.gla.project.graph.Stop;
+import fr.u_paris.gla.project.graph.Subline;
 
 public class Gui extends JFrame {
 
@@ -56,8 +59,11 @@ public class Gui extends JFrame {
     JMenu viewMenu = new JMenu("View");
     JMenuItem busMenu = new JMenuItem("Bus");
     JMenuItem metroMenu = new JMenuItem("Metro");
+    JMenuItem allMenu = new JMenuItem("All Lines");
     viewMenu.add(busMenu);
     viewMenu.add(metroMenu);
+    viewMenu.addSeparator(); // Add a separator between the two menu items
+    viewMenu.add(allMenu);
     menuBar.add(viewMenu);
     this.setJMenuBar(menuBar);
 
@@ -274,30 +280,31 @@ public class Gui extends JFrame {
    * 
    * @param graph the graph containing the bus stops
    */
-  public void viewAllMetro(Graph graph) {
+  public void viewLine(Graph graph, String type) {
     mapViewer.removeAllMapMarkers();
     mapViewer.removeAllMapPolygons();
-    for (Stop stop : graph.getListOfStops()) {
-      Coordinate coord = new Coordinate(stop.getLongitude(), stop.getLatitude());
-      MapMarkerDot marker = new MapMarkerDot(coord);
-      mapViewer.addMapMarker(marker);
-    }
-    mapViewer.setDisplayPosition(new Coordinate(48.8566, 2.3522), 10);
-    mapViewer.repaint();
-  }
-
-  /**
-   * Displays all bus stops on the map.
-   * 
-   * @param graph the graph containing bus stops
-   */
-  public void viewAllBus(Graph graph) {
-    mapViewer.removeAllMapMarkers();
-    mapViewer.removeAllMapPolygons();
-    for (Stop stop : graph.getListOfStops()) {
-      Coordinate coord = new Coordinate(stop.getLongitude(), stop.getLatitude());
-      MapMarkerDot marker = new MapMarkerDot(coord);
-      mapViewer.addMapMarker(marker);
+    ArrayList<Line> tmp = new ArrayList<>();
+    ArrayList<Subline> tmpSub = new ArrayList<>();
+    ArrayList<Stop> tmpStop = new ArrayList<>();
+    for (Line line : graph.getListOfLines()) {
+      if (tmp.contains(line) || !line.getType().equals(type)) {
+        continue;
+      }
+      tmp.add(line);
+      for (Subline subline : line.getListOfSublines()) {
+        if (tmpSub.contains(subline)) {
+          continue;
+        }
+        for (Stop stop : subline.getListOfStops()) {
+          if (tmpStop.contains(stop)) {
+            continue;
+          }
+          tmpStop.add(stop);
+          Coordinate coord = new Coordinate(stop.getLongitude(), stop.getLatitude());
+          MapMarkerDot marker = new MapMarkerDot(coord);
+          mapViewer.addMapMarker(marker);
+        }
+      }
     }
     mapViewer.setDisplayPosition(new Coordinate(48.8566, 2.3522), 10);
     mapViewer.repaint();
