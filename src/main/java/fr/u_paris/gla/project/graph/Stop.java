@@ -1,9 +1,6 @@
 package fr.u_paris.gla.project.graph;
 
-<<<<<<< HEAD
-=======
 import java.time.Duration;
->>>>>>> prototype_staging
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,8 +9,6 @@ import java.util.Objects;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import fr.u_paris.gla.project.utils.GPS;
-
-import org.apache.commons.lang3.tuple.MutablePair;
 
 
 public class Stop implements Comparable<Stop>{
@@ -78,8 +73,6 @@ public class Stop implements Comparable<Stop>{
     public void addDeparture(Subline subline, ArrayList<LocalTime> times){
         departures.put(subline, times);
     }
-<<<<<<< HEAD
-=======
 
     public double distanceBetweenAdjacentStop(Stop stop) {
         return Math.abs(this.latitude - stop.latitude) + Math.abs(this.longitude - stop.longitude);
@@ -184,6 +177,5 @@ public class Stop implements Comparable<Stop>{
     public Double calculateDistance(double targetLongitude, double targetLatitude){
         return GPS.distance(this.longitude, this.latitude, targetLongitude, targetLatitude);
     }
->>>>>>> prototype_staging
 }
 

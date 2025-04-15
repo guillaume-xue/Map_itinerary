@@ -1,6 +1,3 @@
-<<<<<<< HEAD:src/main/java/fr/u_paris/gla/project/graph/TestStop.java
-package fr.u_paris.gla.project.graph;public class TestStop {
-=======
 package fr.u_paris.gla.project;
 
 import java.time.LocalTime;
@@ -74,5 +71,5 @@ public class TestStop {
     public static void main(String[] args) {
         System.out.println("test");
     }
->>>>>>> prototype_staging:src/test/java/fr/u_paris/gla/project/TestStop.java
 }
+
