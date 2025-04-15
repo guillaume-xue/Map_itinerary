@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
-import fr.u_paris.gla.project.utils.Pair;
+//import fr.u_paris.gla.project.utils.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 import fr.u_paris.gla.project.utils.GPS;
 
 
@@ -65,7 +66,7 @@ public class Stop implements Comparable<Stop>{
     }
 
     public void addAdjacentStop(Stop adjacentStop, Duration timeToNextStation, Float distanceToNextStation){
-        timeDistancePerAdjacentStop.put(adjacentStop, new Pair<>(timeToNextStation, distanceToNextStation));
+        timeDistancePerAdjacentStop.put(adjacentStop, Pair.of(timeToNextStation, distanceToNextStation));
     }
 
     public void addDeparture(Subline subline, ArrayList<LocalTime> times) {
@@ -87,6 +88,26 @@ public class Stop implements Comparable<Stop>{
     public HashMap<Stop, Pair<Duration, Float>> getTimeDistancePerAdjacentStop(){
         return this.timeDistancePerAdjacentStop;
     }
+    
+    public double getDistanceTo(Stop otherStop) {
+        Pair<Duration, Float> data = timeDistancePerAdjacentStop.get(otherStop);
+        if (data != null) {
+            return data.getRight(); // Retourne la distance
+        }
+        return Double.POSITIVE_INFINITY; // Arrêt non voisin, retourner un coût infini
+    }
+
+    
+    //à voir pour toutes les stations adjacentes mais qui sont adjacentes à pied car la durée est pas init je crois
+    public Duration getTimeTo(Stop otherStop) {
+        Pair<Duration, Float> data = timeDistancePerAdjacentStop.get(otherStop);
+        if (data != null) {
+            return data.getLeft(); // Retourne la durée 
+        }
+        return Duration.ofHours(9999); // Arrêt non voisin, retourner une durée maximale
+    }
+
+
 
     public double getF(){
         return f;
@@ -99,21 +120,25 @@ public class Stop implements Comparable<Stop>{
     public double getH() {
         return h;
     }
-
+    
     public void setCameFrom(Stop cameFrom) {
         this.cameFrom = cameFrom;
     }
 
     public void setG(double g) {
         this.g = g;
-        this.f = g+h;
+        //this.f = g+h;
     }
 
     public void setH(double h) {
         this.h = h;
-        this.f = g+h;
+        //this.f = g+h;
     }
 
+    public void setF() {
+    	this.f = this.h + this.g;
+    }
+    
     public Stop getCameFrom() {
         return cameFrom;
     }
@@ -139,7 +164,17 @@ public class Stop implements Comparable<Stop>{
         return String.join(", ", temp);
     }
 
-    //FIXME
+    
+    //pour pouvoir explorer les noeuds ds l'ordre des f les plus petits
+    @Override
+    public int compareTo(Stop other) {
+        double thisF = this.getF();
+        double otherF = other.getF();
+        return Double.compare(thisF, otherF);
+    }
+    
+    /* à jeter, normalement...
+     //FIXME
     @Override
     public int compareTo(Stop o) {
         return nameOfAssociatedStation.compareTo(o.nameOfAssociatedStation);
@@ -148,7 +183,7 @@ public class Stop implements Comparable<Stop>{
     //FIXME
     public int compateTo(Stop o) {
         return Double.compare(f, o.f);
-    }
+    }*/
 
     @Override
     public int hashCode() {

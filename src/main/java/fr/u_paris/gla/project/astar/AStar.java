@@ -36,6 +36,7 @@ public class AStar {
 
         departStop.setG(0);
         departStop.setH(getHeuristic(departStop, finishStop));
+        departStop.setF();
         openSet.add(departStop);
 
         while(!openSet.isEmpty()){
@@ -48,19 +49,22 @@ public class AStar {
             closedSet.add(currentStop);
 
             for(Stop neighbor : currentStop.getAdjacentStops()){
+            	//si noeud déjà visité on le passe
                 if(closedSet.contains(neighbor)){
                     continue;
                 }
+                //calcul du cout réel total pr arriver au noeud voisin de currentStop depuis departStop
                 double tentativeGScore = currentStop.getG() + currentStop.distanceBetweenAdjacentStop(neighbor);
 
                 if(!openSet.contains(neighbor)){
                     openSet.add(neighbor);
-                } else if(tentativeGScore >= neighbor.getG()){
+                } else if(tentativeGScore >= neighbor.getG()){ //si le cout réel est plus élevé que celui depuis le voisin
                     continue;
                 }
                 neighbor.setCameFrom(currentStop);
                 neighbor.setG(tentativeGScore);
                 neighbor.setH(getHeuristic(neighbor, finishStop));
+                neighbor.setF();
             }
         }
         return new ArrayList<>(); // No path found

@@ -45,6 +45,9 @@ import fr.u_paris.gla.project.astar.AStar;
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.utils.CSVExtractor;
+import fr.u_paris.gla.project.astar.CostFunction;
+import fr.u_paris.gla.project.astar.CostFunctionFactory;
+import fr.u_paris.gla.project.astar.AStarBis;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -386,7 +389,14 @@ public class Gui extends JFrame {
     // FIXME ASAP
     String[] args = {"--parse","mapData.csv","junctionsData.csv","Schedule/"};
     Graph graph = CSVExtractor.makeObjectsFromCSV(args);
-    AStar astar = new AStar(graph);
+    
+    //AStar astar = new AStar(graph); //version 1 de astar
+    
+    //avec version astar2 où ou peut choisir si on veut le chemin le plus court en duree ou distance
+    //faudra appeler qu'un des choix en fonction de ce que l'utilisateur demande
+    CostFunction costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DISTANCE);
+    //CostFunction costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DURATION);
+    AStarBis astar = new AStarBis(costFunction);
 
     buttonSearch.addActionListener(e -> {
 
@@ -430,11 +440,16 @@ public class Gui extends JFrame {
           Stop stopA = graph.getClosestStop(startCoordinates[0], startCoordinates[1]);
           Stop stopB = graph.getClosestStop(endCoordinates[0], endCoordinates[1]);
 
+          /* avec version astar1 qui respecte pas vraiment le fait qu'astar est 
+           * un algo qui devrait marcher plusieurs fois sur differentes données
           astar.setDepartStop(stopA);
           astar.setFinishStop(stopB);
 
-          ArrayList<Stop> stops = astar.findPath();
+          ArrayList<Stop> stops = astar.findPath();*/
 
+          //v2 astar
+          ArrayList<Stop> stops = astar.findShortestPath(stopA, stopB);
+          
           
 
           // Display the path on the map
