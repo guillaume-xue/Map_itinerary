@@ -15,7 +15,7 @@ public class TestLine {
         ArrayList<Subline> listOfSublines = new ArrayList<>();
         ArrayList<LocalTime> departureTimesAtStartOfSubline = new ArrayList<>();
 
-        Line line = new Line("B","Type","Color");
+        Line line = new Line("1","B","Type","Color");
 
         ArrayList<Subline> sublines = new ArrayList<>();
 
@@ -67,7 +67,7 @@ public class TestLine {
     @Test
     public void addLineTest(){
         ArrayList<Line> listOfLines = new ArrayList<>();
-        Line line = new Line("B","Type","Color");
+        Line line = new Line("1","B","Type","Color");
         Subline subline1 = new Subline("B1");
         Subline subline2 = new Subline("B2");
         Subline subline3 = new Subline("B3");
@@ -94,20 +94,20 @@ public class TestLine {
 
         // Lignes de Train (RER et transilien) :
 
-        listOfLines.add(new Line("RER A","Type","Color"));
-        listOfLines.add(new Line("RER B","Type","Color"));
-        listOfLines.add(new Line("RER C","Type","Color"));
-        listOfLines.add(new Line("RER D","Type","Color"));
-        listOfLines.add(new Line("RER E","Type","Color"));
+        listOfLines.add(new Line("1","RER A","Type","Color"));
+        listOfLines.add(new Line("1","RER B","Type","Color"));
+        listOfLines.add(new Line("1","RER C","Type","Color"));
+        listOfLines.add(new Line("1","RER D","Type","Color"));
+        listOfLines.add(new Line("1","RER E","Type","Color"));
 
-        listOfLines.add(new Line("Ligne H","Type","Color"));
-        listOfLines.add(new Line("Ligne J","Type","Color"));
-        listOfLines.add(new Line("Ligne K","Type","Color"));
-        listOfLines.add(new Line("Ligne L","Type","Color"));
-        listOfLines.add(new Line("Ligne N","Type","Color"));
-        listOfLines.add(new Line("Ligne P","Type","Color"));
-        listOfLines.add(new Line("Ligne R","Type","Color"));
-        listOfLines.add(new Line("Ligne U","Type","Color"));
+        listOfLines.add(new Line("1","Ligne H","Type","Color"));
+        listOfLines.add(new Line("1","Ligne J","Type","Color"));
+        listOfLines.add(new Line("1","Ligne K","Type","Color"));
+        listOfLines.add(new Line("1","Ligne L","Type","Color"));
+        listOfLines.add(new Line("1","Ligne N","Type","Color"));
+        listOfLines.add(new Line("1","Ligne P","Type","Color"));
+        listOfLines.add(new Line("1","Ligne R","Type","Color"));
+        listOfLines.add(new Line("1","Ligne U","Type","Color"));
 
 
 
@@ -115,11 +115,11 @@ public class TestLine {
 
         for (int i=1; i<=14; i++){
             if(i == 3 || i == 7){
-                listOfLines.add(new Line("Métro " + String.valueOf(i),"Type","Color"));
-                listOfLines.add(new Line("Métro " + String.valueOf(i) + "bis","Type","Color"));
+                listOfLines.add(new Line("1","Métro " + String.valueOf(i),"Type","Color"));
+                listOfLines.add(new Line("1","Métro " + String.valueOf(i) + "bis","Type","Color"));
             }
             else{
-                listOfLines.add(new Line("Métro " + String.valueOf(i),"Type","Color"));
+                listOfLines.add(new Line("1","Métro " + String.valueOf(i),"Type","Color"));
             }
         }
 
@@ -127,11 +127,11 @@ public class TestLine {
 
         for (int i=1; i<=14; i++){
             if(i == 3){
-                listOfLines.add(new Line("T" + String.valueOf(i) + "a","Type","Color"));
-                listOfLines.add(new Line("T" + String.valueOf(i) + "b","Type","Color"));
+                listOfLines.add(new Line("1","T" + String.valueOf(i) + "a","Type","Color"));
+                listOfLines.add(new Line("1","T" + String.valueOf(i) + "b","Type","Color"));
             }
             else{
-                listOfLines.add(new Line("T" + String.valueOf(i),"Type","Color"));
+                listOfLines.add(new Line("1","T" + String.valueOf(i),"Type","Color"));
             }
         }
 

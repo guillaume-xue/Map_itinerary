@@ -5,51 +5,29 @@ import java.util.Objects;
 
 public class Line implements Comparable<Line>{
     
+    private String id; // clef primaire
     private String name;
     private String type;
     private String color;
     private ArrayList<Subline> listOfSublines = new ArrayList<>();
 
     
-    public Line(String name, String type, String color){
+    public Line(String id, String name, String type, String color){
+        this.id = id;
         this.name = name;
         this.type = type;
         this.color = color;
-    }
-
-    /**
-     * Constructs a line when only one string is provided, expects the string format to be:
-     * "name_type_color"
-     *
-     * @param      input  The string.
-     * @throws     IllegalArgumentException if the format is invalid.
-     * 
-     */
-    public Line(String input){
-        String[] tmp = input.split("_");
-        if (tmp.length != 3) {
-            throw new IllegalArgumentException(
-                "Input string must be in the format 'name_type_color'. Got: " + input
-            );
-        }
-        this.name = tmp[0];
-        this.type = tmp[1];
-        this.color = tmp[2];
-    }
-
-    public Line(String name, ArrayList<Subline> listOfSublines ){
-        String[] tmp = name.split("_");
-        this.name = tmp[0];
-        this.type = tmp[1];
-        this.color = tmp[2];
-        this.listOfSublines = listOfSublines;
     }
 
     public void addSubline(Subline subline){
         listOfSublines.add(subline);
     }
 
-    public String getName() {
+    public String getId(){
+        return id;
+    }
+
+    public String getName(){
         return name;
     }
 
@@ -61,38 +39,42 @@ public class Line implements Comparable<Line>{
         return color;
     }
 
-    public ArrayList<Subline> getListOfSublines() {
+    public ArrayList<Subline> getListOfSublines(){
         return listOfSublines;
     }
 
+    public void setListOfSublines(ArrayList<Subline> newSublines){
+        this.listOfSublines.clear();
+        this.listOfSublines.addAll(newSublines);
+    }
+
     @Override
-    public int compareTo(Line o) {
-        return name.compareTo(o.name);
+    public int compareTo(Line other) {
+        return name.compareTo(other.name);
     }
 
     @Override
     public String toString() {
-        return "Line [name=" + name + ", color=" + color + ", listOfSublines=" + listOfSublines + "]\n";
+        return String.format("Line [id=%s, name=%s, type=%s, color=%s, sublines=%s]%n",
+            id, name, type, color, listOfSublines);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(id);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
+    public boolean equals(Object o) {
+        if (this == o)
             return true;
-        if (obj == null)
+        if (o == null)
             return false;
-        if (getClass() != obj.getClass())
+        if (getClass() != o.getClass())
             return false;
-        Line other = (Line) obj;
+        Line other = (Line) o;
         return 
-            Objects.equals(name, other.name) && 
-            Objects.equals(type, other.type) &&
-            Objects.equals(color, other.type);
+            Objects.equals(id, other.id);
     }
 
 }

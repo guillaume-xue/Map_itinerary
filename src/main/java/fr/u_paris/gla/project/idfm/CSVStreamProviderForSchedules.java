@@ -31,7 +31,7 @@ public class CSVStreamProviderForSchedules implements Supplier<String[]> {
 
             String heureNormalisee = normalizeTime(heurePassage);
 
-            this.line[ScheduleFormat.LINE_INDEX] = lineId;
+            this.line[ScheduleFormat.LINE_ID_INDEX] = lineId;
             this.line[ScheduleFormat.TRIP_SEQUENCE_INDEX] = "["+ numBifurcation +"]"; // On met le numéro de bifurcation
             this.line[ScheduleFormat.TERMINUS_INDEX] = stopName;
             this.line[ScheduleFormat.TIME_INDEX] = heureNormalisee;

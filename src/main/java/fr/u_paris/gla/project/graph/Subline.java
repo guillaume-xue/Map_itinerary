@@ -36,6 +36,10 @@ public class Subline {
         departureTimesAtStartOfSubline.addAll(departureTimes);
     }
 
+    public ArrayList<LocalTime> getDepartureTimes(){
+        return this.departureTimesAtStartOfSubline;
+    }
+
     @Override
     public String toString(){
         return "\nSubline : " + name  + " " + listOfStops.toString();

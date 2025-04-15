@@ -6,33 +6,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
-<<<<<<< HEAD
-import fr.u_paris.gla.project.utils.Pair; 
-=======
-import org.apache.commons.lang3.tuple.MutablePair;
-
+import fr.u_paris.gla.project.utils.Pair;
 import fr.u_paris.gla.project.utils.GPS;
 
->>>>>>> e9990c0a8c27db63ee3f53e45ec252ccde53890d
 
 public class Stop implements Comparable<Stop>{
 
     private double longitude;
     private double latitude;
     private String nameOfAssociatedStation;
+    
+    // Pour l'algo A*
     private Stop cameFrom;
-
     private double f;
     private double g;
     private double h;
-
 
     //A list of all adjacent stations, with the associated time and distance to get from current station to adjacent station. 
     private HashMap<Stop, Pair<Duration, Float>> timeDistancePerAdjacentStop = new HashMap<>();
 
     //For each subline that passes through this station, it should have an entry here
     /*if this station is not a departure station, 
-    we will need to calculate at which time the trains would arrive into the station recursivemy from the departure station
+    we will need to calculate at which time the trains would arrive into the station recursively from the departure station
     */
     private HashMap<Subline, ArrayList<LocalTime>> departures = new HashMap<>();
 
@@ -44,15 +39,14 @@ public class Stop implements Comparable<Stop>{
         this.g = Double.POSITIVE_INFINITY;
     }
 
-    public Stop(double longitude, double latitude, String nameOfAssociatedStation, int f, int g, int h){
-        this.longitude = longitude;
-        this.latitude = latitude;
-        this.nameOfAssociatedStation = nameOfAssociatedStation;
-        this.f = f;
-        this.g = g;
-        this.h = h;
-    }
-
+    // public Stop(double longitude, double latitude, String nameOfAssociatedStation, int f, int g, int h){
+    //     this.longitude = longitude;
+    //     this.latitude = latitude;
+    //     this.nameOfAssociatedStation = nameOfAssociatedStation;
+    //     this.f = f;
+    //     this.g = g;
+    //     this.h = h;
+    // }
 
     public double getLongitude() {
         return longitude;
@@ -74,13 +68,13 @@ public class Stop implements Comparable<Stop>{
         timeDistancePerAdjacentStop.put(adjacentStop, new Pair<>(timeToNextStation, distanceToNextStation));
     }
 
-    public void addDeparture(Subline subline, ArrayList<LocalTime> times){
-        departures.put(subline, times);
+    public void addDeparture(Subline subline, ArrayList<LocalTime> times) {
+        departures.put(subline, new ArrayList<>(times)); // defensive copy
     }
 
-    // public void addDeparture(Subline subline, LocalTime time){
-    //     departures.putIfAbsent(subline,)
-    // }
+    public void addDeparture(Subline subline, LocalTime time) {
+        departures.computeIfAbsent(subline, k -> new ArrayList<>()).add(time);
+    }
 
     public double distanceBetweenAdjacentStop(Stop stop) {
         return Math.abs(this.latitude - stop.latitude) + Math.abs(this.longitude - stop.longitude);

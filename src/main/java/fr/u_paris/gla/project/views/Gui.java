@@ -385,7 +385,7 @@ public class Gui extends JFrame {
     // Add action listener to add displayJsonContent to contentPanel
     // FIXME ASAP
     String[] args = {"--parse","mapData.csv","junctionsData.csv","Schedule/"};
-    Graph graph = CSVExtractor.makeOjectsFromCSV(args);
+    Graph graph = CSVExtractor.makeObjectsFromCSV(args);
     AStar astar = new AStar(graph);
 
     buttonSearch.addActionListener(e -> {

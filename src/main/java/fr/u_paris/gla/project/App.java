@@ -107,6 +107,6 @@ public class App {
             errorLog("parser", "Wrong arguments");
         }
         
-        CSVExtractor.makeOjectsFromCSV(args);
+        CSVExtractor.makeObjectsFromCSV(args);
     }
 }

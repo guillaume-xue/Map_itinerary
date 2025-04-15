@@ -35,7 +35,7 @@ public class CSVStreamProviderForJunctions implements Supplier<String[]> {
                         .map(StopEntry::getStopName)
                         .collect(Collectors.joining(";"));
 
-                line[JunctionsFormat.LINE_ID] = currentLineID;
+                line[JunctionsFormat.LINE_ID_INDEX] = currentLineID;
                 line[JunctionsFormat.VARIANT_INDEX] = bifurcationNumber;
                 line[JunctionsFormat.LIST_INDEX] = "[" + stopsString + "]";
 

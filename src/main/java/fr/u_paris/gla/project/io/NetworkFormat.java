@@ -19,7 +19,7 @@ public final class NetworkFormat {
     public static final int GPS_PRECISION  = 18;
 
     /** The index of the line name in the network format */
-    public static final int LINE_INDEX     = 0;
+    public static final int LINE_ID_INDEX  = 0;
     /** The index of the variant number of the segment in the network format */
     public static final int VARIANT_INDEX  = 1;
     /** The index of the segment trip duration in the network format */

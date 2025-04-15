@@ -62,10 +62,14 @@ public class Graph {
     public String statsToString(){
         int sublinesCpt = 0;
         int emptySublinesCpt = 0;
+        int scheduleCpt = 0;
+
         for ( Line line  : listOfLines ) {
             sublinesCpt += line.getListOfSublines().size();
             for ( Subline subline : line.getListOfSublines() ){
                 if ( subline.getListOfStops().size() == 0 ) emptySublinesCpt++;
+
+                if ( subline.getDepartureTimes().size() != 0 ) scheduleCpt++;
             }
         }
 
@@ -78,6 +82,8 @@ public class Graph {
         sublinesCpt +
         "\nNombre de sous-lignes vides: " +
         emptySublinesCpt +
+        "\nNombre de sous-lignes ayant au moins une horaire de départ recensée: " +
+        scheduleCpt +
         "\n\n-------------------\n";
     }
 }

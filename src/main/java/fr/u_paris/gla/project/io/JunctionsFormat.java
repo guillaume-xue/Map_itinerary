@@ -5,7 +5,7 @@ public final class JunctionsFormat {
 	
 	public static final int NUMBER_COLUMNS = 3;
 	
-    public static final int LINE_ID     = 0;
+    public static final int LINE_ID_INDEX     = 0;
     public static final int VARIANT_INDEX     = 1;
     public static final int LIST_INDEX        = 2;
 

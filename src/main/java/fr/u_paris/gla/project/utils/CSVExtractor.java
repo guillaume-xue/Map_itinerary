@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,14 +16,9 @@ import java.util.Map;
 import java.io.File;
 
 import fr.u_paris.gla.project.graph.*;
-<<<<<<< HEAD
 import fr.u_paris.gla.project.io.UpgradedNetworkFormat;
-import fr.u_paris.gla.project.io.JunctionFormat;
+import fr.u_paris.gla.project.io.JunctionsFormat;
 import fr.u_paris.gla.project.io.ScheduleFormat;
-=======
-import static fr.u_paris.gla.project.io.UpgradedNetworkFormat.*;
-import static fr.u_paris.gla.project.io.JunctionsFormat.*;
->>>>>>> e9990c0a8c27db63ee3f53e45ec252ccde53890d
 import java.time.Duration;
 import java.time.LocalTime;
 
@@ -32,8 +28,6 @@ import java.time.LocalTime;
  *
  */
 public final class CSVExtractor {
-
-    private static int errorCpt = 0;
 
     // Constantes:
     // Index pour les arguments
@@ -53,10 +47,10 @@ public final class CSVExtractor {
 
     /** 
      * Main entry point of the parser. Launches the step, one by one, required to make 
-     * the object Graph of our model.
+     * the Graph object of our model.
      * 
      * @param args The String array of file paths. Expects:
-     * index 1 being the file for stops data and
+     * index 1 being the file for stops data.
      * index 2 being the file for junctions data.
      * index 3 being the directory for schedules.
      *             
@@ -64,7 +58,7 @@ public final class CSVExtractor {
      * null if parsing critically fails.
      * 
      */
-    public static Graph makeOjectsFromCSV(String[] args){
+    public static Graph makeObjectsFromCSV(String[] args){
 
         if ( !areArgumentsValid(args) ){
             LOGGER.severe("Error: Wrong arguments for objects parser. See Usage.");
@@ -79,6 +73,9 @@ public final class CSVExtractor {
         // Une map qui asssocie l'ID d'une ligne à toutes les stations rencontrées dessus
         Map<String,ArrayList<Stop>> mapOfStopEntry = new HashMap<>();
 
+        // Une map qui associe l'ID d'une ligne à son objet
+        Map<String, Line> lineById = new HashMap<>();
+
         // Une map qui associe une paire de coordonnées à une station
         Map<Pair<Double,Double>,Stop> mapOfStops = new HashMap<>();
 
@@ -86,7 +83,7 @@ public final class CSVExtractor {
         try{
             CSVTools.readCSVFromFile(args[STOPS_FILE_ID], (String[] line) -> {
                 if ( isMapDataLineValid(line) ) {
-                    readStops(line, mapOfLines, mapOfStopEntry, mapOfStops);
+                    readStops(line, mapOfLines, mapOfStopEntry, mapOfStops, lineById);
                 } else {
                     LOGGER.warning("Invalid line skipped: " + line.toString());
                 }
@@ -122,25 +119,27 @@ public final class CSVExtractor {
             }
         }
 
-        // Maintenant qu'on a ajouté les horaires de départs depuis les terminus, on ajoute les horaires
-        // pour toutes les autres stations selon leurs adjacences.
-        // LOGGER.info("Objects parsing in progress: adding all other schedules");
-        // addMissingSchedules();
-
         // (Ticket #20) Une fois qu'on a rempli la mapOfStops on doit ajouter les quais de
         // chaque station entre elles pour permettre de changer de ligne, à pied, sur une même station.
         LOGGER.info("Objects parsing in progress: linking Stops");
         linkStops(mapOfStops, MAX_DISTANCE);
 
-        // Maintenant que les map ont été remplis et toutes les informations ajoutées, on les transforme
+        // Maintenant que les map ont été remplies et toutes les informations ajoutées, on les transforme
         // en liste (requis par le model).
         ArrayList<Stop> listOfStops = new ArrayList<>(mapOfStops.values());
 
         ArrayList<Line> listOfLines = new ArrayList<>();
         for (Map.Entry<String, ArrayList<Subline>> entry : mapOfLines.entrySet()) {
-            listOfLines.add(new Line(entry.getKey(), entry.getValue()));
+            //listOfLines.add(new Line(entry.getKey(), entry.getValue()));
+            lineById.get(entry.getKey()).setListOfSublines(entry.getValue());
+            listOfLines.add( lineById.get(entry.getKey()) );
         }
 
+        // Maintenant qu'on a ajouté les horaires de départs depuis les terminus, on ajoute les horaires
+        // pour toutes les autres stations selon leurs adjacences.
+        LOGGER.info("Objects parsing in progress: adding all other schedules");
+        addMissingSchedules(listOfLines);
+        
         //Collections.sort(listOfStops);
         //Collections.sort(listOfLines);
         
@@ -200,31 +199,19 @@ public final class CSVExtractor {
         String[] line, 
         Map<String,ArrayList<Subline>> mapOfLines,
         Map<String,ArrayList<Stop>> mapOfStopEntry,
-        Map<Pair<Double,Double>,Stop> mapOfStops
+        Map<Pair<Double,Double>,Stop> mapOfStops,
+        Map<String,Line> lineById
     ){
-<<<<<<< HEAD
-        // On ajoute la ligne de transport du tuple si elle est nouvelle
-        mapOfLines.putIfAbsent(
-            line[UpgradedNetworkFormat.LINE_INDEX] + "_" 
-            + line[UpgradedNetworkFormat.TYPE_INDEX] + "_" 
-            + line[UpgradedNetworkFormat.COLOR_INDEX], 
-            new ArrayList<>()
-        );
-        mapOfStopEntry.putIfAbsent(
-            line[UpgradedNetworkFormat.LINE_INDEX] + "_" 
-            + line[UpgradedNetworkFormat.TYPE_INDEX] + "_" 
-            + line[UpgradedNetworkFormat.COLOR_INDEX], 
-            new ArrayList<>()
-        );
-        
-        //mapOfLines.putIfAbsent(line[UpgradedNetworkFormat.ID_INDEX]);
-        //mapOfStopEntry.putIfAbsent(line[UpgradedNetworkFormat.ID_INDEX]);
-        
-=======
-        // On ajoute la ligne du tuple si elle est nouvelle
-        mapOfLines.putIfAbsent(line[LINE_ID_INDEX], new ArrayList<>());
-        mapOfStopEntry.putIfAbsent(line[LINE_ID_INDEX], new ArrayList<>());
->>>>>>> e9990c0a8c27db63ee3f53e45ec252ccde53890d
+        // On ajoute la ligne de transport du tuple si elle n'a pas été rencontrée précedemment
+        mapOfLines.putIfAbsent(line[UpgradedNetworkFormat.LINE_ID_INDEX], new ArrayList<>());
+        mapOfStopEntry.putIfAbsent(line[UpgradedNetworkFormat.LINE_ID_INDEX], new ArrayList<>());
+        lineById.putIfAbsent(line[UpgradedNetworkFormat.LINE_ID_INDEX], new Line(
+            line[UpgradedNetworkFormat.LINE_ID_INDEX],
+            line[UpgradedNetworkFormat.LINE_NAME_INDEX],
+            line[UpgradedNetworkFormat.TYPE_INDEX],
+            line[UpgradedNetworkFormat.COLOR_INDEX]
+        ));
+
         // On ajoute les deux stations à la map
         addStops(line, mapOfStopEntry, mapOfStops);
     }
@@ -273,11 +260,7 @@ public final class CSVExtractor {
         
         // On ajoute les deux arrêts à la map qui associe une ligne à tout ses 
         // arrêts rencontrés
-        String ligne = line[UpgradedNetworkFormat.LINE_INDEX] + "_" 
-            + line[UpgradedNetworkFormat.TYPE_INDEX] + "_" 
-            + line[UpgradedNetworkFormat.COLOR_INDEX];
-
-        //String ligne = line[UpgradedNetworkFormat.ID_INDEX];
+        String ligne = line[UpgradedNetworkFormat.LINE_ID_INDEX];
         if (!mapOfStopEntry.get(ligne).contains(stopA)) {
             mapOfStopEntry.get(ligne).add(stopA);
         }
@@ -301,24 +284,14 @@ public final class CSVExtractor {
         Map<String,ArrayList<Stop>> mapOfStopEntry, 
         Map<Pair<Double,Double>,Stop> mapOfStops
     ){
-<<<<<<< HEAD
         // La ligne de transport
-        //String line_id = line[UpgradedNetworkFormat.ID_INDEX];
+        String ligne = line[UpgradedNetworkFormat.LINE_ID_INDEX];
 
         // La sous-ligne
-        Subline variantSubline = new Subline(line[JunctionFormat.VARIANT_INDEX]);
+        Subline variantSubline = new Subline(line[JunctionsFormat.VARIANT_INDEX]);
         
-=======
-        // La ligne sur laquelle on travaille, avec son index et son type concaténé
-        String ligne = line[LINE_ID];
-        Subline variantSubline = new Subline(line[VARIANT_INDEX]); // La sous-ligne
->>>>>>> e9990c0a8c27db63ee3f53e45ec252ccde53890d
         // La liste de string représentant les stations de la sous-ligne
-        String[] stops = line[JunctionFormat.LIST_INDEX].replaceAll("[\\[\\]]", "").split(";");
-
-        // La ligne de transport sur laquelle on travaille
-        String ligne =  line[JunctionFormat.LINE_INDEX] + "_" + line[JunctionFormat.TYPE_INDEX];
-        ligne += "_" + findColor(ligne, stops, mapOfStopEntry);
+        String[] stops = line[JunctionsFormat.LIST_INDEX].replaceAll("[\\[\\]]", "").split(";");
 
         // Les stations potentielles recontrées précédemment pour la ligne
         ArrayList<Stop> listOfStopsEntry = mapOfStopEntry.get(ligne);
@@ -328,51 +301,15 @@ public final class CSVExtractor {
         } 
 
         // La liste de stations finale à ajouter à la subline
-        ArrayList<Stop> listOfStops = buildPotentialLine(stops, listOfStopsEntry, ligne, line[JunctionFormat.VARIANT_INDEX]);
+        ArrayList<Stop> listOfStops = buildPotentialLine(stops, listOfStopsEntry, ligne, line[JunctionsFormat.VARIANT_INDEX]);
+        if ( listOfStops.isEmpty() ){
+            LOGGER.warning("Suppression de la sous-ligne");
+            return;
+        }
 
         variantSubline.setListOfStops(listOfStops);
         mapOfLines.get(ligne).add(variantSubline);
     }
-
-    /**
-     * Finds the potential color of the line, as there are multiple lines with same name and type, color
-     * is used as the determining factor. But the junctions file doesn't provide this color so we have to guess.
-     *
-     * @param      ligne       The ligne in format name_type
-     * @param      mapOfLines  The map of lines
-     *
-     * @return     The color's string if found, empty string otherwise.
-     */
-    public static String findColor(String ligne, String[] stops, Map<String, ArrayList<Stop>> mapOfStopEntry) {
-        String color = "";
-        int maxMatches = -1;
-
-        for (Map.Entry<String, ArrayList<Stop>> entry : mapOfStopEntry.entrySet()) {
-            String key = entry.getKey();
-
-            if (key.startsWith(ligne + "_")) {
-                ArrayList<Stop> stopList = entry.getValue();
-
-                int matches = 0;
-                for (String stopName : stops) {
-                    for (Stop stop : stopList) {
-                        if (stop.getNameOfAssociatedStation().equalsIgnoreCase(stopName)) {
-                            matches++;
-                            break;
-                        }
-                    }
-                }
-
-                if (matches > maxMatches) {
-                    maxMatches = matches;
-                    color = key.substring(ligne.length() + 1);
-                }
-            }
-        }
-
-        return color;
-    }
-
 
     /**
      * Builds a potential line by calling a DFS-search.
@@ -412,8 +349,7 @@ public final class CSVExtractor {
             }
         }
 
-        errorCpt++;
-        LOGGER.warning("Pas de chemin potentiel trouvé pour la sous-ligne " + ligne + ", variant " + variant + ": " + String.join(", ", stops) + "\n\n\n" );
+        LOGGER.warning("Pas de chemin potentiel trouvé pour la sous-ligne " + ligne + ", variant " + variant + "\n" );
         return new ArrayList<>();
     }
 
@@ -441,14 +377,6 @@ public final class CSVExtractor {
             return true;
         }
 
-        // Set<Stop> potentialAdjacent = currentStop.getTimeDistancePerAdjacentStop().keySet();
-
-        // for ( Stop st : listOfStopsEntry ){
-        //     if (!potentialAdjacent.contains(st)){
-        //         potentialAdjacent.remove(st);
-        //     }
-        // } 
-
         for ( Stop adjacent : currentStop.getTimeDistancePerAdjacentStop().keySet() ){
             if ( adjacent.getNameOfAssociatedStation().equals(stops[index]) ){
                 if ( dfsSearch(adjacent, stops, index + 1, listOfStopsEntry, potentialPath) ){
@@ -462,7 +390,7 @@ public final class CSVExtractor {
     }
     
     /**
-     * Read a schedule file in the fileName format: "line_lineType_departureStop.csv"
+     * Read a schedule file in the fileName format: "lineName_lineID_departureStop.csv"
      * Adds the corresponding departure time for the subline.
      *
      * @param      line        The text line
@@ -471,64 +399,20 @@ public final class CSVExtractor {
      */
     public static void readSchedules(
         String[] line, 
-<<<<<<< HEAD
         String fileName, 
         Map<String,ArrayList<Subline>>  mapOfLines,
         Map<String,ArrayList<Stop>> mapOfStopEntry
     )
     {
-        // Si le fichier fourni est bien un csv, on supprime l'extension pour extraire les infos
-        if (fileName.endsWith(".csv")) {
-            fileName = fileName.substring(0, fileName.length() - 4);
-        } else {
-            return;
-=======
-        Map<String,ArrayList<Stop>> mapOfStopEntry, 
-        Map<ImmutablePair<Double,Double>,Stop> mapOfStops
-    ){
-        String[] stopACoordString = line[START_INDEX+1].split(",");
-        double stopAlon = Double.parseDouble(stopACoordString[0]);
-        double stopAlat = Double.parseDouble(stopACoordString[1]);
-        ImmutablePair<Double,Double> stopACoord = new ImmutablePair<>(stopAlon,stopAlat);
-
-        mapOfStops.putIfAbsent(stopACoord, new Stop(stopAlon,stopAlat,line[START_INDEX]));
-
-        String[] stopBCoordString = line[STOP_INDEX+1].split(",");
-        double stopBlon = Double.parseDouble(stopBCoordString[0]);
-        double stopBlat = Double.parseDouble(stopBCoordString[1]);
-        ImmutablePair<Double,Double> stopBCoord = new ImmutablePair<>(stopBlon,stopBlat);
-
-        mapOfStops.putIfAbsent(stopBCoord, new Stop(stopBlon,stopBlat,line[STOP_INDEX]));
-
-        Stop stopA = mapOfStops.get(stopACoord);
-        Stop stopB = mapOfStops.get(stopBCoord);
-
-        Duration timeToNextStation = parseLargeDuration(line[DURATION_INDEX]);
-
-        Float distanceToNextStation = Float.parseFloat(line[DISTANCE_INDEX]);
-
-        stopA.addAdjacentStop(stopB, timeToNextStation, distanceToNextStation);
-        String ligne = line[LINE_ID_INDEX];
-        if (!mapOfStopEntry.get(ligne).contains(stopA)) {
-            mapOfStopEntry.get(ligne).add(stopA);
->>>>>>> e9990c0a8c27db63ee3f53e45ec252ccde53890d
-        }
 
         // Si le fichier fourni n'est pas un csv, on le skip
-        // if (!fileName.endsWith(".csv")) return;
+        if (!fileName.endsWith(".csv")) return;
 
-        // Puisque le nom du fichier est sous la forme: 
-        // LINENAME_TYPE_TERMINUS, on divise la string en deux à partir du dernier underscore
-        int lastUnderscore = fileName.lastIndexOf('_');
-        String lineName = fileName.substring(0, lastUnderscore);
-        String departure = fileName.substring(lastUnderscore + 1);
-
-        // String lineIndex = line[ScheduleFormat.ID_INDEX];
-
-        lineName += "_" + findColor(lineName, new String[]{departure}, mapOfStopEntry);
+        // La ligne
+        String ligne = line[ScheduleFormat.LINE_ID_INDEX];
         
         // On récupère la liste des sous-lignes
-        ArrayList<Subline> allSublines = mapOfLines.get(lineName);
+        ArrayList<Subline> allSublines = mapOfLines.get(ligne);
         if ( allSublines == null ) return;
 
         String variant = line[ScheduleFormat.TRIP_SEQUENCE_INDEX].substring(1, line[ScheduleFormat.TRIP_SEQUENCE_INDEX].length() - 1);
@@ -545,12 +429,53 @@ public final class CSVExtractor {
             String actualTerminus = stops.get(0).getNameOfAssociatedStation();
 
             if (!actualTerminus.equals(expectedTerminus)) {
-                LOGGER.log(Level.WARNING,"Mismatch found on subline: " + subline.getName() + " of line: " + lineName
+                LOGGER.log(Level.WARNING,"Mismatch found on subline: " + subline.getName() + " of line: " + ligne
                 + "\nExpected: " + expectedTerminus + " | Found: " + actualTerminus );
+                return;
             }
 
-            // ^^^ Problems with some lines having n sublines in schedules but only n/2 in junctions data
+            stops.get(0).addDeparture(subline, LocalTime.parse(line[ScheduleFormat.TIME_INDEX]));
+            try{
+                Stop departureStop = stops.get(0);
+                subline.addDepartureTimes(departureStop, new ArrayList<>(List.of(LocalTime.parse(line[ScheduleFormat.TIME_INDEX]))));
+            } catch (Exception e){
+                LOGGER.log(Level.WARNING, "Failed to add departure times: " + e.getMessage());
+            }
         }
+    }
+
+    public static void addMissingSchedules(ArrayList<Line> listOfLines){
+        for ( Line line : listOfLines ){
+            for ( Subline subline : line.getListOfSublines() ){
+                // La liste de Stop qui représente la sous-ligne, qu'on skip si vide
+                ArrayList<Stop> stops = subline.getListOfStops();
+                if (stops.isEmpty()) continue;
+
+                // Le terminus de départ
+                Stop departureStop = stops.get(0);
+
+                // Les horaires de départ
+                ArrayList<LocalTime> departureTimes = subline.getDepartureTimes();
+
+                // On parcourt la liste de stops en récupérant la durée entre l'arrêt précédent 
+                // et celui auquel on veut ajouter l'horaire
+                for (LocalTime lt : departureTimes) {
+                LocalTime currentTime = lt;
+
+                for (int i = 1; i < stops.size(); i++) {
+                    Stop previousStop = stops.get(i - 1);
+                    Stop currentStop = stops.get(i);
+
+                    Duration durationToNext = previousStop.getTimeDistancePerAdjacentStop()
+                        .get(currentStop).getKey();
+
+                    currentTime = currentTime.plus(durationToNext);
+
+                    currentStop.addDeparture(subline, currentTime);
+                }
+            }
+            }
+        }   
     }
 
 
@@ -565,9 +490,10 @@ public final class CSVExtractor {
      * @param      maxDistance  The maximum distance in meters
      */
     public static void linkStops(Map<Pair<Double,Double>,Stop> mapOfStops, double maxDistance){
+        
         // On regroupe les stations par nom
         Map<String, ArrayList<Stop>> stopsByName = new HashMap<>();
-        for (Stop stop : mapOfStops.values()) {
+        for ( Stop stop : mapOfStops.values() ){
             stopsByName.putIfAbsent(stop.getNameOfAssociatedStation(), new ArrayList<>());
             stopsByName.get(stop.getNameOfAssociatedStation()).add(stop);
         }
@@ -575,7 +501,7 @@ public final class CSVExtractor {
         // On parcours les listes de quais de même nom et si leur distance est infieure à la 
         // valeur arbitraire choisie on les ajoute entre-eux dans leur liste d'adjacence.
         for ( ArrayList<Stop> stops : stopsByName.values() ){
-            for ( int i = 0; i < stops.size(); i++) {
+            for ( int i = 0; i < stops.size(); i++){
                 for ( int j = i + 1; j < stops.size(); j++ ){
                     Stop stopA = stops.get(i);
                     Stop stopB = stops.get(j);
