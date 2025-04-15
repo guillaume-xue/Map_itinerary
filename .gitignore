@@ -5,3 +5,9 @@ target/
 .settings/
 .project
 .classpath
+
+#Misc
+Makefile
+*.csv
+dependency-reduced-pom.xml
+**/.DS_Store
