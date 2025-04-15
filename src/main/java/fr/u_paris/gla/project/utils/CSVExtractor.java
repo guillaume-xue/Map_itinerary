@@ -15,9 +15,14 @@ import java.util.Map;
 import java.io.File;
 
 import fr.u_paris.gla.project.graph.*;
+<<<<<<< HEAD
 import fr.u_paris.gla.project.io.UpgradedNetworkFormat;
 import fr.u_paris.gla.project.io.JunctionFormat;
 import fr.u_paris.gla.project.io.ScheduleFormat;
+=======
+import static fr.u_paris.gla.project.io.UpgradedNetworkFormat.*;
+import static fr.u_paris.gla.project.io.JunctionsFormat.*;
+>>>>>>> e9990c0a8c27db63ee3f53e45ec252ccde53890d
 import java.time.Duration;
 import java.time.LocalTime;
 
@@ -197,6 +202,7 @@ public final class CSVExtractor {
         Map<String,ArrayList<Stop>> mapOfStopEntry,
         Map<Pair<Double,Double>,Stop> mapOfStops
     ){
+<<<<<<< HEAD
         // On ajoute la ligne de transport du tuple si elle est nouvelle
         mapOfLines.putIfAbsent(
             line[UpgradedNetworkFormat.LINE_INDEX] + "_" 
@@ -214,6 +220,11 @@ public final class CSVExtractor {
         //mapOfLines.putIfAbsent(line[UpgradedNetworkFormat.ID_INDEX]);
         //mapOfStopEntry.putIfAbsent(line[UpgradedNetworkFormat.ID_INDEX]);
         
+=======
+        // On ajoute la ligne du tuple si elle est nouvelle
+        mapOfLines.putIfAbsent(line[LINE_ID_INDEX], new ArrayList<>());
+        mapOfStopEntry.putIfAbsent(line[LINE_ID_INDEX], new ArrayList<>());
+>>>>>>> e9990c0a8c27db63ee3f53e45ec252ccde53890d
         // On ajoute les deux stations à la map
         addStops(line, mapOfStopEntry, mapOfStops);
     }
@@ -290,12 +301,18 @@ public final class CSVExtractor {
         Map<String,ArrayList<Stop>> mapOfStopEntry, 
         Map<Pair<Double,Double>,Stop> mapOfStops
     ){
+<<<<<<< HEAD
         // La ligne de transport
         //String line_id = line[UpgradedNetworkFormat.ID_INDEX];
 
         // La sous-ligne
         Subline variantSubline = new Subline(line[JunctionFormat.VARIANT_INDEX]);
         
+=======
+        // La ligne sur laquelle on travaille, avec son index et son type concaténé
+        String ligne = line[LINE_ID];
+        Subline variantSubline = new Subline(line[VARIANT_INDEX]); // La sous-ligne
+>>>>>>> e9990c0a8c27db63ee3f53e45ec252ccde53890d
         // La liste de string représentant les stations de la sous-ligne
         String[] stops = line[JunctionFormat.LIST_INDEX].replaceAll("[\\[\\]]", "").split(";");
 
@@ -454,6 +471,7 @@ public final class CSVExtractor {
      */
     public static void readSchedules(
         String[] line, 
+<<<<<<< HEAD
         String fileName, 
         Map<String,ArrayList<Subline>>  mapOfLines,
         Map<String,ArrayList<Stop>> mapOfStopEntry
@@ -464,6 +482,36 @@ public final class CSVExtractor {
             fileName = fileName.substring(0, fileName.length() - 4);
         } else {
             return;
+=======
+        Map<String,ArrayList<Stop>> mapOfStopEntry, 
+        Map<ImmutablePair<Double,Double>,Stop> mapOfStops
+    ){
+        String[] stopACoordString = line[START_INDEX+1].split(",");
+        double stopAlon = Double.parseDouble(stopACoordString[0]);
+        double stopAlat = Double.parseDouble(stopACoordString[1]);
+        ImmutablePair<Double,Double> stopACoord = new ImmutablePair<>(stopAlon,stopAlat);
+
+        mapOfStops.putIfAbsent(stopACoord, new Stop(stopAlon,stopAlat,line[START_INDEX]));
+
+        String[] stopBCoordString = line[STOP_INDEX+1].split(",");
+        double stopBlon = Double.parseDouble(stopBCoordString[0]);
+        double stopBlat = Double.parseDouble(stopBCoordString[1]);
+        ImmutablePair<Double,Double> stopBCoord = new ImmutablePair<>(stopBlon,stopBlat);
+
+        mapOfStops.putIfAbsent(stopBCoord, new Stop(stopBlon,stopBlat,line[STOP_INDEX]));
+
+        Stop stopA = mapOfStops.get(stopACoord);
+        Stop stopB = mapOfStops.get(stopBCoord);
+
+        Duration timeToNextStation = parseLargeDuration(line[DURATION_INDEX]);
+
+        Float distanceToNextStation = Float.parseFloat(line[DISTANCE_INDEX]);
+
+        stopA.addAdjacentStop(stopB, timeToNextStation, distanceToNextStation);
+        String ligne = line[LINE_ID_INDEX];
+        if (!mapOfStopEntry.get(ligne).contains(stopA)) {
+            mapOfStopEntry.get(ligne).add(stopA);
+>>>>>>> e9990c0a8c27db63ee3f53e45ec252ccde53890d
         }
 
         // Si le fichier fourni n'est pas un csv, on le skip

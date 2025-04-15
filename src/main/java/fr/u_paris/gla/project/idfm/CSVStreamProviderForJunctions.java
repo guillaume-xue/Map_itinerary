@@ -4,16 +4,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.function.Supplier;
 
+import fr.u_paris.gla.project.io.JunctionsFormat;
 
 
 public class CSVStreamProviderForJunctions implements Supplier<String[]> {
     private final Iterator<Map.Entry<String, TraceEntry>> tracesIterator; // Premier itérateur
     private Iterator<Map.Entry<String, List<StopEntry>>> pathsIterator = Collections.emptyIterator(); // Deuxième itérateur
 
-    private String currentLineName;
+    private String currentLineID;
     private String currentLineType;
 
-    private final String[] line = new String[4]; // 4 colonnes : nomLigne, typeLigne, numBifurcation, stops
+    private final String[] line = new String[JunctionsFormat.NUMBER_COLUMNS]; // 4 colonnes : nomLigne, typeLigne, numBifurcation, stops
 
     public CSVStreamProviderForJunctions(Map<String, TraceEntry> traces) {
         this.tracesIterator = traces.entrySet().iterator();
@@ -34,10 +35,9 @@ public class CSVStreamProviderForJunctions implements Supplier<String[]> {
                         .map(StopEntry::getStopName)
                         .collect(Collectors.joining(";"));
 
-                line[0] = currentLineName;
-                line[1] = currentLineType;
-                line[2] = bifurcationNumber;
-                line[3] = "[" + stopsString + "]";
+                line[JunctionsFormat.LINE_ID] = currentLineID;
+                line[JunctionsFormat.VARIANT_INDEX] = bifurcationNumber;
+                line[JunctionsFormat.LIST_INDEX] = "[" + stopsString + "]";
 
                 return line;
             } else if (!advanceToNextValidTrace()) {
@@ -53,8 +53,7 @@ public class CSVStreamProviderForJunctions implements Supplier<String[]> {
     private boolean advanceToNextValidTrace() {
         while (tracesIterator.hasNext()) {
             Map.Entry<String, TraceEntry> traceEntry = tracesIterator.next();
-            currentLineName = traceEntry.getValue().getLineName();
-            currentLineType = traceEntry.getValue().getLineType(); 
+            currentLineID = traceEntry.getValue().getLineId();
             pathsIterator = traceEntry.getValue().getPaths().entrySet().iterator(); // Initialise le deuxième itérateur
 
             if (pathsIterator.hasNext()) {
