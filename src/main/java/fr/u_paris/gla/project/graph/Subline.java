@@ -24,6 +24,10 @@ public class Subline {
         this.listOfStops = listOfStops;
     }
     
+    public ArrayList<Stop> getListOfStops(){
+        return this.listOfStops;
+    }
+
     //Stop should be the departure Stop. 
     public void addDepartureTimes(Stop Stop, ArrayList<LocalTime> departureTimes) throws Exception{
         if(!Stop.equals(listOfStops.get(0))){
@@ -35,6 +39,10 @@ public class Subline {
     @Override
     public String toString(){
         return "\nSubline : " + name  + " " + listOfStops.toString();
+    }
+
+    public String getName(){
+        return this.name;
     }
 }
 

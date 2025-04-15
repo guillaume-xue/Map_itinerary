@@ -7,8 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
-import org.apache.commons.lang3.tuple.MutablePair;
-
+import fr.u_paris.gla.project.utils.Pair; 
 
 public class Stop implements Comparable<Stop>{
 
@@ -23,7 +22,7 @@ public class Stop implements Comparable<Stop>{
 
 
     //A list of all adjacent stations, with the associated time and distance to get from current station to adjacent station. 
-    private HashMap<Stop, MutablePair<Duration, Float>> timeDistancePerAdjacentStop = new HashMap<>();
+    private HashMap<Stop, Pair<Duration, Float>> timeDistancePerAdjacentStop = new HashMap<>();
 
     //For each subline that passes through this station, it should have an entry here
     /*if this station is not a departure station, 
@@ -66,12 +65,16 @@ public class Stop implements Comparable<Stop>{
     }
 
     public void addAdjacentStop(Stop adjacentStop, Duration timeToNextStation, Float distanceToNextStation){
-        timeDistancePerAdjacentStop.put(adjacentStop, new MutablePair<>(timeToNextStation, distanceToNextStation));
+        timeDistancePerAdjacentStop.put(adjacentStop, new Pair<>(timeToNextStation, distanceToNextStation));
     }
 
     public void addDeparture(Subline subline, ArrayList<LocalTime> times){
         departures.put(subline, times);
     }
+
+    // public void addDeparture(Subline subline, LocalTime time){
+    //     departures.putIfAbsent(subline,)
+    // }
 
     public double distanceBetweenAdjacentStop(Stop stop) {
         return Math.abs(this.latitude - stop.latitude) + Math.abs(this.longitude - stop.longitude);
@@ -81,7 +84,7 @@ public class Stop implements Comparable<Stop>{
         return new ArrayList<>(timeDistancePerAdjacentStop.keySet());
     }
 
-    public HashMap<Stop, MutablePair<Duration, Float>> getTimeDistancePerAdjacentStop(){
+    public HashMap<Stop, Pair<Duration, Float>> getTimeDistancePerAdjacentStop(){
         return this.timeDistancePerAdjacentStop;
     }
 
@@ -153,18 +156,18 @@ public class Stop implements Comparable<Stop>{
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
+    public boolean equals(Object o) {
+        if (this == o)
             return true;
-        if (obj == null)
+        if (o == null)
             return false;
-        if (getClass() != obj.getClass())
+        if (getClass() != o.getClass())
             return false;
-        Stop other = (Stop) obj;
-        return Double.doubleToLongBits(latitude) == Double
-                .doubleToLongBits(other.latitude) && Objects.equals(nameOfAssociatedStation, other.nameOfAssociatedStation)
-                && Double.doubleToLongBits(longitude) == Double
-                        .doubleToLongBits(other.longitude);
+        Stop other = (Stop) o;
+        return 
+            Double.doubleToLongBits(latitude) == Double.doubleToLongBits(other.latitude) && 
+            Objects.equals(nameOfAssociatedStation, other.nameOfAssociatedStation) && 
+            Double.doubleToLongBits(longitude) == Double.doubleToLongBits(other.longitude);
     }
 
     //TODO: test this ( or use utils.GPS.distance method )

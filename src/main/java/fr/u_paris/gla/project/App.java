@@ -1,5 +1,7 @@
 package fr.u_paris.gla.project;
 
+import java.util.Objects;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -97,10 +99,13 @@ public class App {
     }
 
     public static void launchParser(String[] args) {
-        if ( args.length != 3 ){
+        if ( args.length < 4 ){
             errorLog("parser","Missing inputs files");
             return;
+        } else if ( args.length > 4 ){
+            errorLog("parser", "Wrong arguments");
         }
+        
         CSVExtractor.makeOjectsFromCSV(args);
     }
 }

@@ -47,12 +47,38 @@ public class Graph {
         throw new Exception(String.format("Line was not found with name %s", name));
     }
 
+    public ArrayList<Stop> getListOfStops(){
+        return this.listOfStops;
+    }
+
     @Override
     public String toString(){
         return "--- List of Stops: ---\n" +
         listOfStops.toString() + 
         "\n--- List of Lines: ---\n" +
         listOfLines.toString();
+    }
+
+    public String statsToString(){
+        int sublinesCpt = 0;
+        int emptySublinesCpt = 0;
+        for ( Line line  : listOfLines ) {
+            sublinesCpt += line.getListOfSublines().size();
+            for ( Subline subline : line.getListOfSublines() ){
+                if ( subline.getListOfStops().size() == 0 ) emptySublinesCpt++;
+            }
+        }
+
+        return "\n--- Graph stats ---\n" +
+        "\nNombre de quais uniques: " + 
+        listOfStops.size() +
+        "\nNombre de lignes: " + 
+        listOfLines.size() +
+        "\nNombre de sous-lignes: " + 
+        sublinesCpt +
+        "\nNombre de sous-lignes vides: " +
+        emptySublinesCpt +
+        "\n\n-------------------\n";
     }
 }
 
