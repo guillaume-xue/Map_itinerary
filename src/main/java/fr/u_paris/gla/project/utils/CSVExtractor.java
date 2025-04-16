@@ -147,6 +147,16 @@ public final class CSVExtractor {
         LOGGER.info("Objects parsing finished: Graph done");
 
         System.out.println(graph.statsToString());
+        
+        //pour vérifier comment les horaires sont ajoutés
+        try {
+        	Stop stop = graph.getClosestStop(48.887424510518066, 2.3256869607667356);
+            stop.showTimeDistancePerAdjacentStop();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        
 
         return graph;
     }

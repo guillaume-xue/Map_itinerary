@@ -4,11 +4,14 @@ import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 
 //import fr.u_paris.gla.project.utils.Pair;
 import org.apache.commons.lang3.tuple.Pair;
 import fr.u_paris.gla.project.utils.GPS;
+import fr.u_paris.gla.project.io.UpgradedNetworkFormat;
 
 
 public class Stop implements Comparable<Stop>{
@@ -108,6 +111,24 @@ public class Stop implements Comparable<Stop>{
     }
 
 
+    public void showTimeDistancePerAdjacentStop() {
+    	System.out.println(this.nameOfAssociatedStation);
+        for (Map.Entry<Stop, Pair<Duration, Float>> entry : timeDistancePerAdjacentStop.entrySet()) {
+            Stop adjacentStop = entry.getKey();
+            Pair<Duration, Float> data = entry.getValue();
+
+            Duration duration = data.getLeft();
+            Float distance = data.getRight();
+
+            System.out.println(adjacentStop.getNameOfAssociatedStation() + " - Durée: " + 
+            UpgradedNetworkFormat.formatDuration(duration) + " min - Distance: " + distance + " m");
+        }
+    }
+
+    /*public boolean isNextStopWithoutTransfer(Stop next) {
+    	
+    }*/
+    
 
     public double getF(){
         return f;
