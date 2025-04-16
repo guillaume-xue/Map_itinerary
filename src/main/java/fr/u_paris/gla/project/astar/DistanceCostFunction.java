@@ -7,6 +7,14 @@ import fr.u_paris.gla.project.graph.Stop;
 public class DistanceCostFunction implements CostFunction {
     @Override
     public double costBetween(Stop from, Stop to) {
-        return from.getDistanceTo(to); 
+        try {
+            if (from == null || to == null) {
+                throw new IllegalArgumentException("Stops cannot be null");
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+            return Double.POSITIVE_INFINITY;
+        }
+        return from.getDistanceTo(to);
     }
 }
