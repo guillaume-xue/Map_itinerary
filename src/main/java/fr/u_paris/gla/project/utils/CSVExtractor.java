@@ -152,6 +152,9 @@ public final class CSVExtractor {
         try {
         	Stop stop = graph.getClosestStop(48.887424510518066, 2.3256869607667356);
             stop.showTimeDistancePerAdjacentStop();
+            LocalTime heureDepart = LocalTime.of(19, 38);
+            //LocalTime heureDepart = LocalTime.now();
+            stop.showNextStopsArrivalTime(heureDepart);
         } catch (Exception e) {
             e.printStackTrace();
         }

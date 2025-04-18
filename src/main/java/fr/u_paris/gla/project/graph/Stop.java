@@ -5,6 +5,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.Objects;
 
@@ -12,6 +14,7 @@ import java.util.Objects;
 import org.apache.commons.lang3.tuple.Pair;
 import fr.u_paris.gla.project.utils.GPS;
 import fr.u_paris.gla.project.io.UpgradedNetworkFormat;
+import java.util.PriorityQueue;
 
 
 public class Stop implements Comparable<Stop>{
@@ -102,12 +105,23 @@ public class Stop implements Comparable<Stop>{
 
     
     //à voir pour toutes les stations adjacentes mais qui sont adjacentes à pied car la durée est pas init je crois
-    public Duration getTimeTo(Stop otherStop) {
+    /*public Duration getTimeTo(Stop otherStop) {
         Pair<Duration, Float> data = timeDistancePerAdjacentStop.get(otherStop);
         if (data != null) {
             return data.getLeft(); // Retourne la durée 
         }
         return Duration.ofHours(9999); // Arrêt non voisin, retourner une durée maximale
+    }*/
+    
+    public Duration getTimeTo(Stop to, LocalTime departTime) {
+    	ArrayList<Pair<Stop, LocalTime>> nextStops = this.giveNextStopsArrivalTime(departTime);
+
+        for (Pair<Stop, LocalTime> pair : nextStops) {
+            if (pair.getLeft().equals(to)) {
+                return Duration.between(departTime, pair.getRight()); // coût = durée
+            }
+        }
+        return Duration.ofHours(9999);
     }
 
 
@@ -125,10 +139,67 @@ public class Stop implements Comparable<Stop>{
         }
     }
 
-    /*public boolean isNextStopWithoutTransfer(Stop next) {
-    	
-    }*/
+    /*en disant qu'on est au stop this au moment departTime alors ça nous dis à quelle 
+    heure on pourra et devra être au stop suivant
+    cad que si c'est un trajet à pied on aura la plus petite heure du depart du prochain 
+    train telle que departTime + tempsTransfert < heureRenvoyee
+    et si c'est un trajet en train alors ça donne l'horaire auquel le prochain train qui 
+    va à la station suivante arrivera là-bas
+    */
+    public ArrayList<Pair<Stop, LocalTime>> giveNextStopsArrivalTime(LocalTime departTime) {
+    	ArrayList<Pair<Stop, LocalTime>> result = new ArrayList<>();
+        Set<Stop> alreadyProcessed = new HashSet<>(); // Pour éviter les doublons
+
+        // 1. Cas des trajets en train
+        for (Map.Entry<Subline, ArrayList<LocalTime>> entry : departures.entrySet()) {
+            Subline subline = entry.getKey();
+            ArrayList<LocalTime> departureTimes = entry.getValue();
+            ArrayList<Stop> stops = subline.getListOfStops();
+
+            //on récupere les stops suivants depuis les sublines qui passent par le quai this
+            for (int i = 0; i < stops.size() - 1; i++) {
+                if (stops.get(i).equals(this)) {
+                    Stop nextStop = stops.get(i + 1);
+                    Pair<Duration, Float> timeDist = timeDistancePerAdjacentStop.get(nextStop);
+
+                    if (timeDist != null) {
+                        Duration travelTime = timeDist.getLeft();
+
+                        for (LocalTime departure : departureTimes) {
+                        	//on ajoute à result le premier horaire qui remplit les conditions
+                            if (!departure.isBefore(departTime.plus(travelTime))) {
+                                result.add(Pair.of(nextStop, departure));
+                                alreadyProcessed.add(nextStop);
+                                break;
+                            }
+                        }
+                    }
+                    break; 
+                }
+            }
+        }
+
+        // 2. Cas des trajets à pied
+        for (Map.Entry<Stop, Pair<Duration, Float>> entry : timeDistancePerAdjacentStop.entrySet()) {
+            Stop nextStop = entry.getKey();
+            if (!alreadyProcessed.contains(nextStop)) {
+                Duration travelTime = entry.getValue().getLeft();
+                LocalTime arrivalTime = departTime.plus(travelTime);
+                result.add(Pair.of(nextStop, arrivalTime));
+            }
+        }
+
+        return result;
+    }
     
+    
+    public void showNextStopsArrivalTime(LocalTime depart) {
+    	ArrayList<Pair<Stop, LocalTime>> result = giveNextStopsArrivalTime(depart);
+    	for (Pair<Stop, LocalTime> p : result) {
+    	    System.out.println("Prochain stop : " + p.getLeft().getNameOfAssociatedStation()
+    	        + " à " + p.getRight());
+    	}
+    }
 
     public double getF(){
         return f;

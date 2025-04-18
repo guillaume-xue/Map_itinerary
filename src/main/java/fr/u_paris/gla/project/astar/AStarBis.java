@@ -7,80 +7,145 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.PriorityQueue;
-
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 
+import org.apache.commons.lang3.tuple.Pair;
+import java.time.LocalTime;
+
 public class AStarBis {
+	//c'est dans costFunction qu'on décide de choisir un cout entre deux stop en distance ou en durée
 	 private final CostFunction costFunction;
 
 	    public AStarBis(CostFunction costFunction) {
 	        this.costFunction = costFunction;
 	    }
-
-	    public ArrayList<Stop> findShortestPath(Stop start, Stop goal) {
-	        PriorityQueue<Stop> openSet = new PriorityQueue<>();
-	        Set<Stop> closedSet = new HashSet<>();
-	        Set<Stop> visitedStops = new HashSet<>(); // pour reset les f,g,h des noeuds
-
-	        start.setG(0);
-	        start.setH(start.calculateDistance(goal)); 
-	        start.setF();
-	        openSet.add(start);
-	        visitedStops.add(start);
-
-	        while (!openSet.isEmpty()) {
-	            Stop current = openSet.poll();
-
-	            if (current.equals(goal)) {
-	            	ArrayList<Stop> path = reconstructPath(current);
-	            	resetStopsForNextSearch(visitedStops);
-	                return path;
-	            }
-
-	            closedSet.add(current);
-
-	            for (Stop neighbor : current.getAdjacentStops()) {
-	                if (closedSet.contains(neighbor)) continue;
-
-	                double tentativeG = current.getG() + costFunction.costBetween(current, neighbor);
-
-	                if (tentativeG < neighbor.getG()) {
-	                    neighbor.setCameFrom(current);
-	                    neighbor.setG(tentativeG);
-	                    neighbor.setH(neighbor.calculateDistance(goal)); 
-	                    neighbor.setF();
-
-	                    if (!openSet.contains(neighbor)) {
-	                        openSet.add(neighbor);
-	                    }
-	                    visitedStops.add(neighbor);
-	                }
-	            }
-	        }
-	        // si aucun chemin trouvé → on reset quand même les noeuds visités
-	       	resetStopsForNextSearch(visitedStops);
-	        return new ArrayList<>(); // Pas de chemin trouvé
-	    }
-
-	     
-	    private void resetStopsForNextSearch(Set<Stop> visitedStops) {
-	    	for (Stop stop : visitedStops) {
-	            stop.setG(Double.POSITIVE_INFINITY);
-	            stop.setH(Double.POSITIVE_INFINITY);
-	            stop.setF();
-	            stop.setCameFrom(null);
-	        }
-	    }
-	    
-	    private ArrayList<Stop> reconstructPath(Stop current) {
+	
+	    /* si tt continue à bien fonctionner on pourra jeter ça
+	     * private ArrayList<Stop> reconstructPath1(TraversalNode node) {
 	        ArrayList<Stop> path = new ArrayList<>();
-	        while (current != null) {
-	            path.add(current);
-	            current = current.getCameFrom();
+	        while (node != null) {
+	            path.add(node.getStop());
+	            node = node.getCameFrom();
 	        }
 	        Collections.reverse(path);
 	        return path;
 	    }
-	
+	    
+	    //v1 sans les horaires -> on va finir par pouvoir la jeter
+	    public ArrayList<Stop> findShortestPath(Stop start, Stop goal) {
+	        PriorityQueue<TraversalNode> openSet = new PriorityQueue<>();
+	        Set<Stop> closedSet = new HashSet<>();
+	        //les traversalNode seront instanciés que si on a besoin d'eux et 
+	        //au moment du return ils sont nettoyés par le garbage collector (apres la reconstruction du chemin)
+	        Map<Stop, TraversalNode> nodeMap = new HashMap<>();
+
+	        // Création du node de départ
+	        TraversalNode startNode = new TraversalNode(start);
+	        startNode.setG(0);
+	        startNode.setH(start.calculateDistance(goal));
+	        startNode.updateF();
+	        nodeMap.put(start, startNode);
+	        openSet.add(startNode);
+
+	        while (!openSet.isEmpty()) {
+	            TraversalNode currentNode = openSet.poll();
+	            Stop currentStop = currentNode.getStop();
+
+	            if (currentStop.equals(goal)) {
+	                return reconstructPath1(currentNode);
+	            }
+
+	            closedSet.add(currentStop);
+
+	            for (Stop neighborStop : currentStop.getAdjacentStops()) {
+	                if (closedSet.contains(neighborStop)) continue;
+
+	                // Récupère ou crée le node du voisin
+	                TraversalNode neighborNode = nodeMap.computeIfAbsent(neighborStop, stop -> new TraversalNode(stop));
+
+	                double tentativeG = currentNode.getG() + costFunction.costBetween(currentStop, neighborStop);
+
+	                if (tentativeG < neighborNode.getG()) {
+	                    neighborNode.setCameFrom(currentNode);
+	                    neighborNode.setG(tentativeG);
+	                    neighborNode.setH(neighborStop.calculateDistance(goal));
+	                    neighborNode.updateF();
+
+	                    if (!openSet.contains(neighborNode)) {
+	                        openSet.add(neighborNode);
+	                    }
+	                }
+	            }
+	        }
+
+	        return new ArrayList<>(); // Pas de chemin trouvé
+	    }*/
+
+	    private ArrayList<Pair<Stop, LocalTime>> reconstructPath2(TraversalNode node) {
+	        ArrayList<Pair<Stop, LocalTime>> path = new ArrayList<>();
+	        while (node != null) {
+	            path.add(Pair.of(node.getStop(), node.getArrivalTime()));
+	            node = node.getCameFrom();
+	        }
+	        Collections.reverse(path);
+	        return path;
+	    }
+	    
+	    //donne les horaires en plus de la liste de stops
+	    public ArrayList<Pair<Stop, LocalTime>> findShortestPath(Stop start, Stop goal, LocalTime startTime) {
+	        PriorityQueue<TraversalNode> openSet = new PriorityQueue<>();
+	        Set<Stop> closedSet = new HashSet<>();
+	        Map<Stop, TraversalNode> nodeMap = new HashMap<>();
+
+	        TraversalNode startNode = new TraversalNode(start);
+	        startNode.setG(0);
+	        startNode.setH(start.calculateDistance(goal));
+	        startNode.updateF();
+	        startNode.setArrivalTime(startTime);
+	        nodeMap.put(start, startNode);
+	        openSet.add(startNode);
+
+	        while (!openSet.isEmpty()) {
+	            TraversalNode currentNode = openSet.poll();
+	            Stop currentStop = currentNode.getStop();
+
+	            if (currentStop.equals(goal)) {
+	                return reconstructPath2(currentNode);
+	            }
+
+	            closedSet.add(currentStop);
+
+	            for (Pair<Stop, LocalTime> next : currentStop.giveNextStopsArrivalTime(currentNode.getArrivalTime())) {
+	                Stop neighborStop = next.getLeft();
+	                LocalTime arrivalTimeAtNeighbor = next.getRight();
+
+	                if (closedSet.contains(neighborStop)) continue;
+
+	                TraversalNode neighborNode = nodeMap.computeIfAbsent(neighborStop, stop -> new TraversalNode(stop));
+
+	                
+	                double tentativeG = currentNode.getG() +
+	                	    costFunction.costBetween(currentStop, neighborStop, currentNode.getArrivalTime());
+
+	                if (tentativeG < neighborNode.getG()) {
+	                    neighborNode.setCameFrom(currentNode);
+	                    neighborNode.setG(tentativeG);
+	                    neighborNode.setH(neighborStop.calculateDistance(goal));
+	                    neighborNode.updateF();
+	                    neighborNode.setArrivalTime(arrivalTimeAtNeighbor);
+
+	                    if (!openSet.contains(neighborNode)) {
+	                        openSet.add(neighborNode);
+	                    }
+	                }
+	            }
+	        }
+
+	        return new ArrayList<>();
+	    }
+
+	   
 }

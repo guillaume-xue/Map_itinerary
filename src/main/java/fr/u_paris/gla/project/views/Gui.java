@@ -15,6 +15,7 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.time.LocalTime;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -48,6 +49,7 @@ import fr.u_paris.gla.project.utils.CSVExtractor;
 import fr.u_paris.gla.project.astar.CostFunction;
 import fr.u_paris.gla.project.astar.CostFunctionFactory;
 import fr.u_paris.gla.project.astar.AStarBis;
+import org.apache.commons.lang3.tuple.Pair;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -394,8 +396,8 @@ public class Gui extends JFrame {
     
     //avec version astar2 où ou peut choisir si on veut le chemin le plus court en duree ou distance
     //faudra appeler qu'un des choix en fonction de ce que l'utilisateur demande
-    CostFunction costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DISTANCE);
-    //CostFunction costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DURATION);
+    //CostFunction costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DISTANCE);
+    CostFunction costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DURATION);
     AStarBis astar = new AStarBis(costFunction);
 
     buttonSearch.addActionListener(e -> {
@@ -448,12 +450,13 @@ public class Gui extends JFrame {
           ArrayList<Stop> stops = astar.findPath();*/
 
           //v2 astar
-          ArrayList<Stop> stops = astar.findShortestPath(stopA, stopB);
-          
+          LocalTime heureDepart = LocalTime.of(19, 38);
+          ArrayList<Pair<Stop, LocalTime>> stopsAndTimes = astar.findShortestPath(stopA, stopB, heureDepart);
+          printPathWithTimes(stopsAndTimes);
           
 
           // Display the path on the map
-          contentPanel.add(displayPath(stops));
+          contentPanel.add(displayPath(stopsAndTimes));
           contentPanel.add(new JPanel());
           contentPanel.revalidate();
           contentPanel.repaint();
@@ -469,20 +472,35 @@ public class Gui extends JFrame {
 
     return buttonSearch;
   }
+  
+  //la fonction c'est juste en attendant qu'on ait les affichages avec horaire ds l'app et c'est pour debugger
+  public static void printPathWithTimes(ArrayList<Pair<Stop, LocalTime>> stopsAndTimes) {
+	    if (stopsAndTimes == null || stopsAndTimes.isEmpty()) {
+	        System.out.println("Aucun chemin trouvé.");
+	        return;
+	    }
 
+	    System.out.println("Chemin trouvé :");
+	    for (Pair<Stop, LocalTime> pair : stopsAndTimes) {
+	        Stop stop = pair.getLeft();
+	        LocalTime time = pair.getRight();
+	        System.out.println(" -> " + stop.getNameOfAssociatedStation() + " à " + time);
+	    }
+	}
+  
   /**
    * Reads and displays the contents of a .txt file in a formatted panel.
    * 
    * @return the panel containing the text content
    */
-  private JPanel displayPath(ArrayList<Stop> stops) {
+  private JPanel displayPath(ArrayList<Pair<Stop, LocalTime>> stopsAndTimes) {
     JPanel pathPanel = new JPanel();
     pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
     pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
     pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
 
     // initialize the first stop
-    Stop stop = stops.get(0);
+    Stop stop = stopsAndTimes.get(0).getLeft();
     JTextArea stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
     pathPanel.add(stopTextArea);
     Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
@@ -491,8 +509,8 @@ public class Gui extends JFrame {
     mapViewer.addMapMarker(parisMarker);
 
     // draw the path and add TextAreas for each stop
-    for (int i = 1; i < stops.size(); i++) {
-      stop = stops.get(i);
+    for (int i = 1; i < stopsAndTimes.size(); i++) {
+      stop = stopsAndTimes.get(i).getLeft();
       // add TextArea for the stop
       stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
       pathPanel.add(stopTextArea);
