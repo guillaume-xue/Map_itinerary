@@ -8,13 +8,17 @@ import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
 import java.awt.*;
+import java.lang.reflect.Array;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 
 import java.util.ArrayList;
 
+import fr.u_paris.gla.project.graph.Graph;
+import fr.u_paris.gla.project.graph.Line;
 import fr.u_paris.gla.project.graph.Stop;
+import fr.u_paris.gla.project.graph.Subline;
 
 public class Gui extends JFrame {
 
@@ -50,6 +54,18 @@ public class Gui extends JFrame {
    * Initializes the GUI components.
    */
   private void init() {
+    // Create a menu bar
+    JMenuBar menuBar = new JMenuBar();
+    JMenu viewMenu = new JMenu("View");
+    JMenuItem busMenu = new JMenuItem("Bus");
+    JMenuItem metroMenu = new JMenuItem("Metro");
+    JMenuItem allMenu = new JMenuItem("All Lines");
+    viewMenu.add(busMenu);
+    viewMenu.add(metroMenu);
+    viewMenu.addSeparator(); // Add a separator between the two menu items
+    viewMenu.add(allMenu);
+    menuBar.add(viewMenu);
+    this.setJMenuBar(menuBar);
 
     // Create text areas for the start and end
     this.textStart = createTextAreaInput("From");
@@ -116,6 +132,29 @@ public class Gui extends JFrame {
     mainContentPanel.add(mapPanel, BorderLayout.CENTER);
 
     add(mainContentPanel);
+  }
+
+  /**
+   * Toggles the checkmark icon on the given menu item.
+   * 
+   * @param menuItem the menu item to toggle
+   */
+  public void toggleCheckmark(JMenuItem menuItem) {
+    if (menuItem.getIcon() == null) {
+      menuItem.setIcon(UIManager.getIcon("CheckBox.icon"));
+    } else {
+      menuItem.setIcon(null);
+    }
+  }
+
+  /**
+   * Checks if the given menu item has the checkmark icon enabled.
+   * 
+   * @param menuItem the menu item to check
+   * @return true if the checkmark icon is enabled, false otherwise
+   */
+  public boolean isCheckmarkEnabled(JMenuItem menuItem) {
+    return menuItem.getIcon() != null;
   }
 
   // Custom rounded border class
@@ -237,6 +276,50 @@ public class Gui extends JFrame {
   }
 
   /**
+   * Displays all bus stops on the map.
+   * 
+   * @param graph the graph containing the bus stops
+   */
+  public void viewLine(Graph graph, String type) {
+    mapViewer.removeAllMapMarkers();
+    mapViewer.removeAllMapPolygons();
+    ArrayList<Line> tmp = new ArrayList<>();
+    ArrayList<Subline> tmpSub = new ArrayList<>();
+    ArrayList<Stop> tmpStop = new ArrayList<>();
+    for (Line line : graph.getListOfLines()) {
+      if (tmp.contains(line) || !line.getType().equals(type)) {
+        continue;
+      }
+      tmp.add(line);
+      for (Subline subline : line.getListOfSublines()) {
+        if (tmpSub.contains(subline)) {
+          continue;
+        }
+        for (Stop stop : subline.getListOfStops()) {
+          if (tmpStop.contains(stop)) {
+            continue;
+          }
+          tmpStop.add(stop);
+          Coordinate coord = new Coordinate(stop.getLongitude(), stop.getLatitude());
+          MapMarkerDot marker = new MapMarkerDot(coord);
+          mapViewer.addMapMarker(marker);
+        }
+      }
+    }
+    mapViewer.setDisplayPosition(new Coordinate(48.8566, 2.3522), 10);
+    mapViewer.repaint();
+  }
+
+  /**
+   * Clears all markers and polygons from the map.
+   */
+  public void cleanMap() {
+    mapViewer.removeAllMapMarkers();
+    mapViewer.removeAllMapPolygons();
+    mapViewer.repaint();
+  }
+
+  /**
    * Reads and displays the contents of a .txt file in a formatted panel.
    * 
    * @return the panel containing the text content
@@ -279,6 +362,27 @@ public class Gui extends JFrame {
    */
   public void launch() {
     setVisible(true);
+  }
+
+  /**
+   * Gets the menu bar item at the specified index.
+   * 
+   * @return the menu bar item
+   */
+  public JMenuItem getMenuItem(int menuIndex, int itemIndex) {
+    JMenuBar menuBar = this.getJMenuBar();
+    if (menuBar == null || menuIndex < 0 || menuIndex >= menuBar.getMenuCount()) {
+      System.err.println("Invalid menu index: " + menuIndex);
+      return null;
+    }
+
+    JMenu menu = menuBar.getMenu(menuIndex);
+    if (menu == null || itemIndex < 0 || itemIndex >= menu.getItemCount()) {
+      System.err.println("Invalid item index: " + itemIndex + " in menu: " + menuIndex);
+      return null;
+    }
+
+    return menu.getItem(itemIndex);
   }
 
   /**
