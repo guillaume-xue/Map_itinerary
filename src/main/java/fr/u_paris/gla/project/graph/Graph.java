@@ -47,6 +47,14 @@ public class Graph {
         throw new Exception(String.format("Line was not found with name %s", name));
     }
 
+    public void addStop(Stop stopA) {
+        if ( !listOfStops.contains(stopA) ) {
+            listOfStops.add(stopA);
+        } else {
+            System.out.println("Stop already exists in the graph.");
+        }
+    }
+
     public ArrayList<Stop> getListOfStops(){
         return this.listOfStops;
     }
@@ -86,5 +94,7 @@ public class Graph {
         scheduleCpt +
         "\n\n-------------------\n";
     }
+
+
 }
 
