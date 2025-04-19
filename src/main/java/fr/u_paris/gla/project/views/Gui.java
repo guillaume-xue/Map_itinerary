@@ -59,11 +59,8 @@ public class Gui extends JFrame {
     JMenu viewMenu = new JMenu("View");
     JMenuItem busMenu = new JMenuItem("Bus");
     JMenuItem metroMenu = new JMenuItem("Metro");
-    JMenuItem allMenu = new JMenuItem("All Lines");
     viewMenu.add(busMenu);
     viewMenu.add(metroMenu);
-    viewMenu.addSeparator(); // Add a separator between the two menu items
-    viewMenu.add(allMenu);
     menuBar.add(viewMenu);
     this.setJMenuBar(menuBar);
 
@@ -283,26 +280,36 @@ public class Gui extends JFrame {
   public void viewLine(Graph graph, String type) {
     mapViewer.removeAllMapMarkers();
     mapViewer.removeAllMapPolygons();
-    ArrayList<Line> tmp = new ArrayList<>();
-    ArrayList<Subline> tmpSub = new ArrayList<>();
-    ArrayList<Stop> tmpStop = new ArrayList<>();
+    ArrayList<Line> tmpLine = new ArrayList<>();
+    ArrayList<Subline> tmpLineSub = new ArrayList<>();
+    ArrayList<Stop> tmpLineStop = new ArrayList<>();
     for (Line line : graph.getListOfLines()) {
-      if (tmp.contains(line) || !line.getType().equals(type)) {
+      if (tmpLine.contains(line) || !line.getType().equals(type)) {
         continue;
       }
-      tmp.add(line);
+      tmpLine.add(line);
       for (Subline subline : line.getListOfSublines()) {
-        if (tmpSub.contains(subline)) {
+        if (tmpLineSub.contains(subline)) {
           continue;
         }
         for (Stop stop : subline.getListOfStops()) {
-          if (tmpStop.contains(stop)) {
+          if (tmpLineStop.contains(stop)) {
             continue;
           }
-          tmpStop.add(stop);
+          tmpLineStop.add(stop);
           Coordinate coord = new Coordinate(stop.getLongitude(), stop.getLatitude());
           MapMarkerDot marker = new MapMarkerDot(coord);
           mapViewer.addMapMarker(marker);
+        }
+      }
+    }
+    for (Stop stop : tmpLineStop) {
+      for (Stop adjacentStop : stop.getAdjacentStops()) {
+        if (tmpLineStop.contains(adjacentStop)) {
+          Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
+          Coordinate mEnd = new Coordinate(adjacentStop.getLongitude(), adjacentStop.getLatitude());
+          MapPolygon mLine = new MapPolygonImpl(mStart, mEnd, mStart);
+          mapViewer.addMapPolygon(mLine);
         }
       }
     }
