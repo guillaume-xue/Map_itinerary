@@ -48,7 +48,11 @@ public class App {
         }
     }
 
-    /** @param out */
+    /**
+     * Prints application infos.
+     *
+     * @param      out   The out stream
+     */
     public static void printAppInfos(PrintStream out) {
         Properties props = readApplicationProperties();
 
@@ -57,19 +61,29 @@ public class App {
         out.println("By: " + props.getProperty("app.team", UNSPECIFIED)); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    /**
+     * Loads and returns the application properties.
+     *
+     * @return     a Properties object containing application information
+     */
     private static Properties readApplicationProperties() {
         Properties props = new Properties();
         try (InputStream is = App.class.getResourceAsStream("application.properties")) { //$NON-NLS-1$
             props.load(is);
         } catch (IOException e) {
-            throw new RuntimeException("Unable to read application informations", e); //$NON-NLS-1$
+            throw new RuntimeException("Unable to read application information", e); //$NON-NLS-1$
         }
         return props;
     }
 
+    /**
+     * Logs error messages based on the provided command and log context.
+     *
+     * @param      command  The string representation of the command
+     * @param      log      The log from the context
+     */
     public static void errorLog(String command, String log) {
 
-        // TODO ? Remplacer les System.out.prinln par un Logger
         switch (command) {
             case "parser":
                 System.out.println("Error: Invalid command line for objects parser. " + log + ".");
@@ -77,7 +91,6 @@ public class App {
                 break;
             case "generator":
                 System.out.println("Error: Invalid command line for IDFM parser. " + log + ".");
-                // FIXME
                 System.out.println("Usage: --createfiles mapData.csv junctionsData.csv Schedule/");
                 break;
             default:
@@ -86,6 +99,11 @@ public class App {
         }
     }
 
+    /**
+     * Main entry point for IDFM network Extractor.
+     *
+     * @param      args  The arguments, expects length 3, two target files and a directory
+     */
     public static void launchMakingFilesParser(String[] args) {
         if (args.length != 3) {
             errorLog("generator", "Needs two target files and a target directory.");
@@ -94,6 +112,11 @@ public class App {
         IDFMNetworkExtractor.parse(args);
     }
 
+    /**
+     * Main entry point for objects parser.
+     *
+     * @param      args  The arguments, expects length 3, the command and two target files
+     */
     public static void launchParser(String[] args) {
         if (args.length != 3) {
             errorLog("parser", "Missing inputs files");
