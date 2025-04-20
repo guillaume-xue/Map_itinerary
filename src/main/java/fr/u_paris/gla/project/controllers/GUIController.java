@@ -2,7 +2,6 @@ package fr.u_paris.gla.project.controllers;
 
 import java.util.ArrayList;
 
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -24,7 +23,6 @@ import fr.u_paris.gla.project.views.Gui;
 public class GUIController {
 
   private Gui gui;
-  private Graph graph;
 
   /**
    * Constructor for GUIController.
@@ -34,47 +32,13 @@ public class GUIController {
     SwingUtilities.invokeLater(() -> {
       // Create the main window
       this.gui = new Gui();
-      // init Controllers
       new KeyboardController(gui.getTextStart());
       new KeyboardController(gui.getTextEnd());
       new MouseController(gui.getMapViewer(), gui.getTextStart(), gui.getTextEnd());
-      // init Graph class
-      String[] args = { "--parse", "mapData.csv", "junctionsData.csv" };
-      this.graph = CSVExtractor.makeOjectsFromCSV(args);
-      // init Listenners
       initFocusListenerToTextArea();
       initActionListenner();
-      // init Menu bar
-      initMenuBar();
-      // Set the visibility to true
       this.gui.launch();
-      // Check the internet connection.
-      if (!isInternetAvailable()) {
-        JOptionPane.showMessageDialog(this.gui,
-            "Aucune connexion Internet détectée. Veuillez vérifier votre connexion.",
-            "Erreur de connexion",
-            JOptionPane.ERROR_MESSAGE);
-      }
     });
-  }
-
-  /**
-   * Checks if there is an active internet connection.
-   * 
-   * @return true if connected, false otherwise
-   */
-  private boolean isInternetAvailable() {
-    try {
-      OkHttpClient client = new OkHttpClient();
-      Request request = new Request.Builder()
-          .url("http://www.google.com")
-          .build();
-      try (Response response = client.newCall(request).execute()) {
-        return response.isSuccessful();
-      }
-    } catch (Exception e) {
-      return false;
-    }
   }
 
   /**
@@ -187,6 +151,10 @@ public class GUIController {
         return;
       }
 
+      // Add action listener to add displayJsonContent to contentPanel
+      // FIXME ASAP
+      String[] args = { "--parse", "mapData.csv", "junctionsData.csv" };
+      Graph graph = CSVExtractor.makeOjectsFromCSV(args);
       AStar astar = new AStar(graph);
 
       gui.getContentPanel().removeAll();
@@ -247,32 +215,6 @@ public class GUIController {
         JOptionPane.showMessageDialog(this.gui, "Impossible de trouver les coordonnées pour l'une des adresses.",
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
-      }
-    });
-  }
-
-  /**
-   * Initializes the menu bar with action listeners for metro and bus options.
-   * Toggles the checkmark icons when selected.
-   */
-  private void initMenuBar() {
-    // Add action listeners to toggle checkmark icons
-    JMenuItem busMenuItem = gui.getMenuItem(0, 0);
-    busMenuItem.addActionListener(e -> {
-      gui.toggleCheckmark(busMenuItem);
-      if (gui.isCheckmarkEnabled(busMenuItem)) {
-        gui.viewLine(graph, "Bus");
-      } else {
-        gui.cleanMap();
-      }
-    });
-    JMenuItem metroMenuItem = gui.getMenuItem(0, 1);
-    metroMenuItem.addActionListener(e -> {
-      gui.toggleCheckmark(metroMenuItem);
-      if (gui.isCheckmarkEnabled(metroMenuItem)) {
-        gui.viewLine(graph, "Subway");
-      } else {
-        gui.cleanMap();
       }
     });
   }
