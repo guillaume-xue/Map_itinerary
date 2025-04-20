@@ -2,6 +2,7 @@ package fr.u_paris.gla.project.controllers;
 
 import java.util.ArrayList;
 
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -23,6 +24,7 @@ import fr.u_paris.gla.project.views.Gui;
 public class GUIController {
 
   private Gui gui;
+  private Graph graph;
 
   /**
    * Constructor for GUIController.
@@ -32,13 +34,47 @@ public class GUIController {
     SwingUtilities.invokeLater(() -> {
       // Create the main window
       this.gui = new Gui();
+      // init Graph class
+      String[] args = { "--parse", "mapData.csv", "junctionsData.csv" };
+      this.graph = CSVExtractor.makeOjectsFromCSV(args);
+      // init Controllers
       new KeyboardController(gui.getTextStart());
       new KeyboardController(gui.getTextEnd());
-      new MouseController(gui.getMapViewer(), gui.getTextStart(), gui.getTextEnd());
+      new MouseController(gui.getMapViewer(), gui.getTextStart(), gui.getTextEnd(), this.graph, this.gui);
+      // init Listenners
       initFocusListenerToTextArea();
       initActionListenner();
+      // init Menu bar
+      initMenuBar();
+      // Set the visibility to true
       this.gui.launch();
+      // Check the internet connection.
+      if (!isInternetAvailable()) {
+        JOptionPane.showMessageDialog(this.gui,
+            "Aucune connexion Internet détectée. Veuillez vérifier votre connexion.",
+            "Erreur de connexion",
+            JOptionPane.ERROR_MESSAGE);
+      }
     });
+  }
+
+  /**
+   * Checks if there is an active internet connection.
+   * 
+   * @return true if connected, false otherwise
+   */
+  private boolean isInternetAvailable() {
+    try {
+      OkHttpClient client = new OkHttpClient();
+      Request request = new Request.Builder()
+          .url("http://www.google.com")
+          .build();
+      try (Response response = client.newCall(request).execute()) {
+        return response.isSuccessful();
+      }
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   /**
@@ -151,10 +187,6 @@ public class GUIController {
         return;
       }
 
-      // Add action listener to add displayJsonContent to contentPanel
-      // FIXME ASAP
-      String[] args = { "--parse", "mapData.csv", "junctionsData.csv" };
-      Graph graph = CSVExtractor.makeOjectsFromCSV(args);
       AStar astar = new AStar(graph);
 
       gui.getContentPanel().removeAll();
@@ -173,26 +205,7 @@ public class GUIController {
       double[] startCoordinates = getCoordinatesFromAddress(startAddress);
       double[] endCoordinates = getCoordinatesFromAddress(endAddress);
 
-      String[] p1 = startAddress.split(",\\s*");
-      /*
-       * double[] startCoordinates = new double[] {
-       * Double.parseDouble(p1[0]),
-       * Double.parseDouble(p1[1])
-       * };
-       */
-
-      String[] p2 = endAddress.split(",\\s*");
-      /*
-       * double[] endCoordinates = new double[] {
-       * Double.parseDouble(p2[0]),
-       * Double.parseDouble(p2[1])
-       * };
-       */
-
       if (startCoordinates != null && endCoordinates != null) {
-        // Create stops with coordinates and addresses
-        // ArrayList<Stop> stops = new ArrayList<>();
-
         try {
           Stop stopA = graph.getClosestStop(startCoordinates[0], startCoordinates[1]);
           Stop stopB = graph.getClosestStop(endCoordinates[0], endCoordinates[1]);
@@ -208,13 +221,43 @@ public class GUIController {
           gui.getContentPanel().revalidate();
           gui.getContentPanel().repaint();
         } catch (Exception except) {
-          System.out.println("No path was found between these two points");
+          // Show an error message if the path is not found
+          except.printStackTrace();
+          JOptionPane.showMessageDialog(this.gui, "No path was found between these two points",
+              "Erreur",
+              JOptionPane.ERROR_MESSAGE);
         }
       } else {
         // Show an error message if the coordinates are not found
         JOptionPane.showMessageDialog(this.gui, "Impossible de trouver les coordonnées pour l'une des adresses.",
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
+      }
+    });
+  }
+
+  /**
+   * Initializes the menu bar with action listeners for metro and bus options.
+   * Toggles the checkmark icons when selected.
+   */
+  private void initMenuBar() {
+    // Add action listeners to toggle checkmark icons
+    JMenuItem busMenuItem = gui.getMenuItem(0, 0);
+    busMenuItem.addActionListener(e -> {
+      gui.toggleCheckmark(busMenuItem);
+      if (gui.isCheckmarkEnabled(busMenuItem)) {
+        gui.viewLine(graph, "Bus");
+      } else {
+        gui.cleanMap();
+      }
+    });
+    JMenuItem metroMenuItem = gui.getMenuItem(0, 1);
+    metroMenuItem.addActionListener(e -> {
+      gui.toggleCheckmark(metroMenuItem);
+      if (gui.isCheckmarkEnabled(metroMenuItem)) {
+        gui.viewLine(graph, "Subway");
+      } else {
+        gui.cleanMap();
       }
     });
   }

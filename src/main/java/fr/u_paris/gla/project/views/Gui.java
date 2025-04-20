@@ -8,13 +8,18 @@ import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
 import java.awt.*;
+import java.time.LocalTime;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
+import fr.u_paris.gla.project.graph.Graph;
+import fr.u_paris.gla.project.graph.Line;
 import fr.u_paris.gla.project.graph.Stop;
+import fr.u_paris.gla.project.graph.Subline;
 
 public class Gui extends JFrame {
 
@@ -50,6 +55,15 @@ public class Gui extends JFrame {
    * Initializes the GUI components.
    */
   private void init() {
+    // Create a menu bar
+    JMenuBar menuBar = new JMenuBar();
+    JMenu viewMenu = new JMenu("View");
+    JMenuItem busMenu = new JMenuItem("Bus");
+    JMenuItem metroMenu = new JMenuItem("Metro");
+    viewMenu.add(busMenu);
+    viewMenu.add(metroMenu);
+    menuBar.add(viewMenu);
+    this.setJMenuBar(menuBar);
 
     // Create text areas for the start and end
     this.textStart = createTextAreaInput("From");
@@ -116,6 +130,29 @@ public class Gui extends JFrame {
     mainContentPanel.add(mapPanel, BorderLayout.CENTER);
 
     add(mainContentPanel);
+  }
+
+  /**
+   * Toggles the checkmark icon on the given menu item.
+   * 
+   * @param menuItem the menu item to toggle
+   */
+  public void toggleCheckmark(JMenuItem menuItem) {
+    if (menuItem.getIcon() == null) {
+      menuItem.setIcon(UIManager.getIcon("CheckBox.icon"));
+    } else {
+      menuItem.setIcon(null);
+    }
+  }
+
+  /**
+   * Checks if the given menu item has the checkmark icon enabled.
+   * 
+   * @param menuItem the menu item to check
+   * @return true if the checkmark icon is enabled, false otherwise
+   */
+  public boolean isCheckmarkEnabled(JMenuItem menuItem) {
+    return menuItem.getIcon() != null;
   }
 
   // Custom rounded border class
@@ -237,6 +274,60 @@ public class Gui extends JFrame {
   }
 
   /**
+   * Displays all bus stops on the map.
+   * 
+   * @param graph the graph containing the bus stops
+   */
+  public void viewLine(Graph graph, String type) {
+    mapViewer.removeAllMapMarkers();
+    mapViewer.removeAllMapPolygons();
+    ArrayList<Line> tmpLine = new ArrayList<>();
+    ArrayList<Subline> tmpLineSub = new ArrayList<>();
+    ArrayList<Stop> tmpLineStop = new ArrayList<>();
+    for (Line line : graph.getListOfLines()) {
+      if (tmpLine.contains(line) || !line.getType().equals(type)) {
+        continue;
+      }
+      tmpLine.add(line);
+      for (Subline subline : line.getListOfSublines()) {
+        if (tmpLineSub.contains(subline)) {
+          continue;
+        }
+        for (Stop stop : subline.getListOfStops()) {
+          if (tmpLineStop.contains(stop)) {
+            continue;
+          }
+          tmpLineStop.add(stop);
+          Coordinate coord = new Coordinate(stop.getLongitude(), stop.getLatitude());
+          MapMarkerDot marker = new MapMarkerDot(coord);
+          mapViewer.addMapMarker(marker);
+        }
+      }
+    }
+    for (Stop stop : tmpLineStop) {
+      for (Stop adjacentStop : stop.getAdjacentStops()) {
+        if (tmpLineStop.contains(adjacentStop)) {
+          Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
+          Coordinate mEnd = new Coordinate(adjacentStop.getLongitude(), adjacentStop.getLatitude());
+          MapPolygon mLine = new MapPolygonImpl(mStart, mEnd, mStart);
+          mapViewer.addMapPolygon(mLine);
+        }
+      }
+    }
+    mapViewer.setDisplayPosition(new Coordinate(48.8566, 2.3522), 10);
+    mapViewer.repaint();
+  }
+
+  /**
+   * Clears all markers and polygons from the map.
+   */
+  public void cleanMap() {
+    mapViewer.removeAllMapMarkers();
+    mapViewer.removeAllMapPolygons();
+    mapViewer.repaint();
+  }
+
+  /**
    * Reads and displays the contents of a .txt file in a formatted panel.
    * 
    * @return the panel containing the text content
@@ -274,11 +365,48 @@ public class Gui extends JFrame {
     return pathPanel;
   }
 
+  public JPanel displayListOfStopDeparture(HashMap<Subline, ArrayList<LocalTime>> departures) {
+    JPanel pathPanel = new JPanel();
+    pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
+    pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
+    pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
+    System.out.println(departures);
+    for (Subline subline : departures.keySet()) {
+      ArrayList<LocalTime> times = departures.get(subline);
+      for (LocalTime time : times) {
+        JTextArea timeTextArea = createTextAreaOutput(time.toString());
+        pathPanel.add(timeTextArea);
+      }
+    }
+    return pathPanel;
+  }
+
   /**
    * Launches the application.
    */
   public void launch() {
     setVisible(true);
+  }
+
+  /**
+   * Gets the menu bar item at the specified index.
+   * 
+   * @return the menu bar item
+   */
+  public JMenuItem getMenuItem(int menuIndex, int itemIndex) {
+    JMenuBar menuBar = this.getJMenuBar();
+    if (menuBar == null || menuIndex < 0 || menuIndex >= menuBar.getMenuCount()) {
+      System.err.println("Invalid menu index: " + menuIndex);
+      return null;
+    }
+
+    JMenu menu = menuBar.getMenu(menuIndex);
+    if (menu == null || itemIndex < 0 || itemIndex >= menu.getItemCount()) {
+      System.err.println("Invalid item index: " + itemIndex + " in menu: " + menuIndex);
+      return null;
+    }
+
+    return menu.getItem(itemIndex);
   }
 
   /**
