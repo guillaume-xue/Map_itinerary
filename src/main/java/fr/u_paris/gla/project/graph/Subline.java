@@ -11,7 +11,6 @@ public class Subline {
     private ArrayList<Stop> listOfStops = new ArrayList<>();
     private ArrayList<LocalTime> departureTimesAtStartOfSubline = new ArrayList<>();
     
-
     public Subline(String name){
         this.name = name;
     }

@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Map;
 import java.io.File;
+import java.util.stream.Collectors;
 
 import fr.u_paris.gla.project.graph.*;
 import fr.u_paris.gla.project.io.UpgradedNetworkFormat;
@@ -447,10 +448,13 @@ public final class CSVExtractor {
                 return;
             }
 
-            stops.get(0).addDeparture(subline, LocalTime.parse(line[ScheduleFormat.TIME_INDEX]));
+
             try{
                 Stop departureStop = stops.get(0);
-                subline.addDepartureTimes(departureStop, new ArrayList<>(List.of(LocalTime.parse(line[ScheduleFormat.TIME_INDEX]))));
+                LocalTime scheduleToAdd = LocalTime.parse(line[ScheduleFormat.TIME_INDEX]);
+                if ( subline.getDepartureTimes().contains(scheduleToAdd)) return;
+                departureStop.addDeparture(subline, scheduleToAdd);
+                subline.addDepartureTimes(departureStop, new ArrayList<>(List.of(scheduleToAdd)));
             } catch (Exception e){
                 LOGGER.log(Level.WARNING, "Failed to add departure times: " + e.getMessage());
             }
