@@ -145,8 +145,4 @@ public class MouseController {
       }
     }
   }
-
-  public Stop getStop() {
-    return stop;
-  }
 }

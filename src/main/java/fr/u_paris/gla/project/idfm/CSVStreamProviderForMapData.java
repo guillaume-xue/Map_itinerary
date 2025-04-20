@@ -31,6 +31,7 @@ public class CSVStreamProviderForMapData implements Supplier<String[]> {
     private final Iterator<Map.Entry<String, TraceEntry>> tracesIterator; // Premier itérateur
     private Iterator<Pair<StopEntry, StopEntry>> adjacentStopsIterator = Collections.emptyIterator(); // Deuxième itérateur
 
+    private String currentLineID;
     private String currentLineName;
     private String currentLineType;
     private String currentLineColor;
@@ -51,7 +52,8 @@ public class CSVStreamProviderForMapData implements Supplier<String[]> {
         Pair<StopEntry, StopEntry> pair = adjacentStopsIterator.next();
         StopEntry first = pair.getLeft();
         StopEntry second = pair.getRight();
-        this.line[UpgradedNetworkFormat.LINE_INDEX] = currentLineName;
+        this.line[UpgradedNetworkFormat.LINE_ID_INDEX] = currentLineID;
+        this.line[UpgradedNetworkFormat.LINE_NAME_INDEX] = currentLineName;
         this.line[UpgradedNetworkFormat.TYPE_INDEX] = currentLineType;
         this.line[UpgradedNetworkFormat.COLOR_INDEX] = currentLineColor;
         fillStation(first, this.line, UpgradedNetworkFormat.START_INDEX);
@@ -69,6 +71,7 @@ public class CSVStreamProviderForMapData implements Supplier<String[]> {
     private boolean advanceToNextValidTrace() {
         while (tracesIterator.hasNext()) {
             Map.Entry<String, TraceEntry> traceEntry = tracesIterator.next();
+            currentLineID = traceEntry.getValue().getLineId();
             currentLineName = traceEntry.getValue().getLineName();
             currentLineType = traceEntry.getValue().getLineType(); 
             currentLineColor = traceEntry.getValue().getLineColor();

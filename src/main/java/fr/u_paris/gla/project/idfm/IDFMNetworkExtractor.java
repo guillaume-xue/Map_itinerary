@@ -29,6 +29,7 @@ import java.io.FileWriter;
 
 import java.util.NavigableSet;
 import java.util.TreeSet;
+import java.util.TreeMap;
 import java.util.Optional;
 import java.time.LocalTime;
 import org.apache.commons.lang3.tuple.Pair;
@@ -38,7 +39,7 @@ import java.util.Iterator;
 
 /** Code of an extractor for the data from IDF mobilite.
  * 
- * @author Emmanuel Bigeon */
+ */
 public class IDFMNetworkExtractor {
 
     /** The logger for information on the process */
@@ -86,7 +87,7 @@ public class IDFMNetworkExtractor {
      * @param destination The destination file */
     public static void parse(String[] args) {
     	// map <route_id, traceEntry>
-        Map<String, TraceEntry> traces = new HashMap<>();
+        Map<String, TraceEntry> traces = new TreeMap<>();
         fillMapTraceEntries(traces);
         cleanTraces(traces);
         
@@ -287,16 +288,18 @@ public class IDFMNetworkExtractor {
     
     private static void fillScheduleFiles(Map<String, TraceEntry> traces, File directory) {
     	for (TraceEntry trace : traces.values()) {
+    		String lineId = trace.getLineId();
     		String lineName = trace.getLineName();
-    		String lineType = trace.getLineType();
     		for (Map.Entry<String,List<Pair<String,String>>> dep : trace.getDepartures().entrySet()) {
     			String stopName = dep.getKey();
     			List<Pair<String, String>> timesAndJunctions = dep.getValue();
-    			String sanitizedStopName = stopName.replaceAll("[\\\\/]", "_"); //pour eviter les erreurs liés aux / et \ dans les noms des stations
-                String fileName = directory + "/" + lineName + "_" + lineType + "_" + sanitizedStopName + ".csv";
+    			String sanitizedStopName = stopName.replaceAll("[\\\\/:*?\"<>|]", ""); //pour eviter les erreurs liés aux / et \ dans les noms des stations
+    			String sanitizedLineId = lineId.replaceAll("[\\\\/:*?\"<>|]", "");
+    			String fileName = directory.toString() + "/" + lineName + "_" + sanitizedLineId + "_" + sanitizedStopName + ".csv";
+    			//System.out.println("nom fichier :" + fileName);
                 File file = new File(fileName);
                 
-                CSVStreamProviderForSchedules provider = new CSVStreamProviderForSchedules(timesAndJunctions, lineName, stopName);
+                CSVStreamProviderForSchedules provider = new CSVStreamProviderForSchedules(timesAndJunctions, sanitizedLineId, stopName);
                 
                 try {
                 	CSVTools.writeCSVToFile(fileName, Stream.generate(provider).takeWhile(Objects::nonNull));
@@ -311,7 +314,7 @@ public class IDFMNetworkExtractor {
     	
     
     private static void fillTripsByRoutesMap(String[] line, Map<String, List<String>> tripsByRoutes) {
-    	String routeId = line[IDFM_ROUTE_ID];
+    	String routeId = line[IDFM_ROUTE_ID].replaceAll(":", "");
     	String tripId = line[IDFM_TRIP_ID];
         // Ajouter routeId en tant que clé si pas présente dans la map
         tripsByRoutes.putIfAbsent(routeId, new ArrayList<>());
@@ -354,14 +357,17 @@ public class IDFMNetworkExtractor {
     		}
     	}
     	for (String string : toRemove) {
+    		System.out.println(string);
             traces.remove(string);
         }
+    	System.out.println("Nombre de lignes supprimées car ne possèdent aucun stops : " + toRemove.size() + "\n");
     }
 
     
     //construit les listes désordonnées de quais appartenant à chacune des lignes de transport
     private static void addStop(String[] line, Map<String, TraceEntry> traces) {
-    	String routeId = line[IDFM_STOPS_RID_INDEX];
+    	String routeId = line[IDFM_STOPS_RID_INDEX].replaceAll(":", "");
+    	
     	if (traces.containsKey(routeId)) {
     		StopEntry stop = new StopEntry(line[IDFM_STOPS_NAME_INDEX], line[IDFM_STOPS_ID_INDEX],
                 Double.parseDouble(line[IDFM_STOPS_LON_INDEX]),
@@ -370,10 +376,19 @@ public class IDFMNetworkExtractor {
     	}
     }
 
-    
-    private static void addLine(String[] line, Map<String, TraceEntry> traces) {
-    	TraceEntry entry = new TraceEntry(line[IDFM_TRACE_SNAME_INDEX], line[IDFM_TRACE_ID_INDEX], line[IDFM_TRACE_TYPE_INDEX], line[IDFM_TRACE_COLOR_INDEX]);
-    	traces.put(line[IDFM_TRACE_ID_INDEX], entry);
+    //remettre en private
+    public static void addLine(String[] line, Map<String, TraceEntry> traces) {
+    	String id = line[IDFM_TRACE_ID_INDEX];
+    	String sanitizedLineId = id.replaceAll(":", "");
+        TraceEntry newEntry = new TraceEntry(line[IDFM_TRACE_SNAME_INDEX], sanitizedLineId, line[IDFM_TRACE_TYPE_INDEX], line[IDFM_TRACE_COLOR_INDEX]);
+        
+        if (traces.containsKey(id)) {
+            System.out.println("Attention : Un doublon a été détecté pour l'ID " + sanitizedLineId);
+            System.out.println("Ancienne entrée : " + traces.get(sanitizedLineId));
+            System.out.println("Nouvelle entrée : " + newEntry);
+        }
+        
+        traces.put(sanitizedLineId, newEntry);
     }
 
 }

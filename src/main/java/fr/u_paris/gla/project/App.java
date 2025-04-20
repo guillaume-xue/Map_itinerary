@@ -1,5 +1,7 @@
 package fr.u_paris.gla.project;
 
+import java.util.Objects;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -41,7 +43,8 @@ public class App {
                     return;
                 }
                 if ("--createfiles".equals(string)) {
-                    launchMakingFilesParser(new String[] { args[1], args[2], args[3] });
+                	System.out.println("Création des fichiers en cours...");
+                    launchMakingFilesParser( new String[] { args[1], args[2], args[3]} );
                     return;
                 }
             }
@@ -118,10 +121,14 @@ public class App {
      * @param      args  The arguments, expects length 3, the command and two target files
      */
     public static void launchParser(String[] args) {
-        if (args.length != 3) {
-            errorLog("parser", "Missing inputs files");
+        if ( args.length < 4 ){
+            errorLog("parser","Missing inputs files");
+            return;
+        } else if ( args.length > 4 ){
+            errorLog("parser", "Wrong arguments");
             return;
         }
-        CSVExtractor.makeOjectsFromCSV(args);
+        
+        CSVExtractor.makeObjectsFromCSV(args);
     }
 }

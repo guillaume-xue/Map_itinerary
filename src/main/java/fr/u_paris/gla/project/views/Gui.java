@@ -20,6 +20,7 @@ import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Line;
 import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.graph.Subline;
+import fr.u_paris.gla.project.utils.Pair;
 
 public class Gui extends JFrame {
 
@@ -332,24 +333,22 @@ public class Gui extends JFrame {
    * 
    * @return the panel containing the text content
    */
-  public JPanel displayPath(ArrayList<Stop> stops) {
+  public JPanel displayPath(ArrayList<Pair<Stop, LocalTime>> stopsAndTimes) {
     JPanel pathPanel = new JPanel();
     pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
     pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
     pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
-
     // initialize the first stop
-    Stop stop = stops.get(0);
+    Stop stop = stopsAndTimes.get(0).getKey();
     JTextArea stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
     pathPanel.add(stopTextArea);
     Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
     mapViewer.setDisplayPosition(mStart, 12);
     MapMarkerDot parisMarker = new MapMarkerDot(mStart);
     mapViewer.addMapMarker(parisMarker);
-
     // draw the path and add TextAreas for each stop
-    for (int i = 1; i < stops.size(); i++) {
-      stop = stops.get(i);
+    for (int i = 1; i < stopsAndTimes.size(); i++) {
+      stop = stopsAndTimes.get(i).getKey();
       // add TextArea for the stop
       stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
       pathPanel.add(stopTextArea);

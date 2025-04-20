@@ -5,27 +5,29 @@ import java.util.Objects;
 
 public class Line implements Comparable<Line>{
     
+    private String id; // clef primaire
     private String name;
     private String type;
+    private String color;
     private ArrayList<Subline> listOfSublines = new ArrayList<>();
 
     
-    public Line(String name){
+    public Line(String id, String name, String type, String color){
+        this.id = id;
         this.name = name;
-    }
-
-    public Line(String name, ArrayList<Subline> listOfSublines ){
-        String[] tmp = name.split("_");
-        this.name = tmp[0];
-        this.type = tmp[1];
-        this.listOfSublines = listOfSublines;
+        this.type = type;
+        this.color = color;
     }
 
     public void addSubline(Subline subline){
         listOfSublines.add(subline);
     }
 
-    public String getName() {
+    public String getId(){
+        return id;
+    }
+
+    public String getName(){
         return name;
     }
 
@@ -33,35 +35,46 @@ public class Line implements Comparable<Line>{
         return type;
     }
 
-    public ArrayList<Subline> getListOfSublines() {
+    public String getColor(){
+        return color;
+    }
+
+    public ArrayList<Subline> getListOfSublines(){
         return listOfSublines;
     }
 
+    public void setListOfSublines(ArrayList<Subline> newSublines){
+        this.listOfSublines.clear();
+        this.listOfSublines.addAll(newSublines);
+    }
+
     @Override
-    public int compareTo(Line o) {
-        return name.compareTo(o.name);
+    public int compareTo(Line other) {
+        return name.compareTo(other.name);
     }
 
     @Override
     public String toString() {
-        return "Line [name=" + name + ", listOfSublines=" + listOfSublines + "]\n";
+        return String.format("Line [id=%s, name=%s, type=%s, color=%s, sublines=%s]%n",
+            id, name, type, color, listOfSublines);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(id);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
+    public boolean equals(Object o) {
+        if (this == o)
             return true;
-        if (obj == null)
+        if (o == null)
             return false;
-        if (getClass() != obj.getClass())
+        if (getClass() != o.getClass())
             return false;
-        Line other = (Line) obj;
-        return name.equals(other.name);
+        Line other = (Line) o;
+        return 
+            Objects.equals(id, other.id);
     }
 
 }

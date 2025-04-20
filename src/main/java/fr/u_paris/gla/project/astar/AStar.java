@@ -31,38 +31,47 @@ public class AStar {
     }
 
     public ArrayList<Stop> findPath(){
-        PriorityQueue<Stop> openSet = new PriorityQueue<>();
-        ArrayList<Stop> closedSet = new ArrayList<>();
 
-        departStop.setG(0);
-        departStop.setH(getHeuristic(departStop, finishStop));
-        openSet.add(departStop);
+        try{
+            PriorityQueue<Stop> openSet = new PriorityQueue<>();
+            ArrayList<Stop> closedSet = new ArrayList<>();
+            departStop.setG(0);
+            departStop.setH(getHeuristic(departStop, finishStop));
+            departStop.setF();
+            openSet.add(departStop);
+            while(!openSet.isEmpty()){
+                Stop currentStop = openSet.poll();
 
-        while(!openSet.isEmpty()){
-            Stop currentStop = openSet.poll();
-
-            if(currentStop.equals(finishStop)){
-                return reconstructPath(currentStop);
-            }
-
-            closedSet.add(currentStop);
-
-            for(Stop neighbor : currentStop.getAdjacentStops()){
-                if(closedSet.contains(neighbor)){
-                    continue;
+                if(currentStop.equals(finishStop)){
+                    return reconstructPath(currentStop);
                 }
-                double tentativeGScore = currentStop.getG() + currentStop.distanceBetweenAdjacentStop(neighbor);
 
-                if(!openSet.contains(neighbor)){
-                    openSet.add(neighbor);
-                } else if(tentativeGScore >= neighbor.getG()){
-                    continue;
+                closedSet.add(currentStop);
+
+                for(Stop neighbor : currentStop.getAdjacentStops()){
+                    //si noeud déjà visité on le passe
+                    if(closedSet.contains(neighbor)){
+                        continue;
+                    }
+                    //calcul du cout réel total pr arriver au noeud voisin de currentStop depuis departStop
+                    double tentativeGScore = currentStop.getG() + currentStop.distanceBetweenAdjacentStop(neighbor);
+
+                    if(!openSet.contains(neighbor)){
+                        openSet.add(neighbor);
+                    } else if(tentativeGScore >= neighbor.getG()){ //si le cout réel est plus élevé que celui depuis le voisin
+                        continue;
+                    }
+                    neighbor.setCameFrom(currentStop);
+                    neighbor.setG(tentativeGScore);
+                    neighbor.setH(getHeuristic(neighbor, finishStop));
+                    neighbor.setF();
                 }
-                neighbor.setCameFrom(currentStop);
-                neighbor.setG(tentativeGScore);
-                neighbor.setH(getHeuristic(neighbor, finishStop));
             }
+        } catch (NullPointerException e){
+            System.out.println(e.getMessage());
         }
+
+
         return new ArrayList<>(); // No path found
 
     }

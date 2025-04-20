@@ -11,7 +11,9 @@ import javax.swing.SwingUtilities;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import fr.u_paris.gla.project.astar.AStar;
+import fr.u_paris.gla.project.astar.CostFunction;
+import fr.u_paris.gla.project.astar.CostFunctionFactory;
+import fr.u_paris.gla.project.astar.AStarBis;
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.utils.CSVExtractor;
@@ -20,6 +22,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import fr.u_paris.gla.project.views.Gui;
+import fr.u_paris.gla.project.utils.Pair;
+import java.time.LocalTime;
 
 public class GUIController {
 
@@ -35,8 +39,8 @@ public class GUIController {
       // Create the main window
       this.gui = new Gui();
       // init Graph class
-      String[] args = { "--parse", "mapData.csv", "junctionsData.csv" };
-      this.graph = CSVExtractor.makeOjectsFromCSV(args);
+      String[] args = { "--parse", "mapData.csv", "junctionsData.csv", "Schedules/" };
+      this.graph = CSVExtractor.makeObjectsFromCSV(args);
       // init Controllers
       new KeyboardController(gui.getTextStart());
       new KeyboardController(gui.getTextEnd());
@@ -187,9 +191,11 @@ public class GUIController {
         return;
       }
 
-      AStar astar = new AStar(graph);
-
-      gui.getContentPanel().removeAll();
+      //avec version astar2 où ou peut choisir si on veut le chemin le plus court en duree ou distance
+      //faudra appeler qu'un des choix en fonction de ce que l'utilisateur demande
+      //CostFunction costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DISTANCE);
+      CostFunction costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DURATION);
+      AStarBis astar = new AStarBis(costFunction);
 
       // Remove all markers and polygons from the map
       gui.getMapViewer().removeAllMapMarkers();
@@ -210,13 +216,13 @@ public class GUIController {
           Stop stopA = graph.getClosestStop(startCoordinates[0], startCoordinates[1]);
           Stop stopB = graph.getClosestStop(endCoordinates[0], endCoordinates[1]);
 
-          astar.setDepartStop(stopA);
-          astar.setFinishStop(stopB);
-
-          ArrayList<Stop> stops = astar.findPath();
+          //v2 astar
+          LocalTime heureDepart = LocalTime.of(19, 38);
+          ArrayList<Pair<Stop, LocalTime>> stopsAndTimes = astar.findShortestPath(stopA, stopB, heureDepart);
+          printPathWithTimes(stopsAndTimes);
 
           // Display the path on the map
-          gui.getContentPanel().add(gui.displayPath(stops));
+          gui.getContentPanel().add(gui.displayPath(stopsAndTimes));
           gui.getContentPanel().add(new JPanel());
           gui.getContentPanel().revalidate();
           gui.getContentPanel().repaint();
@@ -234,6 +240,21 @@ public class GUIController {
             JOptionPane.ERROR_MESSAGE);
       }
     });
+  }
+
+  // TBD
+  //la fonction c'est juste en attendant qu'on ait les affichages avec horaire ds l'app et c'est pour debugger
+  public static void printPathWithTimes(ArrayList<Pair<Stop, LocalTime>> stopsAndTimes) {
+      if (stopsAndTimes == null || stopsAndTimes.isEmpty()) {
+          System.out.println("Aucun chemin trouvé.");
+          return;
+      }
+      System.out.println("Chemin trouvé :");
+      for (Pair<Stop, LocalTime> pair : stopsAndTimes) {
+          Stop stop = pair.getKey();
+          LocalTime time = pair.getValue();
+          System.out.println(" -> " + stop.getNameOfAssociatedStation() + " à " + time);
+      }
   }
 
   /**
