@@ -12,19 +12,27 @@ import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
 
+import fr.u_paris.gla.project.graph.Graph;
+import fr.u_paris.gla.project.graph.Stop;
+import fr.u_paris.gla.project.views.Gui;
+
 public class MouseController {
 
   private JMapViewer mapViewer;
   private Point lastDragPoint;
   private JTextArea startTextArea;
   private JTextArea endTextArea;
+  private Graph graph;
+  private Gui gui;
 
   /**
    * Constructor for MouseController.
    *
    * @param mapViewer the JMapViewer to control
    */
-  MouseController(JMapViewer mapViewer, JTextArea startTextArea, JTextArea endTextArea) {
+  MouseController(JMapViewer mapViewer, JTextArea startTextArea, JTextArea endTextArea, Graph graph, Gui gui) {
+    this.gui = gui;
+    this.graph = graph;
     this.mapViewer = mapViewer;
     this.startTextArea = startTextArea;
     this.endTextArea = endTextArea;
@@ -91,7 +99,22 @@ public class MouseController {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-      if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e) && (startTextArea.isFocusOwner() || endTextArea.isFocusOwner())) {
+      if (e.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(e)) {
+        mapViewer.removeAllMapMarkers();
+        mapViewer.removeAllMapPolygons();
+        Point clickPoint = e.getPoint();
+        Coordinate coord = new Coordinate(mapViewer.getPosition(clickPoint).getLat(),
+            mapViewer.getPosition(clickPoint).getLon());
+        mapViewer.addMapMarker(new MapMarkerDot(coord));
+        try {
+          Stop stop = graph.getClosestStop(coord.getLon(), coord.getLat());
+          gui.getContentPanel().add(gui.displayListOfStopDeparture(stop.getDepartures()));
+        } catch (Exception e1) {
+          // TODO Auto-generated catch block
+          e1.printStackTrace();
+        }
+      } else if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)
+          && (startTextArea.isFocusOwner() || endTextArea.isFocusOwner())) {
         mapViewer.removeAllMapMarkers();
         mapViewer.removeAllMapPolygons();
         Point clickPoint = e.getPoint();
@@ -121,5 +144,9 @@ public class MouseController {
         lastDragPoint = currentPoint;
       }
     }
+  }
+
+  public Stop getStop() {
+    return stop;
   }
 }

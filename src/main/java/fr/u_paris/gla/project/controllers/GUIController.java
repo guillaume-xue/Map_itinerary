@@ -34,13 +34,13 @@ public class GUIController {
     SwingUtilities.invokeLater(() -> {
       // Create the main window
       this.gui = new Gui();
-      // init Controllers
-      new KeyboardController(gui.getTextStart());
-      new KeyboardController(gui.getTextEnd());
-      new MouseController(gui.getMapViewer(), gui.getTextStart(), gui.getTextEnd());
       // init Graph class
       String[] args = { "--parse", "mapData.csv", "junctionsData.csv" };
       this.graph = CSVExtractor.makeOjectsFromCSV(args);
+      // init Controllers
+      new KeyboardController(gui.getTextStart());
+      new KeyboardController(gui.getTextEnd());
+      new MouseController(gui.getMapViewer(), gui.getTextStart(), gui.getTextEnd(), this.graph, this.gui);
       // init Listenners
       initFocusListenerToTextArea();
       initActionListenner();
@@ -205,26 +205,7 @@ public class GUIController {
       double[] startCoordinates = getCoordinatesFromAddress(startAddress);
       double[] endCoordinates = getCoordinatesFromAddress(endAddress);
 
-      String[] p1 = startAddress.split(",\\s*");
-      /*
-       * double[] startCoordinates = new double[] {
-       * Double.parseDouble(p1[0]),
-       * Double.parseDouble(p1[1])
-       * };
-       */
-
-      String[] p2 = endAddress.split(",\\s*");
-      /*
-       * double[] endCoordinates = new double[] {
-       * Double.parseDouble(p2[0]),
-       * Double.parseDouble(p2[1])
-       * };
-       */
-
       if (startCoordinates != null && endCoordinates != null) {
-        // Create stops with coordinates and addresses
-        // ArrayList<Stop> stops = new ArrayList<>();
-
         try {
           Stop stopA = graph.getClosestStop(startCoordinates[0], startCoordinates[1]);
           Stop stopB = graph.getClosestStop(endCoordinates[0], endCoordinates[1]);
@@ -240,7 +221,11 @@ public class GUIController {
           gui.getContentPanel().revalidate();
           gui.getContentPanel().repaint();
         } catch (Exception except) {
-          System.out.println("No path was found between these two points");
+          // Show an error message if the path is not found
+          except.printStackTrace();
+          JOptionPane.showMessageDialog(this.gui, "No path was found between these two points",
+              "Erreur",
+              JOptionPane.ERROR_MESSAGE);
         }
       } else {
         // Show an error message if the coordinates are not found

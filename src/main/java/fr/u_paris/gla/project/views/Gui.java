@@ -8,12 +8,13 @@ import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
 import java.awt.*;
-import java.lang.reflect.Array;
+import java.time.LocalTime;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Line;
@@ -360,6 +361,22 @@ public class Gui extends JFrame {
       mapViewer.addMapMarker(markerDot);
       // update the start
       mStart = mEnd;
+    }
+    return pathPanel;
+  }
+
+  public JPanel displayListOfStopDeparture(HashMap<Subline, ArrayList<LocalTime>> departures) {
+    JPanel pathPanel = new JPanel();
+    pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
+    pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
+    pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
+    System.out.println(departures);
+    for (Subline subline : departures.keySet()) {
+      ArrayList<LocalTime> times = departures.get(subline);
+      for (LocalTime time : times) {
+        JTextArea timeTextArea = createTextAreaOutput(time.toString());
+        pathPanel.add(timeTextArea);
+      }
     }
     return pathPanel;
   }
