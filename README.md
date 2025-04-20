@@ -1,6 +1,6 @@
 # Projet de GLA
 
-Version 2024
+Version 2025
 
 ## Description
 
@@ -23,7 +23,7 @@ Dans sa version initiale, le programme fournit est un simple code qui se lance e
 Une fois le programme compilé, vous trouverez un jar executable dans le dossier target. Au nom de jar près (version changeante), vous pourrez l'exécuter avec:
 
 ```
-java -jar target/project-2024.1.0.0-SNAPSHOT-jar-with-dependencies.jar
+java -jar target/project-2025.1.0.0-PROTOTYPE-jar-with-dependencies.jar
 ```
 
 L'option de lancement `--info` causera l'affichage dans la console d'informations de l'application.
@@ -42,13 +42,8 @@ Suggestion d'usage pour démonstration du gui :
 ```
 mvn clean package
 mvn verify  
-java -jar target/project-2024.1.0.0-SNAPSHOT-jar-with-dependencies.jar --createfiles mapData.csv junctionsData.csv Schedule/
-java -jar target/project-2024.1.0.0-SNAPSHOT-jar-with-dependencies.jar --gui 
+java -jar target/project-2025.1.0.0-PROTOTYPE-jar-with-dependencies.jar --gui 
 ```
-
-Pour simuler un trajet depuis Olympiades jusqu'à Saint Ouen, rentrer les coordonnées suivantes dans les champs From et To:  
-From: 48.826944, 2.367034  
-To: 48.905170, 2.322756  
 
 
 
