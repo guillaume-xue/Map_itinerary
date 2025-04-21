@@ -29,6 +29,9 @@ public class Launcher {
     splashScreen.dispose();
     // Set the system property for the user agent
     System.setProperty("http.agent", "MyCustomApp/1.0 (https://example.com)");
+    // Set the system property for the menu bar
+    // This is for MacOS to use the menu bar at the top of the screen
+    System.setProperty("apple.laf.useScreenMenuBar", "true");
     // Initialize the GUI
     new GUIController();
   }
