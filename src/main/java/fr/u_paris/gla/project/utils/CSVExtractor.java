@@ -32,9 +32,10 @@ public final class CSVExtractor {
 
     // Constantes:
     // Index pour les arguments
-    private static final int STOPS_FILE_ID = 1;
-    private static final int JUNCTIONS_FILE_ID = 2;
-    private static final int SCHEDULE_DIR_ID = 3;
+    private static final int NBR_ARGUMENTS = 3;
+    private static final int STOPS_FILE_ID = 0;
+    private static final int JUNCTIONS_FILE_ID = 1;
+    private static final int SCHEDULE_DIR_ID = 2;
 
     // Distance maximale pour le linking des quais
     private static final int MAX_DISTANCE = 150;
@@ -62,7 +63,8 @@ public final class CSVExtractor {
     public static Graph makeObjectsFromCSV(String[] args){
 
         if ( !areArgumentsValid(args) ){
-            LOGGER.severe("Error: Wrong arguments for objects parser. See Usage.");
+            LOGGER.severe("\n\n\nError: Wrong arguments for objects parser. See --help.");
+            System.out.println("Suggestion: First use '--create-files'");
             return null;
         }
 
@@ -167,17 +169,36 @@ public final class CSVExtractor {
 
     /**
      * Determines whether the arguments of the main function are valid.
-     * Checks that there are four arguments and that noone of them are empty.
+     * Checks that there are 3 arguments and that noone of them are empty.
      *
      * @param      args  The arguments
      *
      * @return     True if the arguments are valid, False otherwise.
      */
     public static boolean areArgumentsValid(String[] args) {
-        if ( args.length != 4 ) return false;
-        for ( String arg : args ){
-            if ( arg.isEmpty() ){ return false; }
+        if ( args.length != NBR_ARGUMENTS || args == null ) return false;
+        
+        for (String arg : args) {
+            if (arg == null || arg.isEmpty()) {
+                return false;
+            }
         }
+
+        File stopsFile = new File(args[0]);
+        File junctionsFile = new File(args[1]);
+        File schedulesDir = new File(args[2]);
+
+
+        if (!stopsFile.exists() || !stopsFile.isFile()) {
+            return false;
+        }
+        if (!junctionsFile.exists() || !junctionsFile.isFile()) {
+            return false;
+        }
+        if (!schedulesDir.exists() || !schedulesDir.isDirectory()) {
+            return false;
+        }
+
 
         return true;
     }

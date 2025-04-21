@@ -34,13 +34,13 @@ public class GUIController {
    * Constructor for GUIController.
    * Initializes the GUI and sets up event listeners.
    */
-  public GUIController() {
+  public GUIController(String[] args) {
     SwingUtilities.invokeLater(() -> {
       // Create the main window
       this.gui = new Gui();
       // init Graph class
-      String[] args = { "--parse", "mapData.csv", "junctionsData.csv", "Schedules/" };
       this.graph = CSVExtractor.makeObjectsFromCSV(args);
+      if ( graph == null ) System.exit(0);
       // init Controllers
       new KeyboardController(gui.getTextStart());
       new KeyboardController(gui.getTextEnd());
