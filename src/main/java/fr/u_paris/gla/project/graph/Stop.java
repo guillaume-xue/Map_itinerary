@@ -35,6 +35,7 @@ public class Stop implements Comparable<Stop>{
     public Stop(double longitude, double latitude, String nameOfAssociatedStation){
         this.longitude = longitude;
         this.latitude = latitude;
+
         this.nameOfAssociatedStation = nameOfAssociatedStation;
         this.f = Double.POSITIVE_INFINITY;
         this.g = Double.POSITIVE_INFINITY;
@@ -70,20 +71,28 @@ public class Stop implements Comparable<Stop>{
         timeDistancePerAdjacentStop.put(adjacentStop, new MutablePair<>(timeToNextStation, distanceToNextStation));
     }
 
+    public void addAdjacentStop(Stop adjacentStop, Duration timeToNextStation, Double distanceToNextStation){
+        timeDistancePerAdjacentStop.put(adjacentStop, new MutablePair<>(timeToNextStation, (Float) distanceToNextStation.floatValue()));
+    }
+
     public void addDeparture(Subline subline, ArrayList<LocalTime> times){
         departures.put(subline, times);
     }
 
     public double distanceBetweenAdjacentStop(Stop stop) {
-        return Math.abs(this.latitude - stop.latitude) + Math.abs(this.longitude - stop.longitude);
+        return GPS.distance(this.getLatitude(), this.getLongitude(), stop.getLatitude(), stop.getLongitude());
     }
 
     public ArrayList<Stop> getAdjacentStops() {
         return new ArrayList<>(timeDistancePerAdjacentStop.keySet());
     }
 
+    public boolean hasAdjacentStop(Stop s){
+        return timeDistancePerAdjacentStop.containsKey(s);
+    }
+
     public HashMap<Stop, MutablePair<Duration, Float>> getTimeDistancePerAdjacentStop(){
-        return this.timeDistancePerAdjacentStop;
+        return timeDistancePerAdjacentStop;
     }
 
     public double getF(){

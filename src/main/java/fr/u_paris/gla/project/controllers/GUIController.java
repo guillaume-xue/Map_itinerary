@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -14,11 +15,10 @@ import fr.u_paris.gla.project.astar.AStar;
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.utils.CSVExtractor;
+import fr.u_paris.gla.project.views.Gui;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import fr.u_paris.gla.project.views.Gui;
 
 public class GUIController {
 
@@ -155,7 +155,7 @@ public class GUIController {
       // FIXME ASAP
       String[] args = { "--parse", "mapData.csv", "junctionsData.csv" };
       Graph graph = CSVExtractor.makeOjectsFromCSV(args);
-      AStar astar = new AStar(graph);
+
 
       gui.getContentPanel().removeAll();
 
@@ -194,11 +194,17 @@ public class GUIController {
         // ArrayList<Stop> stops = new ArrayList<>();
 
         try {
-          Stop stopA = graph.getClosestStop(startCoordinates[0], startCoordinates[1]);
-          Stop stopB = graph.getClosestStop(endCoordinates[0], endCoordinates[1]);
 
-          astar.setDepartStop(stopA);
-          astar.setFinishStop(stopB);
+          //This should not be called if the default maximum distance between Stops has not been changed, as it takes really long.
+          graph.connectStopsByWalking();
+
+          //Create and get Start and Finish Stops
+          MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(startCoordinates[0], startCoordinates[1], endCoordinates[0], endCoordinates[1]);
+
+          AStar astar = new AStar(graph);
+
+          astar.setDepartStop(startFinish.left);
+          astar.setFinishStop(startFinish.right);
 
           ArrayList<Stop> stops = astar.findPath();
 
