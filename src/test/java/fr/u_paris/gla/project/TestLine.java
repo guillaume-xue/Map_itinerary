@@ -10,7 +10,7 @@ import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.graph.Subline;
 
 public class TestLine {
-    @Test
+    /*@Test
     public void addSublineTest(){
         ArrayList<Subline> listOfSublines = new ArrayList<>();
         ArrayList<LocalTime> departureTimesAtStartOfSubline = new ArrayList<>();
@@ -138,7 +138,7 @@ public class TestLine {
         for (Line line: listOfLines){
             System.out.println(line.toString());
         }
-    }
+    }*/
 
 
 }

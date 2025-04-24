@@ -120,7 +120,7 @@ public class Stop {
 
 
     
-    public Duration getTimeTo(Stop to, LocalTime departTime) {
+    /*public Duration getTimeTo(Stop to, LocalTime departTime) {
     	ArrayList<Pair<Stop, LocalTime>> nextStops = this.giveNextStopsArrivalTime(departTime);
 
         for (Pair<Stop, LocalTime> pair : nextStops) {
@@ -129,7 +129,7 @@ public class Stop {
             }
         }
         return Duration.ofHours(9999);
-    }
+    }*/
 
     //si il y a plusieurs façons d'attendre le prochain stop, renvoie la durée la plus courte
     public Duration getTimeTo(Stop to, LocalTime departTime) {

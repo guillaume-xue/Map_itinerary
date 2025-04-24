@@ -126,9 +126,9 @@ public class AStarBis {
 	                TransportTypes stopType = next.getMiddle();
 	                LocalTime arrivalTimeAtNeighbor = next.getRight();
 
-	                if (closedSet.contains(neighborStop) && stopsByTransportType.contains(new Pair(neighborStop, stopType))) continue;
+	                if (closedSet.contains(neighborStop) && stopsByTransportType.containsKey(new Pair(neighborStop, stopType))) continue;
 
-	                stopsByTransportType.put(neighborStop, stopType);
+	                stopsByTransportType.put(new Pair(neighborStop, stopType), arrivalTimeAtNeighbor);
 	                TraversalNode neighborNode = nodeMap.computeIfAbsent(neighborStop, stop -> new TraversalNode(stop));
 
 	                //a voir si il faut modif getTimeTo pour qu'il prenne en compte dans quel type de transport on est
