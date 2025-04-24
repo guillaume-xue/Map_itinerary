@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.HashSet;
 
 import java.time.LocalTime;
+import org.apache.commons.lang3.tuple.Triple;
+import fr.u_paris.gla.project.utils.TransportTypes;
 
 public class AStarBis {
 	//c'est dans costFunction qu'on décide de choisir un cout entre deux stop en distance ou en durée
@@ -99,6 +101,7 @@ public class AStarBis {
 	        PriorityQueue<TraversalNode> openSet = new PriorityQueue<>();
 	        Set<Stop> closedSet = new HashSet<>();
 	        Map<Stop, TraversalNode> nodeMap = new HashMap<>();
+	        Map<Pair<Stop, TransportTypes>, LocalTime> stopsByTransportType = new HashMap<>();
 
 	        TraversalNode startNode = new TraversalNode(start);
 	        startNode.setG(0);
@@ -118,12 +121,14 @@ public class AStarBis {
 
 	            closedSet.add(currentStop);
 
-	            for (Pair<Stop, LocalTime> next : currentStop.giveNextStopsArrivalTime(currentNode.getArrivalTime())) {
-	                Stop neighborStop = next.getKey();
-	                LocalTime arrivalTimeAtNeighbor = next.getValue();
+	            for (Triple<Stop, TransportTypes, LocalTime> next : currentStop.giveNextStopsArrivalTime(currentNode.getArrivalTime())) {
+	                Stop neighborStop = next.getLeft();
+	                TransportTypes stopType = next.getMiddle();
+	                LocalTime arrivalTimeAtNeighbor = next.getRight();
 
-	                if (closedSet.contains(neighborStop)) continue;
+	                if (closedSet.contains(neighborStop) && stopsByTransportType.contains(new Pair(neighborStop, stopType))) continue;
 
+	                stopsByTransportType.put(neighborStop, stopType);
 	                TraversalNode neighborNode = nodeMap.computeIfAbsent(neighborStop, stop -> new TraversalNode(stop));
 
 	                

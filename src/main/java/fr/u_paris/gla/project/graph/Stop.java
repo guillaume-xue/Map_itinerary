@@ -13,23 +13,19 @@ import java.util.Objects;
 import fr.u_paris.gla.project.utils.Pair;
 import fr.u_paris.gla.project.utils.GPS;
 import fr.u_paris.gla.project.io.UpgradedNetworkFormat;
+import fr.u_paris.gla.project.utils.TransportTypes;
 import java.util.PriorityQueue;
 
 
-public class Stop implements Comparable<Stop>{
+public class Stop {
 
     private double longitude;
     private double latitude;
     private String nameOfAssociatedStation;
-    
-    // Pour l'algo A*
-    private Stop cameFrom;
-    private double f;
-    private double g;
-    private double h;
 
     //A list of all adjacent stations, with the associated time and distance to get from current station to adjacent station. 
-    private HashMap<Stop, Pair<Duration, Float>> timeDistancePerAdjacentStop = new HashMap<>();
+    //private HashMap<Stop, Pair<Duration, Float>> timeDistancePerAdjacentStop = new HashMap<>();
+    private HashMap<Pair<Stop, TransportTypes >, Pair<Duration, Float>> timeDistancePerAdjacentStop = new HashMap<>();
 
     //For each subline that passes through this station, it should have an entry here
     /*if this station is not a departure station, 
@@ -41,18 +37,7 @@ public class Stop implements Comparable<Stop>{
         this.longitude = longitude;
         this.latitude = latitude;
         this.nameOfAssociatedStation = nameOfAssociatedStation;
-        this.f = Double.POSITIVE_INFINITY;
-        this.g = Double.POSITIVE_INFINITY;
     }
-
-    // public Stop(double longitude, double latitude, String nameOfAssociatedStation, int f, int g, int h){
-    //     this.longitude = longitude;
-    //     this.latitude = latitude;
-    //     this.nameOfAssociatedStation = nameOfAssociatedStation;
-    //     this.f = f;
-    //     this.g = g;
-    //     this.h = h;
-    // }
 
     public double getLongitude() {
         return longitude;
@@ -70,10 +55,15 @@ public class Stop implements Comparable<Stop>{
         return departures;
     }
 
-    public void addAdjacentStop(Stop adjacentStop, Duration timeToNextStation, Float distanceToNextStation){
+    /*public void addAdjacentStop(Stop adjacentStop, Duration timeToNextStation, Float distanceToNextStation){
         timeDistancePerAdjacentStop.put(adjacentStop, Pair.of(timeToNextStation, distanceToNextStation));
+    }*/
+
+    public void addAdjacentStop(Stop adjacentStop, TransportTypes mode, Duration timeToNextStation, Float distanceToNextStation){
+        timeDistancePerAdjacentStop.put(new Pair(adjacentStop, mode), new Pair(timeToNextStation, distanceToNextStation));
     }
 
+    
     public void addDeparture(Subline subline, ArrayList<LocalTime> times) {
         departures.put(subline, new ArrayList<>(times)); // defensive copy
     }
@@ -86,31 +76,48 @@ public class Stop implements Comparable<Stop>{
         return Math.abs(this.latitude - stop.latitude) + Math.abs(this.longitude - stop.longitude);
     }
 
-    public ArrayList<Stop> getAdjacentStops() {
+    /*public ArrayList<Stop> getAdjacentStops() {
         return new ArrayList<>(timeDistancePerAdjacentStop.keySet());
     }
 
     public HashMap<Stop, Pair<Duration, Float>> getTimeDistancePerAdjacentStop(){
         return this.timeDistancePerAdjacentStop;
+    }*/
+    
+    //à voir si cette fonction est encore utilisée qqpart
+    public ArrayList<Stop> getAdjacentStops() {
+        ArrayList<Stop> stops = new ArrayList<>();
+        for (Pair<Stop, TransportTypes> key : timeDistancePerAdjacentStop.keySet()) {
+            Stop stop = key.getKey();
+            if (!stops.contains(stop)) { // Évite les doublons si un stop est accessible par plusieurs modes
+                stops.add(stop);
+            }
+        }
+        return stops;
+    }
+
+    public HashMap<Pair<Stop, TransportTypes>, Pair<Duration, Float>> getTimeDistancePerAdjacentStop() {
+        return this.timeDistancePerAdjacentStop;
     }
     
-    public double getDistanceTo(Stop otherStop) {
+    /*public double getDistanceTo(Stop otherStop) {
         Pair<Duration, Float> data = timeDistancePerAdjacentStop.get(otherStop);
         if (data != null) {
             return data.getValue(); // Retourne la distance
         }
         return Double.POSITIVE_INFINITY; // Arrêt non voisin, retourner un coût infini
+    }*/
+    
+    public double getDistanceTo(Stop otherStop, boolean byWalk) {
+    	TransportTypes mode = byWalk ? TransportTypes.Walk : associatedSublinesType;
+        Pair<Duration, Float> data = timeDistancePerAdjacentStop.get(new Pair(otherStop, mode));
+        if (data != null) {
+            return data.getValue(); // distance
+        }
+        return Double.POSITIVE_INFINITY;
     }
 
-    
-    //à voir pour toutes les stations adjacentes mais qui sont adjacentes à pied car la durée est pas init je crois
-    /*public Duration getTimeTo(Stop otherStop) {
-        Pair<Duration, Float> data = timeDistancePerAdjacentStop.get(otherStop);
-        if (data != null) {
-            return data.getKey(); // Retourne la durée 
-        }
-        return Duration.ofHours(9999); // Arrêt non voisin, retourner une durée maximale
-    }*/
+
     
     public Duration getTimeTo(Stop to, LocalTime departTime) {
     	ArrayList<Pair<Stop, LocalTime>> nextStops = this.giveNextStopsArrivalTime(departTime);
@@ -124,7 +131,7 @@ public class Stop implements Comparable<Stop>{
     }
 
 
-    public void showTimeDistancePerAdjacentStop() {
+    /*public void showTimeDistancePerAdjacentStop() {
     	System.out.println(this.nameOfAssociatedStation);
         for (Map.Entry<Stop, Pair<Duration, Float>> entry : timeDistancePerAdjacentStop.entrySet()) {
             Stop adjacentStop = entry.getKey();
@@ -136,7 +143,24 @@ public class Stop implements Comparable<Stop>{
             System.out.println(adjacentStop.getNameOfAssociatedStation() + " - Durée: " + 
             UpgradedNetworkFormat.formatDuration(duration) + " min - Distance: " + distance + " m");
         }
+    }*/
+    
+    
+    public void showTimeDistancePerAdjacentStop() {
+        System.out.println(this.nameOfAssociatedStation);
+        for (Map.Entry<Pair<Stop, TransportTypes>, Pair<Duration, Float>> entry : timeDistancePerAdjacentStop.entrySet()) {
+            Stop adjacentStop = entry.getKey().getKey();
+            TransportTypes mode = entry.getKey().getValue();
+            Pair<Duration, Float> data = entry.getValue();
+
+            Duration duration = data.getKey();
+            Float distance = data.getValue();
+
+            System.out.println(adjacentStop.getNameOfAssociatedStation() + " (" + mode + ") - Durée: " + 
+                UpgradedNetworkFormat.formatDuration(duration) + " min - Distance: " + distance + " m");
+        }
     }
+
 
     /*en disant qu'on est au stop this au moment departTime alors ça nous dis à quelle 
     heure on pourra et devra être au stop suivant
@@ -145,7 +169,7 @@ public class Stop implements Comparable<Stop>{
     et si c'est un trajet en train alors ça donne l'horaire auquel le prochain train qui 
     va à la station suivante arrivera là-bas
     */
-    public ArrayList<Pair<Stop, LocalTime>> giveNextStopsArrivalTime(LocalTime departTime) {
+    /*public ArrayList<Pair<Stop, LocalTime>> giveNextStopsArrivalTime(LocalTime departTime) {
     	ArrayList<Pair<Stop, LocalTime>> result = new ArrayList<>();
         Set<Stop> alreadyProcessed = new HashSet<>(); // Pour éviter les doublons
 
@@ -189,51 +213,69 @@ public class Stop implements Comparable<Stop>{
         }
 
         return result;
-    }
+    }*/
     
-    
-    public void showNextStopsArrivalTime(LocalTime depart) {
-    	ArrayList<Pair<Stop, LocalTime>> result = giveNextStopsArrivalTime(depart);
-    	for (Pair<Stop, LocalTime> p : result) {
-    	    System.out.println("Prochain stop : " + p.getKey().getNameOfAssociatedStation()
-    	        + " à " + p.getValue());
+    public Stop findNextStopInSubline(Subline subline) {
+    	ArrayList<Stop> stops = subline.getListOfStops();
+    	for(int i = 0; i<stops.size() -1; i++) {
+    		if (stops.get(i).equals(this)) {
+    			return stops.get(i + 1);
+    		}
     	}
-    }
-
-    public double getF(){
-        return f;
-    }
-
-    public double getG() {
-        return g;
-    }
-
-    public double getH() {
-        return h;
+    	return null;
     }
     
-    public void setCameFrom(Stop cameFrom) {
-        this.cameFrom = cameFrom;
+    public ArrayList<Triple<Stop, TransportTypes, LocalTime>> giveNextStopsArrivalTime(LocalTime departTime) {
+        ArrayList<Triple<Stop, TransportTypes, LocalTime>> result = new ArrayList<>();
+        Set<Pair<Stop, TransportTypes>> alreadyProcessed = new HashSet<>();
+
+        // 1. Cas des trajets véhiculés (rail, tram, subway, bus)
+        for (Map.Entry<Subline, ArrayList<LocalTime>> entry : departures.entrySet()) {
+            Subline subline = entry.getKey();
+            ArrayList<LocalTime> departureTimes = entry.getValue();
+            TransportTypes mode = subline.getSublineType(); 
+            Stop nextStop = findNextStopInSubline(subline);
+            if (nextStop == null) continue;
+            Pair<Stop, TransportTypes> key = new Pair(nextStop, mode);
+            Pair<Duration, Float> timeDist = timeDistancePerAdjacentStop.get(key);
+            if (timeDist != null) {
+            	Duration travelTime = timeDist.getKey();
+                for (LocalTime departure : departureTimes) {
+             		if (!departure.isBefore(departTime.plus(travelTime))) {
+               			result.add(Triple.of(nextStop, mode, departure));
+                        alreadyProcessed.add(key);
+                        break;
+                    }
+             	}
+            }
+        }
+
+        // 2. Cas des trajets à pied
+        for (Map.Entry<Pair<Stop, TransportTypes>, Pair<Duration, Float>> entry : timeDistancePerAdjacentStop.entrySet()) {
+            Pair<Stop, TransportTypes> key = entry.getKey();
+            Stop nextStop = key.getKey();
+            TransportTypes mode = key.getValue();
+
+            if (mode == TransportTypes.Walk && !alreadyProcessed.contains(key)) {
+                Duration travelTime = entry.getValue().getKey();
+                LocalTime arrivalTime = departTime.plus(travelTime);
+                result.add(Triple.of(nextStop, mode, arrivalTime));
+            }
+        }
+
+        return result;
     }
 
-    public void setG(double g) {
-        this.g = g;
-        //this.f = g+h;
+
+    public void showNextStopsArrivalTime(LocalTime depart) {
+        ArrayList<Triple<Stop, TransportTypes, LocalTime>> result = giveNextStopsArrivalTime(depart);
+        for (Triple<Stop, TransportTypes, LocalTime> t : result) {
+            System.out.println("Prochain stop : " + t.getLeft().getNameOfAssociatedStation()
+                + " à " + t.getRight() + " via " + t.getMiddle().toString());
+        }
     }
 
-    public void setH(double h) {
-        this.h = h;
-        //this.f = g+h;
-    }
-
-    public void setF() {
-    	this.f = this.h + this.g;
-    }
     
-    public Stop getCameFrom() {
-        return cameFrom;
-    }
-
     @Override
     public String toString() {
         return String.format(
@@ -248,28 +290,12 @@ public class Stop implements Comparable<Stop>{
     }
 
     public String getAllConnections(){
-
         ArrayList<String> temp = new ArrayList<>();
-
-        timeDistancePerAdjacentStop.forEach((k,v) -> temp.add(k.getNameOfAssociatedStation()));
+        timeDistancePerAdjacentStop.forEach((k,v) -> temp.add(k.getKey().getNameOfAssociatedStation()));
         return String.join(", ", temp);
     }
 
     
-    //pour pouvoir explorer les noeuds ds l'ordre des f les plus petits
-    @Override
-    public int compareTo(Stop other) {
-        double thisF = this.getF();
-        double otherF = other.getF();
-        return Double.compare(thisF, otherF);
-    }
-    
-    /* à jeter, normalement...
-     //FIXME
-    @Override
-    public int compareTo(Stop o) {
-        return nameOfAssociatedStation.compareTo(o.nameOfAssociatedStation);
-    }*/
 
     @Override
     public int hashCode() {

@@ -2,11 +2,13 @@ package fr.u_paris.gla.project.graph;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+import fr.u_paris.gla.project.utils.TransportTypes;
 
 public class Subline {
 
     private String name;
 
+    private TransportTypes sublineType;
     //The first Stop should ALWAYS be the departure Stop.
     private ArrayList<Stop> listOfStops = new ArrayList<>();
     private ArrayList<LocalTime> departureTimesAtStartOfSubline = new ArrayList<>();
@@ -25,6 +27,10 @@ public class Subline {
     
     public ArrayList<Stop> getListOfStops(){
         return this.listOfStops;
+    }
+    
+    public TransportTypes getSublineType() {
+    	return sublineType;
     }
 
     //Stop should be the departure Stop. 
