@@ -3,19 +3,20 @@ package fr.u_paris.gla.project.graph;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import fr.u_paris.gla.project.utils.TransportTypes;
+
 public class Line implements Comparable<Line>{
     
     private String id; // clef primaire
     private String name;
-    private String type;
+    private TransportTypes type;
     private String color;
     private ArrayList<Subline> listOfSublines = new ArrayList<>();
-
     
     public Line(String id, String name, String type, String color){
         this.id = id;
         this.name = name;
-        this.type = type;
+        this.type = TransportTypes.valueOf(type);
         this.color = color;
     }
 
@@ -31,7 +32,7 @@ public class Line implements Comparable<Line>{
         return name;
     }
 
-    public String getType(){
+    public TransportTypes getType(){
         return type;
     }
 
@@ -46,6 +47,12 @@ public class Line implements Comparable<Line>{
     public void setListOfSublines(ArrayList<Subline> newSublines){
         this.listOfSublines.clear();
         this.listOfSublines.addAll(newSublines);
+    }
+
+    public void setSublinesTransportType(){
+        for ( Subline subl : listOfSublines ){
+            subl.setTransportType(this.type);
+        }
     }
 
     @Override

@@ -33,6 +33,10 @@ public class Subline {
     	return sublineType;
     }
 
+    public void setTransportType(TransportTypes type){
+        this.sublineType = type;
+    }
+
     //Stop should be the departure Stop. 
     public void addDepartureTimes(Stop Stop, ArrayList<LocalTime> departureTimes) throws Exception{
         if(!Stop.equals(listOfStops.get(0))){

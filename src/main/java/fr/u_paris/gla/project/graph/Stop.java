@@ -15,6 +15,7 @@ import fr.u_paris.gla.project.utils.GPS;
 import fr.u_paris.gla.project.io.UpgradedNetworkFormat;
 import fr.u_paris.gla.project.utils.TransportTypes;
 import java.util.PriorityQueue;
+import org.apache.commons.lang3.tuple.Triple;
 
 
 public class Stop {
@@ -55,14 +56,9 @@ public class Stop {
         return departures;
     }
 
-    /*public void addAdjacentStop(Stop adjacentStop, Duration timeToNextStation, Float distanceToNextStation){
-        timeDistancePerAdjacentStop.put(adjacentStop, Pair.of(timeToNextStation, distanceToNextStation));
-    }*/
-
-    public void addAdjacentStop(Stop adjacentStop, TransportTypes mode, Duration timeToNextStation, Float distanceToNextStation){
-        timeDistancePerAdjacentStop.put(new Pair(adjacentStop, mode), new Pair(timeToNextStation, distanceToNextStation));
+    public void addAdjacentStop(Stop adjacentStop, String mode, Duration timeToNextStation, Float distanceToNextStation){
+        timeDistancePerAdjacentStop.put(new Pair(adjacentStop, TransportTypes.valueOf(mode)), new Pair(timeToNextStation, distanceToNextStation));
     }
-
     
     public void addDeparture(Subline subline, ArrayList<LocalTime> times) {
         departures.put(subline, new ArrayList<>(times)); // defensive copy
