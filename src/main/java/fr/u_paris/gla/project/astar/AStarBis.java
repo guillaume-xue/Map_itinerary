@@ -131,7 +131,7 @@ public class AStarBis {
 	                stopsByTransportType.put(neighborStop, stopType);
 	                TraversalNode neighborNode = nodeMap.computeIfAbsent(neighborStop, stop -> new TraversalNode(stop));
 
-	                
+	                //a voir si il faut modif getTimeTo pour qu'il prenne en compte dans quel type de transport on est
 	                double tentativeG = currentNode.getG() +
 	                	    costFunction.costBetween(currentStop, neighborStop, currentNode.getArrivalTime());
 

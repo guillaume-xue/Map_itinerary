@@ -108,12 +108,17 @@ public class Stop {
         return Double.POSITIVE_INFINITY; // Arrêt non voisin, retourner un coût infini
     }*/
     
-    public double getDistanceTo(Stop otherStop, boolean byWalk) {
-    	TransportTypes mode = byWalk ? TransportTypes.Walk : associatedSublinesType;
-        Pair<Duration, Float> data = timeDistancePerAdjacentStop.get(new Pair(otherStop, mode));
-        if (data != null) {
-            return data.getValue(); // distance
+    
+    //retourne la distance avec le prochain stop en sachant que peut importe le type de transport la distance est calculée pareil
+    public double getDistanceTo(Stop otherStop) {
+        // Parcourir toutes les clés de la map pour vérifier si le Stop correspond à otherStop
+        for (Map.Entry<Pair<Stop, TransportTypes>, Pair<Duration, Float>> entry : timeDistancePerAdjacentStop.entrySet()) {
+            // Si la clé contient otherStop, on récupère la distance
+            if (entry.getKey().getKey().equals(otherStop)) {
+                return entry.getValue().getValue(); 
+            }
         }
+        // Si on n'a pas trouvé la paire, retourner une distance infinie
         return Double.POSITIVE_INFINITY;
     }
 
@@ -128,6 +133,27 @@ public class Stop {
             }
         }
         return Duration.ofHours(9999);
+    }
+
+    //si il y a plusieurs façons d'attendre le prochain stop, renvoie la durée la plus courte
+    public Duration getTimeTo(Stop to, LocalTime departTime) {
+        // Récupérer la liste des prochains arrêts avec leur heure d'arrivée
+        ArrayList<Triple<Stop, TransportTypes, LocalTime>> nextStops = this.giveNextStopsArrivalTime(departTime);
+        Duration minDuration = Duration.ofHours(9999); // On initialise à une durée très longue
+
+        // Parcourir tous les triplets dans nextStops
+        for (Triple<Stop, TransportTypes, LocalTime> triple : nextStops) {
+            if (triple.getLeft().equals(to)) {
+                // Calculer la durée entre departTime et l'heure d'arrivée
+                Duration duration = Duration.between(departTime, triple.getRight());
+                
+                // Comparer et garder la durée minimale
+                if (duration.compareTo(minDuration) < 0) {
+                    minDuration = duration;
+                }
+            }
+        }
+        return minDuration;
     }
 
 
