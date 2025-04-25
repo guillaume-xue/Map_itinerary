@@ -100,7 +100,7 @@ public final class CSVExtractor {
         // On associe les sous-lignes à leur ligne
         try{
             CSVTools.readCSVFromFile(args[JUNCTIONS_FILE_ID],(String[] line) -> 
-                readJunctions(line, mapOfLines, mapOfStopEntry, mapOfStops));
+                readJunctions(line, mapOfLines, mapOfStopEntry, lineById));
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error while reading the Junctions data file", e);
         }
@@ -142,11 +142,7 @@ public final class CSVExtractor {
         // pour toutes les autres stations selon leurs adjacences.
         LOGGER.info("Objects parsing in progress: adding all other schedules");
         addMissingSchedules(listOfLines);
-        
-        //Collections.sort(listOfStops);
-        //Collections.sort(listOfLines);
-        
-        
+
         Graph graph = new Graph(listOfStops, listOfLines);
         LOGGER.info("Objects parsing finished: Graph done");
 
@@ -276,17 +272,17 @@ public final class CSVExtractor {
     /**
      * Reads a line from the junctions data CSV and adds the potential path to the
      * transport line.
+     * Creates a Subline, and generates its potentiel path, from the text line being read in the JunctionsData CSV
      * 
-     * @param      line            The text line from csv being read
+     * @param      line            The text line from csv
      * @param      mapOfLines      The map of lines
      * @param      mapOfStopEntry  The map of stop entry
-     * @param      mapOfStops      The map of stops
      */
     public static void readJunctions(
         String[] line,
         Map<String,ArrayList<Subline>> mapOfLines,
-        Map<String,ArrayList<Stop>> mapOfStopEntry, 
-        Map<Pair<Double,Double>,Stop> mapOfStops
+        Map<String,ArrayList<Stop>> mapOfStopEntry,
+        Map<String,Line> lineById
     ){
         // La ligne de transport
         String ligne = line[UpgradedNetworkFormat.LINE_ID_INDEX];
@@ -312,6 +308,7 @@ public final class CSVExtractor {
         }
 
         variantSubline.setListOfStops(listOfStops);
+        variantSubline.setAssociatedLine(lineById.get(ligne));
         mapOfLines.get(ligne).add(variantSubline);
     }
 

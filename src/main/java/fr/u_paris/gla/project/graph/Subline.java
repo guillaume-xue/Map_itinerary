@@ -51,6 +51,10 @@ public class Subline {
     public Line getAssociatedLine() {
     	return this.associatedLine;
     }
+
+    public void setAssociatedLine(Line ligne){
+        this.associatedLine = ligne;
+    }
     
     public void setListOfStops(ArrayList<Stop> listOfStops){
         this.listOfStops = listOfStops;
