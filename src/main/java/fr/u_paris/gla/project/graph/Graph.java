@@ -1,11 +1,16 @@
 package fr.u_paris.gla.project.graph;
 
 import java.util.ArrayList;
+import fr.u_paris.gla.project.utils.TransportTypes;
+import java.util.Collections;
 
 public class Graph {
-
+    //constante pour la ligne de marche
+    public static final Line WALK_LINE = new Line("IDWALK", "Marche a pied", "Walk", "808080");
     private ArrayList<Stop> listOfStops = new ArrayList<>();
-    private ArrayList<Line> listOfLines = new ArrayList<>();
+    
+    //on ajoute la Line WALK_LINE à notre graphe, au debut elle est vide puis elle est remplie par l'algo quand c'est nécéssaire
+    private ArrayList<Line> listOfLines = new ArrayList<>(Collections.singletonList(WALK_LINE));
 
     public Graph(ArrayList<Stop> listOfStops, ArrayList<Line> listOfLines){
         this.listOfLines = listOfLines;
@@ -63,6 +68,7 @@ public class Graph {
         return this.listOfStops;
     }
 
+    
     @Override
     public String toString(){
         return "--- List of Stops: ---\n" +

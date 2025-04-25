@@ -36,7 +36,7 @@ public final class CSVExtractor {
     private static final int STOPS_FILE_ID = 1;
     private static final int JUNCTIONS_FILE_ID = 2;
     private static final int SCHEDULE_DIR_ID = 3;
-
+   
     // Distance maximale pour le linking des quais
     private static final int MAX_DISTANCE = 150;
 
@@ -145,6 +145,7 @@ public final class CSVExtractor {
         
         //Collections.sort(listOfStops);
         //Collections.sort(listOfLines);
+        
         
         Graph graph = new Graph(listOfStops, listOfLines);
         LOGGER.info("Objects parsing finished: Graph done");

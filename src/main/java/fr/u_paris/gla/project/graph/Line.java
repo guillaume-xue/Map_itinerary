@@ -21,7 +21,9 @@ public class Line implements Comparable<Line>{
     }
 
     public void addSubline(Subline subline){
-        listOfSublines.add(subline);
+    	if (!listOfSublines.contains(subline)) {
+            listOfSublines.add(subline);
+        }
     }
 
     public String getId(){

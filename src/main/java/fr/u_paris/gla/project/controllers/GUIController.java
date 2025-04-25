@@ -16,6 +16,7 @@ import fr.u_paris.gla.project.astar.CostFunctionFactory;
 import fr.u_paris.gla.project.astar.AStarBis;
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
+import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.utils.CSVExtractor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -218,8 +219,13 @@ public class GUIController {
 
           //v2 astar
           LocalTime heureDepart = LocalTime.of(19, 38);
+          //2 prochaines lignes à jeter qd c'est adapté au nv format
           ArrayList<Pair<Stop, LocalTime>> stopsAndTimes = astar.findShortestPath(stopA, stopB, heureDepart);
           printPathWithTimes(stopsAndTimes);
+          
+          //pour le nouveau format
+          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath2(stopA, stopB, heureDepart);
+          displayItinerary(itinerary);
 
           // Display the path on the map
           gui.getContentPanel().add(gui.displayPath(stopsAndTimes));
@@ -257,6 +263,20 @@ public class GUIController {
       }
   }
 
+  //TBD
+  //pr debugger
+  public void displayItinerary(ArrayList<SegmentItineraire> itinerary) {
+	    if (itinerary == null || itinerary.isEmpty()) {
+	        System.out.println("L'itinéraire est vide.");
+	        return;
+	    }
+
+	    System.out.println("Itinéraire :");
+	    for (SegmentItineraire segment : itinerary) {
+	        System.out.println(segment);
+	    }
+	}
+  
   /**
    * Initializes the menu bar with action listeners for metro and bus options.
    * Toggles the checkmark icons when selected.
