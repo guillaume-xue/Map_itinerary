@@ -475,7 +475,7 @@ public final class CSVExtractor {
                     Stop currentStop = stops.get(i);
 
                     Duration durationToNext = previousStop.getTimeDistancePerAdjacentStop()
-                        .get(currentStop).getKey();
+                        .get(new Pair<>(currentStop, line.getType())).getKey();
 
                     currentTime = currentTime.plus(durationToNext);
 
