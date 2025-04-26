@@ -219,11 +219,13 @@ public class GUIController {
 
           //v2 astar
           LocalTime heureDepart = LocalTime.of(19, 38);
-          //2 prochaines lignes à jeter qd c'est adapté au nv format
+          //3 prochaines lignes à jeter qd c'est adapté au nv format
+          System.out.println("recherche du chemin avec algo obsolete");
           ArrayList<Pair<Stop, LocalTime>> stopsAndTimes = astar.findShortestPath(stopA, stopB, heureDepart);
           printPathWithTimes(stopsAndTimes);
           
           //pour le nouveau format
+          System.out.println("recherche du chemin avec nouvel algo");
           ArrayList<SegmentItineraire> itinerary = astar.findShortestPath2(stopA, stopB, heureDepart);
           displayItinerary(itinerary);
 

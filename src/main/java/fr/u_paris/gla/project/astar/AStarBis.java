@@ -104,8 +104,9 @@ public class AStarBis {
 
 	        currentStops.addFirst(current.getStop());
 
+	        TraversalNode previous = current.getCameFrom();
 	        while (current.getCameFrom() != null) {
-	            TraversalNode previous = current.getCameFrom();
+	            previous = current.getCameFrom();
 
 	            // Si la subline change, on termine le segment
 	            if (!currentSubline.equals(previous.getSublineUsed())) {
@@ -128,7 +129,8 @@ public class AStarBis {
 	        }
 
 	        // Ajouter le dernier segment (du début de l'itinéraire)
-	        result.add(0, new SegmentItineraire(currentSubline, new ArrayList<>(currentStops), heureDepart, heureArrivee));
+	        //inutile si on dit qu'on part du stop le plus proche de l'endroit qu'on entre ds l'interface
+	        //result.add(0, new SegmentItineraire(currentSubline, new ArrayList<>(currentStops), heureDepart, heureArrivee));
 
 	        return result;
 	    }
