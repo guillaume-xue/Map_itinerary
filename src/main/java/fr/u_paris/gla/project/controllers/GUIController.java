@@ -192,9 +192,11 @@ public class GUIController {
         return;
       }
 
-      //avec version astar2 où ou peut choisir si on veut le chemin le plus court en duree ou distance
-      //faudra appeler qu'un des choix en fonction de ce que l'utilisateur demande
-      //CostFunction costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DISTANCE);
+      // avec version astar2 où ou peut choisir si on veut le chemin le plus court en
+      // duree ou distance
+      // faudra appeler qu'un des choix en fonction de ce que l'utilisateur demande
+      // CostFunction costFunction =
+      // CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DISTANCE);
       CostFunction costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DURATION);
       AStarBis astar = new AStarBis(costFunction);
 
@@ -217,20 +219,20 @@ public class GUIController {
           Stop stopA = graph.getClosestStop(startCoordinates[0], startCoordinates[1]);
           Stop stopB = graph.getClosestStop(endCoordinates[0], endCoordinates[1]);
 
-          //v2 astar
+          // v2 astar
           LocalTime heureDepart = LocalTime.of(19, 38);
-          //3 prochaines lignes à jeter qd c'est adapté au nv format
+          // 3 prochaines lignes à jeter qd c'est adapté au nv format
           System.out.println("recherche du chemin avec algo obsolete");
           ArrayList<Pair<Stop, LocalTime>> stopsAndTimes = astar.findShortestPath(stopA, stopB, heureDepart);
           printPathWithTimes(stopsAndTimes);
-          
-          //pour le nouveau format
+
+          // pour le nouveau format
           System.out.println("recherche du chemin avec nouvel algo");
           ArrayList<SegmentItineraire> itinerary = astar.findShortestPath2(stopA, stopB, heureDepart);
           displayItinerary(itinerary);
 
           // Display the path on the map
-          gui.getContentPanel().add(gui.displayPath(stopsAndTimes));
+          gui.getContentPanel().add(gui.displayPath(itinerary));
           gui.getContentPanel().add(new JPanel());
           gui.getContentPanel().revalidate();
           gui.getContentPanel().repaint();
@@ -251,34 +253,35 @@ public class GUIController {
   }
 
   // TBD
-  //la fonction c'est juste en attendant qu'on ait les affichages avec horaire ds l'app et c'est pour debugger
+  // la fonction c'est juste en attendant qu'on ait les affichages avec horaire ds
+  // l'app et c'est pour debugger
   public static void printPathWithTimes(ArrayList<Pair<Stop, LocalTime>> stopsAndTimes) {
-      if (stopsAndTimes == null || stopsAndTimes.isEmpty()) {
-          System.out.println("Aucun chemin trouvé.");
-          return;
-      }
-      System.out.println("Chemin trouvé :");
-      for (Pair<Stop, LocalTime> pair : stopsAndTimes) {
-          Stop stop = pair.getKey();
-          LocalTime time = pair.getValue();
-          System.out.println(" -> " + stop.getNameOfAssociatedStation() + " à " + time);
-      }
+    if (stopsAndTimes == null || stopsAndTimes.isEmpty()) {
+      System.out.println("Aucun chemin trouvé.");
+      return;
+    }
+    System.out.println("Chemin trouvé :");
+    for (Pair<Stop, LocalTime> pair : stopsAndTimes) {
+      Stop stop = pair.getKey();
+      LocalTime time = pair.getValue();
+      System.out.println(" -> " + stop.getNameOfAssociatedStation() + " à " + time);
+    }
   }
 
-  //TBD
-  //pr debugger
+  // TBD
+  // pr debugger
   public void displayItinerary(ArrayList<SegmentItineraire> itinerary) {
-	    if (itinerary == null || itinerary.isEmpty()) {
-	        System.out.println("L'itinéraire est vide.");
-	        return;
-	    }
+    if (itinerary == null || itinerary.isEmpty()) {
+      System.out.println("L'itinéraire est vide.");
+      return;
+    }
 
-	    System.out.println("Itinéraire :");
-	    for (SegmentItineraire segment : itinerary) {
-	        System.out.println(segment);
-	    }
-	}
-  
+    System.out.println("Itinéraire :");
+    for (SegmentItineraire segment : itinerary) {
+      System.out.println(segment);
+    }
+  }
+
   /**
    * Initializes the menu bar with action listeners for metro and bus options.
    * Toggles the checkmark icons when selected.
