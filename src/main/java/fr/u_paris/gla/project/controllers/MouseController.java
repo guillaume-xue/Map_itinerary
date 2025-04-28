@@ -99,16 +99,19 @@ public class MouseController {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-      if (e.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(e)) {
+      if (e.getClickCount() == 3 && SwingUtilities.isLeftMouseButton(e)) {
         mapViewer.removeAllMapMarkers();
         mapViewer.removeAllMapPolygons();
+        gui.getContentPanel().removeAll();
+        gui.getContentPanel().revalidate();
+        gui.getContentPanel().repaint();
         Point clickPoint = e.getPoint();
         Coordinate coord = new Coordinate(mapViewer.getPosition(clickPoint).getLat(),
             mapViewer.getPosition(clickPoint).getLon());
         mapViewer.addMapMarker(new MapMarkerDot(coord));
         try {
-          Stop stop = graph.getClosestStop(coord.getLon(), coord.getLat());
-          gui.getContentPanel().add(gui.displayListOfStopDeparture(stop.getDepartures()));
+          Stop stop = graph.getClosestStop(coord.getLat(), coord.getLon());
+          gui.getContentPanel().add(gui.displayListOfStopDeparture(stop));
         } catch (Exception e1) {
           // TODO Auto-generated catch block
           e1.printStackTrace();

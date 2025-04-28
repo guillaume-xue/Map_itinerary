@@ -37,5 +37,20 @@ public class SegmentItineraire {
                "Heure d'arrivée: " + heureArrivee;
     }
 
+    public LocalTime getHeureArrivee() {
+      return heureArrivee;
+    }
+
+    public LocalTime getHeureDepart() {
+      return heureDepart;
+    }
+
+    public ArrayList<Stop> getStops() {
+      return stops;
+    }
+    
+    public Subline getSubline() {
+      return subline;
+    }
 
 }

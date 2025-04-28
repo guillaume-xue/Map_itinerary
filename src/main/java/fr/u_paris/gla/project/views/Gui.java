@@ -16,11 +16,12 @@ import javax.swing.border.AbstractBorder;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Line;
 import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.graph.Subline;
-import fr.u_paris.gla.project.utils.Pair;
+import fr.u_paris.gla.project.utils.TransportTypes;
 
 public class Gui extends JFrame {
 
@@ -333,51 +334,133 @@ public class Gui extends JFrame {
    * 
    * @return the panel containing the text content
    */
-  public JPanel displayPath(ArrayList<Pair<Stop, LocalTime>> stopsAndTimes) {
+  public JPanel displayPath(ArrayList<SegmentItineraire> segments) {
+    // Clear the map and content panel before displaying new paths
+    mapViewer.removeAllMapMarkers();
+    mapViewer.removeAllMapPolygons();
+    mapViewer.repaint();
+    // Clear the content panel
+    contentPanel.removeAll();
+    contentPanel.revalidate();
+    contentPanel.repaint();
+    // Create a new panel to display the paths
     JPanel pathPanel = new JPanel();
     pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
     pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
     pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
-    // initialize the first stop
-    Stop stop = stopsAndTimes.get(0).getKey();
-    JTextArea stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
-    pathPanel.add(stopTextArea);
-    Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
-    mapViewer.setDisplayPosition(mStart, 12);
-    MapMarkerDot parisMarker = new MapMarkerDot(mStart);
-    mapViewer.addMapMarker(parisMarker);
-    // draw the path and add TextAreas for each stop
-    for (int i = 1; i < stopsAndTimes.size(); i++) {
-      stop = stopsAndTimes.get(i).getKey();
-      // add TextArea for the stop
-      stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
-      pathPanel.add(stopTextArea);
-      // draw the path
-      Coordinate mEnd = new Coordinate(stop.getLongitude(), stop.getLatitude()); // Paris center
-      MapPolygon mLine = new MapPolygonImpl(mStart, mEnd, mStart);
-      MapMarkerDot markerDot = new MapMarkerDot(mEnd);
-      mapViewer.addMapPolygon(mLine);
-      mapViewer.addMapMarker(markerDot);
-      // update the start
-      mStart = mEnd;
+    // Iterate through the segments and display each one
+    for (SegmentItineraire segment : segments) {
+      // Print the number of stops
+      JTextArea sublineTextArea = createTextAreaOutput(segment.getSubline().getAssociatedLine().getName() + " - "
+          + segment.getSubline().getSublineType());
+      pathPanel.add(sublineTextArea);
+      if (segment.getSubline().getSublineType() == TransportTypes.Walk) {
+        pathPanel.add(Box.createRigidArea(new Dimension(0, 30))); // Add spacing between segments
+        continue; // Skip if the subline type is "Walk"
+      }
+      // Print the first subline name
+      Stop startStop = segment.getStops().get(0);
+      JTextArea startTextArea = createTextAreaOutput(startStop.getNameOfAssociatedStation());
+      pathPanel.add(startTextArea);
+      Coordinate mStart = new Coordinate(startStop.getLongitude(), startStop.getLatitude());
+      mapViewer.setDisplayPosition(mStart, 12);
+      MapMarkerDot parisMarker = new MapMarkerDot(mStart);
+      mapViewer.addMapMarker(parisMarker);
+      // draw the path and add TextAreas for each stop
+      for (int i = 1; i < segment.getStops().size(); i++) {
+        Stop stop = segment.getStops().get(i);
+        // add TextArea for the stop
+        JTextArea stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
+        pathPanel.add(stopTextArea);
+        // draw the path
+        Coordinate mEnd = new Coordinate(stop.getLongitude(), stop.getLatitude()); // Paris center
+        String color = "#" + segment.getSubline().getAssociatedLine().getColor();
+        MapPolygon coloredPolygon = new ColoredMapPolygon(mStart, mEnd, mStart, Color.decode(color));
+        MapMarkerDot markerDot = new MapMarkerDot(mEnd);
+        mapViewer.addMapPolygon(coloredPolygon);
+        mapViewer.addMapMarker(markerDot);
+        // update the start
+        mStart = mEnd;
+      }
+      pathPanel.add(Box.createRigidArea(new Dimension(0, 30))); // Add spacing between segments
     }
     return pathPanel;
   }
 
-  public JPanel displayListOfStopDeparture(HashMap<Subline, ArrayList<LocalTime>> departures) {
+  /**
+   * Adds a toggle functionality to expand or collapse the list of times when
+   * clicking on a subline text.
+   * 
+   * @param sublineTextArea the JTextArea representing the subline
+   * @param timesPanel      the JPanel containing the list of times
+   */
+  private void addToggleFunctionality(JTextArea sublineTextArea, JPanel timesPanel) {
+    sublineTextArea.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    sublineTextArea.addMouseListener(new java.awt.event.MouseAdapter() {
+      private boolean expanded = false;
+
+      @Override
+      public void mouseClicked(java.awt.event.MouseEvent e) {
+        expanded = !expanded;
+        timesPanel.setVisible(expanded);
+        timesPanel.getParent().revalidate();
+        timesPanel.getParent().repaint();
+      }
+    });
+  }
+
+  public JPanel displayListOfStopDeparture(Stop stop) {
+    HashMap<Subline, ArrayList<LocalTime>> departures = stop.getDepartures();
     JPanel pathPanel = new JPanel();
     pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
     pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
     pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
-    System.out.println(departures);
+    JTextArea stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
+    pathPanel.add(stopTextArea);
+    pathPanel.add(Box.createRigidArea(new Dimension(0, 30))); // Add spacing between segments
     for (Subline subline : departures.keySet()) {
+      JTextArea sublineTextArea = createTextAreaOutput(
+          subline.getAssociatedLine().getName() + " - " + subline.getDestination().getNameOfAssociatedStation());
+      pathPanel.add(sublineTextArea);
+
+      JPanel timesPanel = new JPanel();
+      timesPanel.setLayout(new BoxLayout(timesPanel, BoxLayout.Y_AXIS)); // Ensure vertical layout for times
+      timesPanel.setVisible(false); // Initially hidden
+
       ArrayList<LocalTime> times = departures.get(subline);
       for (LocalTime time : times) {
         JTextArea timeTextArea = createTextAreaOutput(time.toString());
-        pathPanel.add(timeTextArea);
+        timesPanel.add(timeTextArea);
       }
+
+      pathPanel.add(timesPanel);
+      addToggleFunctionality(sublineTextArea, timesPanel); // Add toggle functionality
     }
     return pathPanel;
+  }
+
+  public class ColoredMapPolygon extends MapPolygonImpl {
+    private final Color color;
+
+    public ColoredMapPolygon(Coordinate start, Coordinate end, Coordinate middle, Color color) {
+      super(start, end, middle);
+      this.color = color;
+    }
+
+    @Override
+    public void paint(Graphics g, java.util.List<Point> points) {
+      if (points == null || points.size() < 2) {
+        return;
+      }
+      Graphics2D g2d = (Graphics2D) g;
+      g2d.setColor(color); // Set the custom color
+      g2d.setStroke(new java.awt.BasicStroke(2)); // Optional: Set stroke thickness
+      for (int i = 1; i < points.size(); i++) {
+        Point p1 = points.get(i - 1);
+        Point p2 = points.get(i);
+        g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
+      }
+    }
   }
 
   /**
