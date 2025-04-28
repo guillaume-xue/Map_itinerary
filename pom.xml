@@ -7,7 +7,7 @@
 
 	<groupId>fr.u-paris.gla.groupe3lundi</groupId>
 	<artifactId>project</artifactId>
-	<version>2025.1.0.0-PROTOTYPE</version>
+	<version>2025.1.1.0-PROTOTYPE</version>
 	<name>Planificateur d'itin\u00e9raire</name>
 	<url>https://moule.informatique.univ-paris-diderot.fr/delarmin/gla-groupe-3-lundi</url>
 
@@ -86,7 +86,8 @@
           <mainClass>fr.u_paris.gla.project.App</mainClass>
         </configuration>
       </plugin>
-      <plugin>
+<!--     Inutile, à supprimer 
+			 <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>3.5.0</version>
@@ -109,7 +110,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin> -->
 	   <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -120,6 +121,18 @@
                     </nonFilteredFileExtensions>
                 </configuration>
         </plugin>
+<!--      <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.4.1</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>jar</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin> -->
 		</plugins>
 		<resources>
 			<resource>
@@ -132,4 +145,9 @@
 			</resource>
 		</resources>
 	</build>
+
+  
+
+
+	
 </project>
