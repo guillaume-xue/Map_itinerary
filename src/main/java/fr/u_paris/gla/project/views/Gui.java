@@ -35,6 +35,8 @@ public class Gui extends JFrame {
   private JPanel contentPanel;
   private JMapViewer mapViewer;
   private JButton researchButton;
+  private JCheckBox distCheckBox;
+  private JCheckBox timeCheckBox;
   private static final Color textColor = new Color(11, 22, 44);
   private static final Color bordeColor = new Color(88, 88, 88);
   private static final Color primaryBackgroundColor = new Color(240, 240, 240);
@@ -94,6 +96,16 @@ public class Gui extends JFrame {
     contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
     contentPanel.setBackground(primaryBackgroundColor);
 
+    JLabel label = new JLabel("Best route by : ");
+    this.distCheckBox = new JCheckBox("Distance");
+    this.distCheckBox.setSelected(true); // Default to distance
+    this.timeCheckBox = new JCheckBox("Time");
+    JPanel checkBoxPanel = new JPanel();
+    checkBoxPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+    checkBoxPanel.add(label);
+    checkBoxPanel.add(distCheckBox);
+    checkBoxPanel.add(timeCheckBox);
+
     // Create a panel for the research area
     JPanel researchPanel = new JPanel();
     researchPanel.setBackground(primaryBackgroundColor);
@@ -102,6 +114,7 @@ public class Gui extends JFrame {
     researchPanel.add(Box.createRigidArea(new Dimension(0, 5)));
     researchPanel.add(startPanel);
     researchPanel.add(endPanel);
+    researchPanel.add(checkBoxPanel);
 
     // Create a container for the button to center it
     JPanel buttonPanel = new JPanel();
@@ -120,8 +133,9 @@ public class Gui extends JFrame {
 
     // Create a split pane to separate the research panel and the content panel
     JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-    splitPane.setDividerLocation(250);
+    splitPane.setDividerLocation(280);
     splitPane.setEnabled(false);
+
     splitPane.add(researchPanel, JSplitPane.TOP);
     splitPane.add(scrollPane, JSplitPane.BOTTOM);
 
@@ -535,4 +549,24 @@ public class Gui extends JFrame {
   public JPanel getContentPanel() {
     return contentPanel;
   }
+
+  /**
+   * Gets the text area for the path.
+   * 
+   * @return the text area
+   */
+  public JCheckBox getDistCheckBox() {
+    return distCheckBox;
+  }
+
+  /**
+   * Gets the text area for the path.
+   * 
+   * @return the text area
+   */
+  public JCheckBox getTimeCheckBox() {
+    return timeCheckBox;
+
+  }
+
 }

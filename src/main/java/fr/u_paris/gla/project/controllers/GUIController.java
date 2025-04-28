@@ -41,7 +41,8 @@ public class GUIController {
       this.gui = new Gui();
       // init Graph class
       this.graph = CSVExtractor.makeObjectsFromCSV(args);
-      if ( graph == null ) System.exit(0);
+      if (graph == null)
+        System.exit(0);
       // init Controllers
       new KeyboardController(gui.getTextStart());
       new KeyboardController(gui.getTextEnd());
@@ -49,6 +50,7 @@ public class GUIController {
       // init Listenners
       initFocusListenerToTextArea();
       initActionListenner();
+      initActionListennerCheckBox();
       // init Menu bar
       initMenuBar();
       // Set the visibility to true
@@ -158,6 +160,23 @@ public class GUIController {
     });
   }
 
+  private void initActionListennerCheckBox() {
+    gui.getDistCheckBox().addActionListener(e -> {
+      if (gui.getDistCheckBox().isSelected()) {
+        gui.getTimeCheckBox().setSelected(false);
+      } else {
+        gui.getTimeCheckBox().setSelected(true);
+      }
+    });
+    gui.getTimeCheckBox().addActionListener(e -> {
+      if (gui.getTimeCheckBox().isSelected()) {
+        gui.getDistCheckBox().setSelected(false);
+      } else {
+        gui.getDistCheckBox().setSelected(true);
+      }
+    });
+  }
+
   /**
    * Initializes the action listener for the research button.
    * When clicked, it retrieves coordinates from the text areas and displays the
@@ -192,12 +211,13 @@ public class GUIController {
         return;
       }
 
-      // avec version astar2 où ou peut choisir si on veut le chemin le plus court en
-      // duree ou distance
-      // faudra appeler qu'un des choix en fonction de ce que l'utilisateur demande
-      // CostFunction costFunction =
-      // CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DISTANCE);
-      CostFunction costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DURATION);
+      // Choose the cost function based on the selected checkbox
+      CostFunction costFunction;
+      if (gui.getDistCheckBox().isSelected()) {
+        costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DISTANCE);
+      } else {
+        costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DURATION);
+      }
       AStarBis astar = new AStarBis(costFunction);
 
       // Remove all markers and polygons from the map
