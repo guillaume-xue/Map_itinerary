@@ -12,8 +12,9 @@ public class TraversalNode implements Comparable<TraversalNode> {
     private double g;
     private double h;
     private double f;
+    private LocalTime departureTime;
     private LocalTime arrivalTime;
-    private Subline currentSubline;
+    private Subline sublineUsed;
 
     public TraversalNode(Stop stop) {
         this.stop = stop;
@@ -22,6 +23,23 @@ public class TraversalNode implements Comparable<TraversalNode> {
         updateF();
     }
 
+    public void setDepartureTime(LocalTime time) { 
+    	this.departureTime = time; 
+    }
+
+    
+    public LocalTime getDepartureTime() { 
+    	return departureTime; 
+    }
+    
+    public Subline getSublineUsed() { 
+    	return sublineUsed; 
+    	}
+    
+    public void setSublineUsed(Subline subline) { 
+    	this.sublineUsed = subline; 
+    }
+    
     public void updateF() {
         this.f = g + h;
     }

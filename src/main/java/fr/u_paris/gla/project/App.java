@@ -98,7 +98,7 @@ public class App {
     }
 
     /**
-     * Valides the arguments for the command. Verifies that the path leads to a correct expected file.
+     * Validates the arguments for the command. Verifies that the path leads to a correct expected file.
      *
      * @param      args  The arguments
      *

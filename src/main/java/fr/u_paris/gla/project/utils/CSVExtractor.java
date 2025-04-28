@@ -22,6 +22,7 @@ import fr.u_paris.gla.project.io.JunctionsFormat;
 import fr.u_paris.gla.project.io.ScheduleFormat;
 import java.time.Duration;
 import java.time.LocalTime;
+import fr.u_paris.gla.project.utils.TransportTypes;
 
 /**
  * A tool class to extract and convert CSV data provided into our model objects.
@@ -101,7 +102,7 @@ public final class CSVExtractor {
         // On associe les sous-lignes à leur ligne
         try{
             CSVTools.readCSVFromFile(args[JUNCTIONS_FILE_ID],(String[] line) -> 
-                readJunctions(line, mapOfLines, mapOfStopEntry, mapOfStops));
+                readJunctions(line, mapOfLines, mapOfStopEntry, lineById));
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error while reading the Junctions data file", e);
         }
@@ -133,36 +134,21 @@ public final class CSVExtractor {
 
         ArrayList<Line> listOfLines = new ArrayList<>();
         for (Map.Entry<String, ArrayList<Subline>> entry : mapOfLines.entrySet()) {
-            //listOfLines.add(new Line(entry.getKey(), entry.getValue()));
-            lineById.get(entry.getKey()).setListOfSublines(entry.getValue());
-            listOfLines.add( lineById.get(entry.getKey()) );
+            Line tmp = lineById.get(entry.getKey());
+            tmp.setListOfSublines(entry.getValue());
+            tmp.setSublinesTransportType();
+            listOfLines.add( tmp );
         }
 
         // Maintenant qu'on a ajouté les horaires de départs depuis les terminus, on ajoute les horaires
         // pour toutes les autres stations selon leurs adjacences.
         LOGGER.info("Objects parsing in progress: adding all other schedules");
         addMissingSchedules(listOfLines);
-        
-        //Collections.sort(listOfStops);
-        //Collections.sort(listOfLines);
-        
+
         Graph graph = new Graph(listOfStops, listOfLines);
         LOGGER.info("Objects parsing finished: Graph done");
 
         System.out.println(graph.statsToString());
-        
-        //pour vérifier comment les horaires sont ajoutés
-        try {
-        	Stop stop = graph.getClosestStop(48.887424510518066, 2.3256869607667356);
-            stop.showTimeDistancePerAdjacentStop();
-            LocalTime heureDepart = LocalTime.of(19, 38);
-            //LocalTime heureDepart = LocalTime.now();
-            stop.showNextStopsArrivalTime(heureDepart);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        
 
         return graph;
     }
@@ -291,7 +277,7 @@ public final class CSVExtractor {
 
         // On ajoute l'arrêt B à la liste d'adjacence de l'arrêt A avec la 
         // durée/distance de transport
-        stopA.addAdjacentStop(stopB, timeToNextStation, distanceToNextStation);
+        stopA.addAdjacentStop(stopB, line[UpgradedNetworkFormat.TYPE_INDEX],timeToNextStation, distanceToNextStation);
         
         // On ajoute les deux arrêts à la map qui associe une ligne à tout ses 
         // arrêts rencontrés
@@ -307,17 +293,17 @@ public final class CSVExtractor {
     /**
      * Reads a line from the junctions data CSV and adds the potential path to the
      * transport line.
+     * Creates a Subline, and generates its potentiel path, from the text line being read in the JunctionsData CSV
      * 
-     * @param      line            The text line from csv being read
+     * @param      line            The text line from csv
      * @param      mapOfLines      The map of lines
      * @param      mapOfStopEntry  The map of stop entry
-     * @param      mapOfStops      The map of stops
      */
     public static void readJunctions(
         String[] line,
         Map<String,ArrayList<Subline>> mapOfLines,
-        Map<String,ArrayList<Stop>> mapOfStopEntry, 
-        Map<Pair<Double,Double>,Stop> mapOfStops
+        Map<String,ArrayList<Stop>> mapOfStopEntry,
+        Map<String,Line> lineById
     ){
         // La ligne de transport
         String ligne = line[UpgradedNetworkFormat.LINE_ID_INDEX];
@@ -343,6 +329,7 @@ public final class CSVExtractor {
         }
 
         variantSubline.setListOfStops(listOfStops);
+        variantSubline.setAssociatedLine(lineById.get(ligne));
         mapOfLines.get(ligne).add(variantSubline);
     }
 
@@ -412,7 +399,9 @@ public final class CSVExtractor {
             return true;
         }
 
-        for ( Stop adjacent : currentStop.getTimeDistancePerAdjacentStop().keySet() ){
+        for ( Pair<Stop, TransportTypes> entry : currentStop.getTimeDistancePerAdjacentStop().keySet() ){
+            Stop adjacent = entry.getKey();
+            
             if ( adjacent.getNameOfAssociatedStation().equals(stops[index]) ){
                 if ( dfsSearch(adjacent, stops, index + 1, listOfStopsEntry, potentialPath) ){
                     return true;
@@ -505,7 +494,7 @@ public final class CSVExtractor {
                     Stop currentStop = stops.get(i);
 
                     Duration durationToNext = previousStop.getTimeDistancePerAdjacentStop()
-                        .get(currentStop).getKey();
+                        .get(new Pair<>(currentStop, line.getType())).getKey();
 
                     currentTime = currentTime.plus(durationToNext);
 
@@ -554,8 +543,8 @@ public final class CSVExtractor {
                         Duration duration = 
                         Duration.ofSeconds((long) Math.ceil( (distance / UpgradedNetworkFormat.WALK_AVG_SPEED) * 3600));
                         
-                        stopA.addAdjacentStop(stopB, duration, (float) distance);
-                        stopB.addAdjacentStop(stopA, duration, (float) distance);
+                        stopA.addAdjacentStop(stopB, "Walk", duration, (float) distance);
+                        stopB.addAdjacentStop(stopA, "Walk", duration, (float) distance);
                     }
                 }
             }
