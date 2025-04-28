@@ -86,6 +86,8 @@ public class IDFMNetworkExtractor {
      * 
      * @param destination The destination file */
     public static void parse(String[] args) {
+        System.out.println("Création des fichiers en cours...");
+
     	// map <route_id, traceEntry>
         Map<String, TraceEntry> traces = new TreeMap<>();
         fillMapTraceEntries(traces);

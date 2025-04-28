@@ -210,7 +210,6 @@ public class GUIController {
 
       // Get the coordinates from the addresses
       // Use the Nominatim API to get the coordinates
-
       double[] startCoordinates = getCoordinatesFromAddress(startAddress);
       double[] endCoordinates = getCoordinatesFromAddress(endAddress);
 
@@ -220,14 +219,10 @@ public class GUIController {
           Stop stopB = graph.getClosestStop(endCoordinates[0], endCoordinates[1]);
 
           // v2 astar
-          LocalTime heureDepart = LocalTime.of(19, 38);
-          // 3 prochaines lignes à jeter qd c'est adapté au nv format
-          System.out.println("recherche du chemin avec algo obsolete");
-          ArrayList<Pair<Stop, LocalTime>> stopsAndTimes = astar.findShortestPath(stopA, stopB, heureDepart);
-          printPathWithTimes(stopsAndTimes);
+          LocalTime heureDepart = LocalTime.now();
 
           // pour le nouveau format
-          System.out.println("recherche du chemin avec nouvel algo");
+          System.out.println("Recherche du chemin avec nouvel algo");
           ArrayList<SegmentItineraire> itinerary = astar.findShortestPath2(stopA, stopB, heureDepart);
           displayItinerary(itinerary);
 
@@ -239,7 +234,7 @@ public class GUIController {
         } catch (Exception except) {
           // Show an error message if the path is not found
           except.printStackTrace();
-          JOptionPane.showMessageDialog(this.gui, "No path was found between these two points",
+          JOptionPane.showMessageDialog(this.gui, "Pas de chemins trouvés entre ces deux points.",
               "Erreur",
               JOptionPane.ERROR_MESSAGE);
         }
