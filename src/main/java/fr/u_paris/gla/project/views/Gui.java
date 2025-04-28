@@ -287,7 +287,7 @@ public class Gui extends JFrame {
     ArrayList<Subline> tmpLineSub = new ArrayList<>();
     ArrayList<Stop> tmpLineStop = new ArrayList<>();
     for (Line line : graph.getListOfLines()) {
-      if (tmpLine.contains(line) || !line.getType().equals(type)) {
+      if (tmpLine.contains(line) || line.getType() != TransportTypes.valueOf(type)) {
         continue;
       }
       tmpLine.add(line);
