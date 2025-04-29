@@ -8,13 +8,20 @@ import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
 import java.awt.*;
+import java.time.LocalTime;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
+import fr.u_paris.gla.project.astar.SegmentItineraire;
+import fr.u_paris.gla.project.graph.Graph;
+import fr.u_paris.gla.project.graph.Line;
 import fr.u_paris.gla.project.graph.Stop;
+import fr.u_paris.gla.project.graph.Subline;
+import fr.u_paris.gla.project.utils.TransportTypes;
 
 public class Gui extends JFrame {
 
@@ -28,6 +35,8 @@ public class Gui extends JFrame {
   private JPanel contentPanel;
   private JMapViewer mapViewer;
   private JButton researchButton;
+  private JCheckBox distCheckBox;
+  private JCheckBox timeCheckBox;
   private static final Color textColor = new Color(11, 22, 44);
   private static final Color bordeColor = new Color(88, 88, 88);
   private static final Color primaryBackgroundColor = new Color(240, 240, 240);
@@ -50,6 +59,15 @@ public class Gui extends JFrame {
    * Initializes the GUI components.
    */
   private void init() {
+    // Create a menu bar
+    JMenuBar menuBar = new JMenuBar();
+    JMenu viewMenu = new JMenu("View");
+    JMenuItem busMenu = new JMenuItem("Bus");
+    JMenuItem metroMenu = new JMenuItem("Metro");
+    viewMenu.add(busMenu);
+    viewMenu.add(metroMenu);
+    menuBar.add(viewMenu);
+    this.setJMenuBar(menuBar);
 
     // Create text areas for the start and end
     this.textStart = createTextAreaInput("From");
@@ -78,6 +96,16 @@ public class Gui extends JFrame {
     contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
     contentPanel.setBackground(primaryBackgroundColor);
 
+    JLabel label = new JLabel("Best route by : ");
+    this.distCheckBox = new JCheckBox("Distance");
+    this.distCheckBox.setSelected(true); // Default to distance
+    this.timeCheckBox = new JCheckBox("Time");
+    JPanel checkBoxPanel = new JPanel();
+    checkBoxPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+    checkBoxPanel.add(label);
+    checkBoxPanel.add(distCheckBox);
+    checkBoxPanel.add(timeCheckBox);
+
     // Create a panel for the research area
     JPanel researchPanel = new JPanel();
     researchPanel.setBackground(primaryBackgroundColor);
@@ -86,6 +114,7 @@ public class Gui extends JFrame {
     researchPanel.add(Box.createRigidArea(new Dimension(0, 5)));
     researchPanel.add(startPanel);
     researchPanel.add(endPanel);
+    researchPanel.add(checkBoxPanel);
 
     // Create a container for the button to center it
     JPanel buttonPanel = new JPanel();
@@ -104,8 +133,9 @@ public class Gui extends JFrame {
 
     // Create a split pane to separate the research panel and the content panel
     JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-    splitPane.setDividerLocation(250);
+    splitPane.setDividerLocation(280);
     splitPane.setEnabled(false);
+
     splitPane.add(researchPanel, JSplitPane.TOP);
     splitPane.add(scrollPane, JSplitPane.BOTTOM);
 
@@ -116,6 +146,29 @@ public class Gui extends JFrame {
     mainContentPanel.add(mapPanel, BorderLayout.CENTER);
 
     add(mainContentPanel);
+  }
+
+  /**
+   * Toggles the checkmark icon on the given menu item.
+   * 
+   * @param menuItem the menu item to toggle
+   */
+  public void toggleCheckmark(JMenuItem menuItem) {
+    if (menuItem.getIcon() == null) {
+      menuItem.setIcon(UIManager.getIcon("CheckBox.icon"));
+    } else {
+      menuItem.setIcon(null);
+    }
+  }
+
+  /**
+   * Checks if the given menu item has the checkmark icon enabled.
+   * 
+   * @param menuItem the menu item to check
+   * @return true if the checkmark icon is enabled, false otherwise
+   */
+  public boolean isCheckmarkEnabled(JMenuItem menuItem) {
+    return menuItem.getIcon() != null;
   }
 
   // Custom rounded border class
@@ -237,41 +290,191 @@ public class Gui extends JFrame {
   }
 
   /**
+   * Displays all bus stops on the map.
+   * 
+   * @param graph the graph containing the bus stops
+   */
+  public void viewLine(Graph graph, String type) {
+    mapViewer.removeAllMapMarkers();
+    mapViewer.removeAllMapPolygons();
+    ArrayList<Line> tmpLine = new ArrayList<>();
+    ArrayList<Subline> tmpLineSub = new ArrayList<>();
+    ArrayList<Stop> tmpLineStop = new ArrayList<>();
+    for (Line line : graph.getListOfLines()) {
+      if (tmpLine.contains(line) || line.getType() != TransportTypes.valueOf(type)) {
+        continue;
+      }
+      tmpLine.add(line);
+      for (Subline subline : line.getListOfSublines()) {
+        if (tmpLineSub.contains(subline)) {
+          continue;
+        }
+        for (Stop stop : subline.getListOfStops()) {
+          if (tmpLineStop.contains(stop)) {
+            continue;
+          }
+          tmpLineStop.add(stop);
+          Coordinate coord = new Coordinate(stop.getLongitude(), stop.getLatitude());
+          MapMarkerDot marker = new MapMarkerDot(coord);
+          mapViewer.addMapMarker(marker);
+        }
+      }
+    }
+    for (Stop stop : tmpLineStop) {
+      for (Stop adjacentStop : stop.getAdjacentStops()) {
+        if (tmpLineStop.contains(adjacentStop)) {
+          Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
+          Coordinate mEnd = new Coordinate(adjacentStop.getLongitude(), adjacentStop.getLatitude());
+          MapPolygon mLine = new MapPolygonImpl(mStart, mEnd, mStart);
+          mapViewer.addMapPolygon(mLine);
+        }
+      }
+    }
+    mapViewer.setDisplayPosition(new Coordinate(48.8566, 2.3522), 10);
+    mapViewer.repaint();
+  }
+
+  /**
+   * Clears all markers and polygons from the map.
+   */
+  public void cleanMap() {
+    mapViewer.removeAllMapMarkers();
+    mapViewer.removeAllMapPolygons();
+    mapViewer.repaint();
+  }
+
+  /**
    * Reads and displays the contents of a .txt file in a formatted panel.
    * 
    * @return the panel containing the text content
    */
-  public JPanel displayPath(ArrayList<Stop> stops) {
+  public JPanel displayPath(ArrayList<SegmentItineraire> segments) {
+    // Clear the map and content panel before displaying new paths
+    mapViewer.removeAllMapMarkers();
+    mapViewer.removeAllMapPolygons();
+    mapViewer.repaint();
+    // Clear the content panel
+    contentPanel.removeAll();
+    contentPanel.revalidate();
+    contentPanel.repaint();
+    // Create a new panel to display the paths
     JPanel pathPanel = new JPanel();
     pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
     pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
     pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
-
-    // initialize the first stop
-    Stop stop = stops.get(0);
-    JTextArea stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
-    pathPanel.add(stopTextArea);
-    Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
-    mapViewer.setDisplayPosition(mStart, 12);
-    MapMarkerDot parisMarker = new MapMarkerDot(mStart);
-    mapViewer.addMapMarker(parisMarker);
-
-    // draw the path and add TextAreas for each stop
-    for (int i = 1; i < stops.size(); i++) {
-      stop = stops.get(i);
-      // add TextArea for the stop
-      stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
-      pathPanel.add(stopTextArea);
-      // draw the path
-      Coordinate mEnd = new Coordinate(stop.getLongitude(), stop.getLatitude()); // Paris center
-      MapPolygon mLine = new MapPolygonImpl(mStart, mEnd, mStart);
-      MapMarkerDot markerDot = new MapMarkerDot(mEnd);
-      mapViewer.addMapPolygon(mLine);
-      mapViewer.addMapMarker(markerDot);
-      // update the start
-      mStart = mEnd;
+    // Iterate through the segments and display each one
+    for (SegmentItineraire segment : segments) {
+      // Print the number of stops
+      JTextArea sublineTextArea = createTextAreaOutput(segment.getSubline().getAssociatedLine().getName() + " - "
+          + segment.getSubline().getSublineType());
+      pathPanel.add(sublineTextArea);
+      if (segment.getSubline().getSublineType() == TransportTypes.Walk) {
+        pathPanel.add(Box.createRigidArea(new Dimension(0, 30))); // Add spacing between segments
+        continue; // Skip if the subline type is "Walk"
+      }
+      // Print the first subline name
+      Stop startStop = segment.getStops().get(0);
+      JTextArea startTextArea = createTextAreaOutput(startStop.getNameOfAssociatedStation());
+      pathPanel.add(startTextArea);
+      Coordinate mStart = new Coordinate(startStop.getLongitude(), startStop.getLatitude());
+      mapViewer.setDisplayPosition(mStart, 12);
+      MapMarkerDot parisMarker = new MapMarkerDot(mStart);
+      mapViewer.addMapMarker(parisMarker);
+      // draw the path and add TextAreas for each stop
+      for (int i = 1; i < segment.getStops().size(); i++) {
+        Stop stop = segment.getStops().get(i);
+        // add TextArea for the stop
+        JTextArea stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
+        pathPanel.add(stopTextArea);
+        // draw the path
+        Coordinate mEnd = new Coordinate(stop.getLongitude(), stop.getLatitude()); // Paris center
+        String color = "#" + segment.getSubline().getAssociatedLine().getColor();
+        MapPolygon coloredPolygon = new ColoredMapPolygon(mStart, mEnd, mStart, Color.decode(color));
+        MapMarkerDot markerDot = new MapMarkerDot(mEnd);
+        mapViewer.addMapPolygon(coloredPolygon);
+        mapViewer.addMapMarker(markerDot);
+        // update the start
+        mStart = mEnd;
+      }
+      pathPanel.add(Box.createRigidArea(new Dimension(0, 30))); // Add spacing between segments
     }
     return pathPanel;
+  }
+
+  /**
+   * Adds a toggle functionality to expand or collapse the list of times when
+   * clicking on a subline text.
+   * 
+   * @param sublineTextArea the JTextArea representing the subline
+   * @param timesPanel      the JPanel containing the list of times
+   */
+  private void addToggleFunctionality(JTextArea sublineTextArea, JPanel timesPanel) {
+    sublineTextArea.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    sublineTextArea.addMouseListener(new java.awt.event.MouseAdapter() {
+      private boolean expanded = false;
+
+      @Override
+      public void mouseClicked(java.awt.event.MouseEvent e) {
+        expanded = !expanded;
+        timesPanel.setVisible(expanded);
+        timesPanel.getParent().revalidate();
+        timesPanel.getParent().repaint();
+      }
+    });
+  }
+
+  public JPanel displayListOfStopDeparture(Stop stop) {
+    HashMap<Subline, ArrayList<LocalTime>> departures = stop.getDepartures();
+    JPanel pathPanel = new JPanel();
+    pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
+    pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
+    pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
+    JTextArea stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
+    pathPanel.add(stopTextArea);
+    pathPanel.add(Box.createRigidArea(new Dimension(0, 30))); // Add spacing between segments
+    for (Subline subline : departures.keySet()) {
+      JTextArea sublineTextArea = createTextAreaOutput(
+          subline.getAssociatedLine().getName() + " - " + subline.getDestination().getNameOfAssociatedStation());
+      pathPanel.add(sublineTextArea);
+
+      JPanel timesPanel = new JPanel();
+      timesPanel.setLayout(new BoxLayout(timesPanel, BoxLayout.Y_AXIS)); // Ensure vertical layout for times
+      timesPanel.setVisible(false); // Initially hidden
+
+      ArrayList<LocalTime> times = departures.get(subline);
+      for (LocalTime time : times) {
+        JTextArea timeTextArea = createTextAreaOutput(time.toString());
+        timesPanel.add(timeTextArea);
+      }
+
+      pathPanel.add(timesPanel);
+      addToggleFunctionality(sublineTextArea, timesPanel); // Add toggle functionality
+    }
+    return pathPanel;
+  }
+
+  public class ColoredMapPolygon extends MapPolygonImpl {
+    private final Color color;
+
+    public ColoredMapPolygon(Coordinate start, Coordinate end, Coordinate middle, Color color) {
+      super(start, end, middle);
+      this.color = color;
+    }
+
+    @Override
+    public void paint(Graphics g, java.util.List<Point> points) {
+      if (points == null || points.size() < 2) {
+        return;
+      }
+      Graphics2D g2d = (Graphics2D) g;
+      g2d.setColor(color); // Set the custom color
+      g2d.setStroke(new java.awt.BasicStroke(2)); // Optional: Set stroke thickness
+      for (int i = 1; i < points.size(); i++) {
+        Point p1 = points.get(i - 1);
+        Point p2 = points.get(i);
+        g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
+      }
+    }
   }
 
   /**
@@ -279,6 +482,27 @@ public class Gui extends JFrame {
    */
   public void launch() {
     setVisible(true);
+  }
+
+  /**
+   * Gets the menu bar item at the specified index.
+   * 
+   * @return the menu bar item
+   */
+  public JMenuItem getMenuItem(int menuIndex, int itemIndex) {
+    JMenuBar menuBar = this.getJMenuBar();
+    if (menuBar == null || menuIndex < 0 || menuIndex >= menuBar.getMenuCount()) {
+      System.err.println("Invalid menu index: " + menuIndex);
+      return null;
+    }
+
+    JMenu menu = menuBar.getMenu(menuIndex);
+    if (menu == null || itemIndex < 0 || itemIndex >= menu.getItemCount()) {
+      System.err.println("Invalid item index: " + itemIndex + " in menu: " + menuIndex);
+      return null;
+    }
+
+    return menu.getItem(itemIndex);
   }
 
   /**
@@ -325,4 +549,24 @@ public class Gui extends JFrame {
   public JPanel getContentPanel() {
     return contentPanel;
   }
+
+  /**
+   * Gets the text area for the path.
+   * 
+   * @return the text area
+   */
+  public JCheckBox getDistCheckBox() {
+    return distCheckBox;
+  }
+
+  /**
+   * Gets the text area for the path.
+   * 
+   * @return the text area
+   */
+  public JCheckBox getTimeCheckBox() {
+    return timeCheckBox;
+
+  }
+
 }

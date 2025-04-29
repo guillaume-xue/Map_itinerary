@@ -2,6 +2,7 @@ package fr.u_paris.gla.project.controllers;
 
 import java.util.ArrayList;
 
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -11,34 +12,78 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import fr.u_paris.gla.project.astar.AStar;
+import fr.u_paris.gla.project.astar.CostFunction;
+import fr.u_paris.gla.project.astar.CostFunctionFactory;
+import fr.u_paris.gla.project.astar.AStarBis;
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
+import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.utils.CSVExtractor;
 import fr.u_paris.gla.project.views.Gui;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import fr.u_paris.gla.project.views.Gui;
+import fr.u_paris.gla.project.utils.Pair;
+import java.time.LocalTime;
+
 public class GUIController {
 
   private Gui gui;
+  private Graph graph;
 
   /**
    * Constructor for GUIController.
    * Initializes the GUI and sets up event listeners.
    */
-  public GUIController() {
+  public GUIController(String[] args) {
     SwingUtilities.invokeLater(() -> {
       // Create the main window
       this.gui = new Gui();
+      // init Graph class
+      this.graph = CSVExtractor.makeObjectsFromCSV(args);
+      if (graph == null)
+        System.exit(0);
+      // init Controllers
       new KeyboardController(gui.getTextStart());
       new KeyboardController(gui.getTextEnd());
-      new MouseController(gui.getMapViewer(), gui.getTextStart(), gui.getTextEnd());
+      new MouseController(gui.getMapViewer(), gui.getTextStart(), gui.getTextEnd(), this.graph, this.gui);
+      // init Listenners
       initFocusListenerToTextArea();
       initActionListenner();
+      initActionListennerCheckBox();
+      // init Menu bar
+      initMenuBar();
+      // Set the visibility to true
       this.gui.launch();
+      // Check the internet connection.
+      if (!isInternetAvailable()) {
+        JOptionPane.showMessageDialog(this.gui,
+            "Aucune connexion Internet détectée. Veuillez vérifier votre connexion.",
+            "Erreur de connexion",
+            JOptionPane.ERROR_MESSAGE);
+      }
     });
+  }
+
+  /**
+   * Checks if there is an active internet connection.
+   * 
+   * @return true if connected, false otherwise
+   */
+  private boolean isInternetAvailable() {
+    try {
+      OkHttpClient client = new OkHttpClient();
+      Request request = new Request.Builder()
+          .url("http://www.google.com")
+          .build();
+      try (Response response = client.newCall(request).execute()) {
+        return response.isSuccessful();
+      }
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   /**
@@ -117,6 +162,23 @@ public class GUIController {
     });
   }
 
+  private void initActionListennerCheckBox() {
+    gui.getDistCheckBox().addActionListener(e -> {
+      if (gui.getDistCheckBox().isSelected()) {
+        gui.getTimeCheckBox().setSelected(false);
+      } else {
+        gui.getTimeCheckBox().setSelected(true);
+      }
+    });
+    gui.getTimeCheckBox().addActionListener(e -> {
+      if (gui.getTimeCheckBox().isSelected()) {
+        gui.getDistCheckBox().setSelected(false);
+      } else {
+        gui.getDistCheckBox().setSelected(true);
+      }
+    });
+  }
+
   /**
    * Initializes the action listener for the research button.
    * When clicked, it retrieves coordinates from the text areas and displays the
@@ -151,13 +213,14 @@ public class GUIController {
         return;
       }
 
-      // Add action listener to add displayJsonContent to contentPanel
-      // FIXME ASAP
-      String[] args = { "--parse", "mapData.csv", "junctionsData.csv" };
-      Graph graph = CSVExtractor.makeOjectsFromCSV(args);
-
-
-      gui.getContentPanel().removeAll();
+      // Choose the cost function based on the selected checkbox
+      CostFunction costFunction;
+      if (gui.getDistCheckBox().isSelected()) {
+        costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DISTANCE);
+      } else {
+        costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DURATION);
+      }
+      AStarBis astar = new AStarBis(costFunction);
 
       // Remove all markers and polygons from the map
       gui.getMapViewer().removeAllMapMarkers();
@@ -169,30 +232,10 @@ public class GUIController {
 
       // Get the coordinates from the addresses
       // Use the Nominatim API to get the coordinates
-
       double[] startCoordinates = getCoordinatesFromAddress(startAddress);
       double[] endCoordinates = getCoordinatesFromAddress(endAddress);
 
-      String[] p1 = startAddress.split(",\\s*");
-      /*
-       * double[] startCoordinates = new double[] {
-       * Double.parseDouble(p1[0]),
-       * Double.parseDouble(p1[1])
-       * };
-       */
-
-      String[] p2 = endAddress.split(",\\s*");
-      /*
-       * double[] endCoordinates = new double[] {
-       * Double.parseDouble(p2[0]),
-       * Double.parseDouble(p2[1])
-       * };
-       */
-
       if (startCoordinates != null && endCoordinates != null) {
-        // Create stops with coordinates and addresses
-        // ArrayList<Stop> stops = new ArrayList<>();
-
         try {
 
           //This should not be called if the default maximum distance between Stops has not been changed, as it takes really long.
@@ -206,21 +249,84 @@ public class GUIController {
           astar.setDepartStop(startFinish.left);
           astar.setFinishStop(startFinish.right);
 
-          ArrayList<Stop> stops = astar.findPath();
+          // pour le nouveau format
+          System.out.println("Recherche du chemin avec nouvel algo");
+          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath2(stopA, stopB, heureDepart);
+          displayItinerary(itinerary);
 
           // Display the path on the map
-          gui.getContentPanel().add(gui.displayPath(stops));
+          gui.getContentPanel().add(gui.displayPath(itinerary));
           gui.getContentPanel().add(new JPanel());
           gui.getContentPanel().revalidate();
           gui.getContentPanel().repaint();
         } catch (Exception except) {
-          System.out.println("No path was found between these two points");
+          // Show an error message if the path is not found
+          except.printStackTrace();
+          JOptionPane.showMessageDialog(this.gui, "Pas de chemins trouvés entre ces deux points.",
+              "Erreur",
+              JOptionPane.ERROR_MESSAGE);
         }
       } else {
         // Show an error message if the coordinates are not found
         JOptionPane.showMessageDialog(this.gui, "Impossible de trouver les coordonnées pour l'une des adresses.",
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
+      }
+    });
+  }
+
+  // TBD
+  // la fonction c'est juste en attendant qu'on ait les affichages avec horaire ds
+  // l'app et c'est pour debugger
+  public static void printPathWithTimes(ArrayList<Pair<Stop, LocalTime>> stopsAndTimes) {
+    if (stopsAndTimes == null || stopsAndTimes.isEmpty()) {
+      System.out.println("Aucun chemin trouvé.");
+      return;
+    }
+    System.out.println("Chemin trouvé :");
+    for (Pair<Stop, LocalTime> pair : stopsAndTimes) {
+      Stop stop = pair.getKey();
+      LocalTime time = pair.getValue();
+      System.out.println(" -> " + stop.getNameOfAssociatedStation() + " à " + time);
+    }
+  }
+
+  // TBD
+  // pr debugger
+  public void displayItinerary(ArrayList<SegmentItineraire> itinerary) {
+    if (itinerary == null || itinerary.isEmpty()) {
+      System.out.println("L'itinéraire est vide.");
+      return;
+    }
+
+    System.out.println("Itinéraire :");
+    for (SegmentItineraire segment : itinerary) {
+      System.out.println(segment);
+    }
+  }
+
+  /**
+   * Initializes the menu bar with action listeners for metro and bus options.
+   * Toggles the checkmark icons when selected.
+   */
+  private void initMenuBar() {
+    // Add action listeners to toggle checkmark icons
+    JMenuItem busMenuItem = gui.getMenuItem(0, 0);
+    busMenuItem.addActionListener(e -> {
+      gui.toggleCheckmark(busMenuItem);
+      if (gui.isCheckmarkEnabled(busMenuItem)) {
+        gui.viewLine(graph, "Bus");
+      } else {
+        gui.cleanMap();
+      }
+    });
+    JMenuItem metroMenuItem = gui.getMenuItem(0, 1);
+    metroMenuItem.addActionListener(e -> {
+      gui.toggleCheckmark(metroMenuItem);
+      if (gui.isCheckmarkEnabled(metroMenuItem)) {
+        gui.viewLine(graph, "Subway");
+      } else {
+        gui.cleanMap();
       }
     });
   }
