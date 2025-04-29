@@ -89,7 +89,7 @@ public class Stop {
         return timeDistancePerAdjacentStop.containsKey(s);
     }
 
-    public HashMap<Stop, MutablePair<Duration, Float>> getTimeDistancePerAdjacentStop(){
+    public HashMap<Pair<Stop, TransportTypes >, Pair<Duration, Float>> getTimeDistancePerAdjacentStop(){
         return timeDistancePerAdjacentStop;
     }
     
@@ -120,7 +120,6 @@ public class Stop {
         return minDuration;
     }
 
-    
     
     public void showTimeDistancePerAdjacentStop() {
         System.out.println(this.nameOfAssociatedStation);

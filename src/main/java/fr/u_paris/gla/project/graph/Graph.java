@@ -11,6 +11,7 @@ import static fr.u_paris.gla.project.io.UpgradedNetworkFormat.WALK_AVG_SPEED;
 
 public class Graph {
     //constante pour la ligne de marche
+    public static double MAX_DISTANCE_WALKABLE = 0.1;
     public static final Line WALK_LINE = new Line("IDWALK", "Marche a pied", "Walk", "808080");
     private ArrayList<Stop> listOfStops = new ArrayList<>();
     
@@ -70,19 +71,19 @@ public class Graph {
             }
             else {
                 distance = startStop.calculateDistance(e);
-                if (distance < MAX_DISTANCE_WALKABLE) {
-                    startStop.addAdjacentStop(e, calculateWalkingTime(distance), distance);
+                if (distance < MAX_DISTANCE_WALKABLE + 0.20) {
+                    startStop.addAdjacentStop(e, "Walk", calculateWalkingTime(distance), (float) distance);
                 }
                 distance = finishStop.calculateDistance(e);
-                if (distance < MAX_DISTANCE_WALKABLE) {
-                    e.addAdjacentStop(finishStop, calculateWalkingTime(distance), distance);
+                if (distance < MAX_DISTANCE_WALKABLE + 0.20) {
+                    e.addAdjacentStop(finishStop, "Walk", calculateWalkingTime(distance), (float) distance);
                 }
             }   
         }
         //Check if we can walk directly from the starting point directly to the other
         distance = startStop.calculateDistance(finishStop);
         if(distance < MAX_DISTANCE_WALKABLE){
-            startStop.addAdjacentStop(finishStop, calculateWalkingTime(distance), distance);
+            startStop.addAdjacentStop(finishStop, "Walk", calculateWalkingTime(distance), (float) distance);
         }
         listOfStops.add(startStop);
         listOfStops.add(finishStop);
@@ -129,6 +130,7 @@ public class Graph {
             "The expected waiting time is very high.");
         }
         for(int x = 0; x < size; x ++){
+            System.out.println("X: " + x + "SIZE: " + size);
             //get current Stop to compare
             a = listOfStops.get(x);
 
@@ -144,19 +146,18 @@ public class Graph {
                     //If this is not the case (for instance, if we take into account extra effort / time due to elevation changes), 
                     //one should run additional checks here.
                     if (distance < MAX_DISTANCE_WALKABLE) {
-                        a.addAdjacentStop(e, calculateWalkingTime(distance), distance);
-                        e.addAdjacentStop(a, calculateWalkingTime(distance), distance);
+                        a.addAdjacentStop(e, "Walk", calculateWalkingTime(distance), (float) distance);
+                        e.addAdjacentStop(a, "Walk", calculateWalkingTime(distance), (float) distance);
                     }
                 }
             }
         }
         System.out.println("\nFinished connecting all nodes by walking");
     }
+
     private Duration calculateWalkingTime(double distance){
         return Duration.ofSeconds((long) Math.ceil( (distance / WALK_AVG_SPEED) * 3600));
     }
-
-
 
     public Line getLine(String name) throws Exception{
         for(Line l : listOfLines){

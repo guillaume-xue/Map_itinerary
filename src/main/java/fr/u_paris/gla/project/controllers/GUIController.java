@@ -43,8 +43,12 @@ public class GUIController {
       this.gui = new Gui();
       // init Graph class
       this.graph = CSVExtractor.makeObjectsFromCSV(args);
-      if (graph == null)
-        System.exit(0);
+
+      if (graph == null) System.exit(0);
+      
+      //This should not be called if the default maximum distance between Stops has not been changed, as it takes really long.
+      graph.connectStopsByWalking();
+      
       // init Controllers
       new KeyboardController(gui.getTextStart());
       new KeyboardController(gui.getTextEnd());
@@ -238,20 +242,14 @@ public class GUIController {
       if (startCoordinates != null && endCoordinates != null) {
         try {
 
-          //This should not be called if the default maximum distance between Stops has not been changed, as it takes really long.
-          graph.connectStopsByWalking();
-
           //Create and get Start and Finish Stops
           MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(startCoordinates[0], startCoordinates[1], endCoordinates[0], endCoordinates[1]);
 
-          AStar astar = new AStar(graph);
-
-          astar.setDepartStop(startFinish.left);
-          astar.setFinishStop(startFinish.right);
+          LocalTime heureDepart = LocalTime.now();
 
           // pour le nouveau format
           System.out.println("Recherche du chemin avec nouvel algo");
-          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath2(stopA, stopB, heureDepart);
+          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath2(startFinish.left, startFinish.right, heureDepart);
           displayItinerary(itinerary);
 
           // Display the path on the map
