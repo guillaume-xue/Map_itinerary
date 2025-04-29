@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -18,6 +19,7 @@ import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.utils.CSVExtractor;
+import fr.u_paris.gla.project.views.Gui;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -235,11 +237,17 @@ public class GUIController {
 
       if (startCoordinates != null && endCoordinates != null) {
         try {
-          Stop stopA = graph.getClosestStop(startCoordinates[0], startCoordinates[1]);
-          Stop stopB = graph.getClosestStop(endCoordinates[0], endCoordinates[1]);
 
-          // v2 astar
-          LocalTime heureDepart = LocalTime.now();
+          //This should not be called if the default maximum distance between Stops has not been changed, as it takes really long.
+          graph.connectStopsByWalking();
+
+          //Create and get Start and Finish Stops
+          MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(startCoordinates[0], startCoordinates[1], endCoordinates[0], endCoordinates[1]);
+
+          AStar astar = new AStar(graph);
+
+          astar.setDepartStop(startFinish.left);
+          astar.setFinishStop(startFinish.right);
 
           // pour le nouveau format
           System.out.println("Recherche du chemin avec nouvel algo");

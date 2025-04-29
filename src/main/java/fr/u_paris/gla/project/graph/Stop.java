@@ -37,6 +37,7 @@ public class Stop {
     public Stop(double longitude, double latitude, String nameOfAssociatedStation){
         this.longitude = longitude;
         this.latitude = latitude;
+
         this.nameOfAssociatedStation = nameOfAssociatedStation;
     }
 
@@ -69,7 +70,7 @@ public class Stop {
     }
     
     public double distanceBetweenAdjacentStop(Stop stop) {
-        return Math.abs(this.latitude - stop.latitude) + Math.abs(this.longitude - stop.longitude);
+        return GPS.distance(this.getLatitude(), this.getLongitude(), stop.getLatitude(), stop.getLongitude());
     }
     
     //à voir si cette fonction est encore utilisée qqpart
@@ -84,8 +85,12 @@ public class Stop {
         return stops;
     }
 
-    public HashMap<Pair<Stop, TransportTypes>, Pair<Duration, Float>> getTimeDistancePerAdjacentStop() {
-        return this.timeDistancePerAdjacentStop;
+    public boolean hasAdjacentStop(Stop s){
+        return timeDistancePerAdjacentStop.containsKey(s);
+    }
+
+    public HashMap<Stop, MutablePair<Duration, Float>> getTimeDistancePerAdjacentStop(){
+        return timeDistancePerAdjacentStop;
     }
     
     
