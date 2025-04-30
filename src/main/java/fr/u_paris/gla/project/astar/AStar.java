@@ -18,82 +18,15 @@ import java.time.LocalTime;
 import org.apache.commons.lang3.tuple.Triple;
 import fr.u_paris.gla.project.utils.TransportTypes;
 
-public class AStarBis {
+public class AStar {
 	//c'est dans costFunction qu'on décide de choisir un cout entre deux stop en distance ou en durée
 	 private final CostFunction costFunction; 
 
-	    public AStarBis(CostFunction costFunction) {
+	    public AStar(CostFunction costFunction) {
 	        this.costFunction = costFunction;
 	    }
 	
-	   // -----------VERSIONS A JETER QD GUI A JOUR AVEC NVELLE VERSION
-	    
-	    //fait des bails bizarres
-	    private ArrayList<Pair<Stop, LocalTime>> reconstructPath2(TraversalNode node) {
-	        ArrayList<Pair<Stop, LocalTime>> path = new ArrayList<>();
-	        while (node != null) {
-	            path.add(Pair.of(node.getStop(), node.getArrivalTime()));
-	            node = node.getCameFrom();
-	        }
-	        Collections.reverse(path);
-	        return path;
-	    }
-	    
-	    //donne les horaires en plus de la liste de stops
-	    public ArrayList<Pair<Stop, LocalTime>> findShortestPath(Stop start, Stop goal, LocalTime startTime) {
-	        PriorityQueue<TraversalNode> openSet = new PriorityQueue<>();
-	        Set<Stop> closedSet = new HashSet<>();
-	        Map<Stop, TraversalNode> nodeMap = new HashMap<>();
-
-	        TraversalNode startNode = new TraversalNode(start);
-	        startNode.setG(0);
-	        startNode.setH(start.calculateDistance(goal));
-	        startNode.updateF();
-	        startNode.setArrivalTime(startTime);
-	        nodeMap.put(start, startNode);
-	        openSet.add(startNode);
-
-	        while (!openSet.isEmpty()) {
-	            TraversalNode currentNode = openSet.poll();
-	            Stop currentStop = currentNode.getStop();
-
-	            if (currentStop.equals(goal)) {
-	            	//System.out.println("tentative reconstruction chemin");
-	                return reconstructPath2(currentNode);
-	            }
-
-	            closedSet.add(currentStop);
-
-	            for (Triple<Stop, Subline, LocalTime> next : currentStop.giveNextStopsArrivalTime(currentNode.getArrivalTime())) {
-	                Stop neighborStop = next.getLeft();
-	                LocalTime arrivalTimeAtNeighbor = next.getRight();
-	                if (closedSet.contains(neighborStop)) {
-	                	continue;
-	                }
-	                TraversalNode neighborNode = nodeMap.computeIfAbsent(neighborStop, stop -> new TraversalNode(stop));
-	                double tentativeG = currentNode.getG() +
-	                	    costFunction.costBetween(currentStop, neighborStop, currentNode.getArrivalTime());
-
-	                if (tentativeG < neighborNode.getG()) {
-	                    neighborNode.setCameFrom(currentNode);
-	                    neighborNode.setG(tentativeG);
-	                    neighborNode.setH(neighborStop.calculateDistance(goal));
-	                    neighborNode.updateF();
-	                    neighborNode.setArrivalTime(arrivalTimeAtNeighbor);
-
-	                    if (!openSet.contains(neighborNode)) {
-	                        openSet.add(neighborNode);
-	                    }
-	                }
-	            }
-	        }
-
-	        return new ArrayList<>();
-	    }
-	    
-	 
-	 // ---------NOUVELLES VERSIONS A UTILISER -----------------
-	    private ArrayList<SegmentItineraire> reconstructPath3(TraversalNode endNode) {
+	    private ArrayList<SegmentItineraire> reconstructPath(TraversalNode endNode) {
 	        ArrayList<SegmentItineraire> result = new ArrayList<>();
 
 	        LinkedList<Stop> currentStops = new LinkedList<>();
@@ -136,8 +69,8 @@ public class AStarBis {
 	    }
 
 
-	    //pê nettoyer les departureTime en utilisant les ArrivalTime des stopPrecedents
-	    public ArrayList<SegmentItineraire> findShortestPath2(Stop start, Stop goal, LocalTime startTime) {
+	    
+	    public ArrayList<SegmentItineraire> findShortestPath(Stop start, Stop goal, LocalTime startTime) {
 	        PriorityQueue<TraversalNode> openSet = new PriorityQueue<>();
 	        Map<Stop, TraversalNode> nodeMap = new HashMap<>();
 	        Set<Stop> closedSet = new HashSet<>();
@@ -155,8 +88,8 @@ public class AStarBis {
 	            Stop currentStop = currentNode.getStop();
 
 	            if (currentStop.equals(goal)) {
-	            	System.out.println("tentative reconstruction chemin");
-	                return reconstructPath3(currentNode);
+	            	System.out.println("Un chemin trouvé ! reconstruction en cours...");
+	                return reconstructPath(currentNode);
 	            }
 
 	            closedSet.add(currentStop);

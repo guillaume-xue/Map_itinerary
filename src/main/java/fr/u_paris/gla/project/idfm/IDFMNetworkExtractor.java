@@ -86,7 +86,7 @@ public class IDFMNetworkExtractor {
      * 
      * @param destination The destination file */
     public static void parse(String[] args) {
-        System.out.println("Création des fichiers en cours...");
+        System.out.println("Création des fichiers en cours...\n");
 
     	// map <route_id, traceEntry>
         Map<String, TraceEntry> traces = new TreeMap<>();
@@ -100,8 +100,8 @@ public class IDFMNetworkExtractor {
         
         addPathsAndDeparturesToTraces(traces, tripsByRoutes, itinerariesByTrip);
         
-        System.out.println("Le nombre de lignes avant création des fichiers est " + traces.size() +"\n");
-        printNumberOfStops(traces);
+        //System.out.println("Le nombre de lignes avant création des fichiers est " + traces.size() +"\n");
+        //printNumberOfStops(traces);
         
         File directory = new File(args[2]);
         if (!directory.exists()) {
@@ -111,7 +111,7 @@ public class IDFMNetworkExtractor {
         fillScheduleFiles(traces, directory);
         fillJunctionsFile(args[1], traces);
         fillMapDataFile(args[0], traces);
-        
+        System.out.println("Fichiers clients créés avec succès.");
     }
     
     
@@ -359,10 +359,10 @@ public class IDFMNetworkExtractor {
     		}
     	}
     	for (String string : toRemove) {
-    		System.out.println(string);
+    		//System.out.println(string);
             traces.remove(string);
         }
-    	System.out.println("Nombre de lignes supprimées car ne possèdent aucun stops : " + toRemove.size() + "\n");
+    	//System.out.println("Nombre de lignes supprimées car ne possèdent aucun stops : " + toRemove.size() + "\n");
     }
 
     
@@ -378,8 +378,7 @@ public class IDFMNetworkExtractor {
     	}
     }
 
-    //remettre en private
-    public static void addLine(String[] line, Map<String, TraceEntry> traces) {
+    private static void addLine(String[] line, Map<String, TraceEntry> traces) {
     	String id = line[IDFM_TRACE_ID_INDEX];
     	String sanitizedLineId = id.replaceAll(":", "");
         TraceEntry newEntry = new TraceEntry(line[IDFM_TRACE_SNAME_INDEX], sanitizedLineId, line[IDFM_TRACE_TYPE_INDEX], line[IDFM_TRACE_COLOR_INDEX]);
