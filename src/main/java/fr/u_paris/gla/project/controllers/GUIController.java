@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -18,6 +19,7 @@ import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.utils.CSVExtractor;
+import fr.u_paris.gla.project.views.Gui;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -43,8 +45,12 @@ public class GUIController {
       this.gui = new Gui();
       // init Graph class
       this.graph = CSVExtractor.makeObjectsFromCSV(args);
-      if (graph == null)
-        System.exit(0);
+
+      if (graph == null) System.exit(0);
+      
+      //This should not be called if the default maximum distance between Stops has not been changed, as it takes really long.
+      //graph.connectStopsByWalking();
+      
       // init Controllers
       new KeyboardController(gui.getTextStart());
       new KeyboardController(gui.getTextEnd());
@@ -299,14 +305,15 @@ public class GUIController {
 
       if (startCoordinates != null && endCoordinates != null) {
         try {
-          Stop stopA = graph.getClosestStop(startCoordinates[0], startCoordinates[1]);
-          Stop stopB = graph.getClosestStop(endCoordinates[0], endCoordinates[1]);
 
-          // v2 astar
+          //Create and get Start and Finish Stops
+          MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(startCoordinates[0], startCoordinates[1], endCoordinates[0], endCoordinates[1]);
+
           LocalTime heureDepart = LocalTime.now();
 
           // pour le nouveau format
-          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(stopA, stopB, heureDepart);
+          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(startFinish.getLeft(), startFinish.getRight(), heureDepart);
+
           displayItinerary(itinerary);
 
           // Display the path on the map
