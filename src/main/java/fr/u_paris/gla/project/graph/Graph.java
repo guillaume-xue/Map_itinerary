@@ -11,7 +11,7 @@ import static fr.u_paris.gla.project.io.UpgradedNetworkFormat.WALK_AVG_SPEED;
 
 public class Graph {
     //constante pour la ligne de marche
-    public static double MAX_DISTANCE_WALKABLE = 0.25;
+    public static double MAX_DISTANCE_WALKABLE = 0.500;
     public static final Line WALK_LINE = new Line("IDWALK", "Marche a pied", "Walk", "808080");
     private ArrayList<Stop> listOfStops = new ArrayList<>();
     
@@ -71,18 +71,18 @@ public class Graph {
             }
             else {
                 distance = startStop.calculateDistance(e);
-                if (distance < MAX_DISTANCE_WALKABLE) {
+                if (distance < MAX_DISTANCE_WALKABLE * 1.33) {
                     startStop.addAdjacentStop(e, "Walk", calculateWalkingTime(distance), (float) distance);
                 }
                 distance = finishStop.calculateDistance(e);
-                if (distance < MAX_DISTANCE_WALKABLE) {
+                if (distance < MAX_DISTANCE_WALKABLE * 1.33) {
                     e.addAdjacentStop(finishStop, "Walk", calculateWalkingTime(distance), (float) distance);
                 }
             }   
         }
         //Check if we can walk directly from the starting point directly to the other
         distance = startStop.calculateDistance(finishStop);
-        if(distance < MAX_DISTANCE_WALKABLE){
+        if(distance < MAX_DISTANCE_WALKABLE * 1.33){
             startStop.addAdjacentStop(finishStop, "Walk", calculateWalkingTime(distance), (float) distance);
         }
         listOfStops.add(startStop);
