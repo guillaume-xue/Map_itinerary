@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 /** A tool class for the schedule format.
  * 
- * @author Emmanuel Bigeon */
+ */
 public final class ScheduleFormat {
 	
 	public static final int NUMBER_COLUMNS = 4;
@@ -24,21 +24,5 @@ public final class ScheduleFormat {
     private ScheduleFormat() {
         // Tool class
     }
-
-    /** Read a trip sequence from its string representation
-     * 
-     * @param representation the representation
-     * @return the sequence of branching */
-    public static List<Integer> getTripSequence(String representation) {
-        // TODO Read a trip sequence from a string
-
-    	//for now it will generate empty lists cause we don't know yet how we will get the "bifurcations" numbers
-    	List<Integer> tripSequence = new ArrayList<>();
-    	return tripSequence; 
-        //throw new RuntimeException("Not implemented yet");
-    }
     
-    public static DateTimeFormatter getTimeFormatter() {
-        return DateTimeFormatter.ofPattern("HH:mm").withResolverStyle(ResolverStyle.LENIENT);
-    }
 }

@@ -16,11 +16,11 @@ import java.util.Set;
 import java.util.HashSet;
 
 
-//import org.apache.commons.lang3.tuple.Triple;
 
-/** Representation of a transport line
- * 
- * @author Emmanuel Bigeon */
+/**
+ * Représente une ligne de transport intermédiaire utilisée pour la génération
+ * des fichiers clients (CSV) contenant les informations d’horaires et d’arrêts.
+ */
 public final class TraceEntry {
     private final String lineName;
     private final String lineId;
@@ -28,22 +28,32 @@ public final class TraceEntry {
     private final String colorLine;
     private List<StopEntry> lineStops = new ArrayList<>();
     
-    // map qui lie un num de bifurcation à une sequence de stopEntry
+    /** 
+     * Map associant un numéro de bifurcation (sous-ligne) à une séquence d’arrêts.
+     * Chaque entrée correspond à un chemin alternatif emprunté par certains véhicules de la ligne.
+     */
     private Map<String, List<StopEntry>> paths = new HashMap<>();
     
-    // exemple : [("05:55","2", "nomStationDep");("5:58","1", "autrenomStationDep");...] où on a des 
-    //paires heureDepart-numSousLigne, et c'est trié à l'ajout par heure de départ
-    //private List<Triple<String,String, String>> departures;
-    
-    // pour une clé nomStation on a une liste de tuple [("05:55","1");...] bien ordonnée en focntion des heures
+    /**
+     * Map associant un nom d’arrêt terminus à une liste de paires (heure de départ, sous-ligne).
+     * Les listes sont triées par heure de départ croissante à l’insertion.
+     */
     private Map<String,List<Pair<String,String>>> departures = new HashMap<>();
 
-    //remplie quand paths est ajouté
+    /**
+     * Ensemble de paires d’arrêts consécutifs présents dans les chemins définis par {@code paths}.
+     * Utilisé pour reconstituer la continuité des trajets.
+     */
     private Set<Pair<StopEntry, StopEntry>> adjacentsStops = new HashSet<>();
     
-    /** Create a transport line.
-     * 
-     * @param lname the name of the line */
+    /**
+     * Crée une nouvelle ligne de transport.
+     *
+     * @param lineName  le nom de la ligne
+     * @param lineId    l'identifiant unique de la ligne
+     * @param typeLine  le type de transport (métro, bus, etc.)
+     * @param colorLine la couleur représentative de la ligne
+     */
     public TraceEntry(String lineName, String lineId, String typeLine, String colorLine) {
         super();
         this.lineName = lineName;
@@ -87,12 +97,12 @@ public final class TraceEntry {
         		Objects.equals(colorLine, other.colorLine);
     }
     
-    //inmodifiable depuis l'extérieur, on en a besoin que pour avoir le nombre de quais ou bien le nom des stations
+    
     public List<StopEntry> getAllStops() {
     	return Collections.unmodifiableList(lineStops);
     }
     
-    //ajoute un quai que si il y est pas déjà
+    
     public void addStop(StopEntry stop) {
     	if (!lineStops.contains(stop)) {
     		lineStops.add(stop);
@@ -116,6 +126,9 @@ public final class TraceEntry {
     	return Collections.unmodifiableMap(paths);
     }
     
+    /**
+     * Calcule et stocke toutes les paires d’arrêts consécutifs à partir des chemins définis.
+     */
     public void definePairsOfAdjacentStops() {
     	if (!this.paths.isEmpty()) {
     		Set<Pair<StopEntry, StopEntry>> adjacentsStops = new HashSet<>();
