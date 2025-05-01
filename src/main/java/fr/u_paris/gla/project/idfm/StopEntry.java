@@ -6,11 +6,10 @@ package fr.u_paris.gla.project.idfm;
 import java.text.MessageFormat;
 import java.util.Objects;
 
-//on pourra enlever le fait que ça implémente l'interface de comparaison
 
 /** A transport stop data.
  * 
- * @author Emmanuel Bigeon */
+ */
 public class StopEntry implements Comparable<StopEntry> {
     private final String stopName;
     private final String stopId;
@@ -66,7 +65,6 @@ public class StopEntry implements Comparable<StopEntry> {
         return Objects.hash(latitude, stopName, stopId, longitude);
     }
 
-    //on prend en compte stopId pour vérifier l'égalité de deux stops
     @Override
     public boolean equals(Object obj) {
         if (this == obj)

@@ -74,7 +74,6 @@ public class App {
                 printHelp();
                 break;
             case "--create-files":
-                System.out.println("Création des fichiers en cours...");
                 IDFMNetworkExtractor.parse(command_args);
                 break; 
             case "--parse":

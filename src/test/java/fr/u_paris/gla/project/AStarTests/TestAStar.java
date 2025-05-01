@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 
-//todo : écrire des vrais tests, et adapter à nouvelle version de AStarBis
-public class TestAStarBis {
+//todo : écrire des vrais tests, et adapter à nouvelle version de AStar
+public class TestAStar {
     /*@Test
     public void testAStarBis() throws Exception {
         // Create a list of stops

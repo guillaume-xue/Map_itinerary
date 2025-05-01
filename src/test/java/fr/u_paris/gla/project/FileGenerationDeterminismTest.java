@@ -16,14 +16,31 @@ import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.api.Test;
 
+
+/**
+ * Classe de test permettant de vérifier que la génération de fichiers à partir de l'extracteur IDFM
+ * est déterministe, c’est-à-dire qu'elle produit toujours les mêmes fichiers à partir des mêmes entrées.
+ * 
+ * <p>Ce test est long à exécuter et n'est lancé que si le système est configuré avec la propriété :
+ * {@code -DrunDeterminismTest=true}</p>
+ * 
+ * <p>Les fichiers temporaires sont générés dans {@code target/test-temp} et supprimés après exécution.</p>
+ */
 class FileGenerationDeterminismTest {
 	
-	// pour que les fichiers testés soient dans target/test-temp et qu'ils soient suppr à chaque mvn clean
+    /**
+     * Répertoire temporaire où sont placés les fichiers de test.
+     * Supprimé à chaque exécution de {@code mvn clean}.
+     */
 	private static final Path TEMP_DIR = Paths.get("target", "test-temp");
 
-	//ce test n'est executé par maven que lorsqu'on utilise la commande 
-	// mvn test -DrunDeterminismTest=true
-	//sinon il est skipped car long
+    /**
+     * Test principal de déterminisme.
+     * Il exécute deux fois la génération à partir de l'extracteur {@code IDFMNetworkExtractor},
+     * puis compare les fichiers produits pour s'assurer qu'ils sont strictement identiques.
+     *
+     * @throws Exception en cas d’erreur d’IO ou de génération
+     */
 	@Test
 	@EnabledIfSystemProperty(named = "runDeterminismTest", matches = "true")
 	public void testFileGenerationIsDeterministic() throws Exception {
@@ -55,8 +72,7 @@ class FileGenerationDeterminismTest {
 
         System.out.println("REUSSITE DES TESTS ! Tous les fichiers sont identiques");
         
-        // Suppression des fichiers après le test
-        //à voir si on suppr pas 
+        // Suppression des fichiers après le test 
         deleteRecursively(scheduleDir1);
         deleteRecursively(scheduleDir2);
         Files.deleteIfExists(map1);
@@ -65,7 +81,14 @@ class FileGenerationDeterminismTest {
         Files.deleteIfExists(junction2);
     }
 
-	//vérifie mligne par ligne que deux fichiers sont identiques à l'aide d'un stream parce que gros fichiers
+    /**
+     * Compare ligne par ligne le contenu de deux fichiers texte.
+     * Lève une erreur si une différence est détectée, avec indication de la ligne fautive.
+     *
+     * @param file1 chemin vers le premier fichier
+     * @param file2 chemin vers le second fichier
+     * @throws IOException en cas d'erreur de lecture
+     */
 	private void assertFilesEqual(Path file1, Path file2) throws IOException {
 	    try (
 	        Stream<String> stream1 = Files.lines(file1);
@@ -95,6 +118,17 @@ class FileGenerationDeterminismTest {
 	}
 
 
+    /**
+     * Compare deux répertoires pour vérifier que :
+     * <ul>
+     *   <li>Ils contiennent les mêmes fichiers (même noms)</li>
+     *   <li>Chaque fichier correspondant est strictement identique ligne par ligne</li>
+     * </ul>
+     *
+     * @param dir1 premier dossier à comparer
+     * @param dir2 second dossier à comparer
+     * @throws IOException en cas d'erreur de lecture ou d'accès
+     */
     private void assertDirectoriesEqual(Path dir1, Path dir2) throws IOException {
         assertTrue(Files.isDirectory(dir1), dir1 + " n'est pas un dossier.");
         assertTrue(Files.isDirectory(dir2), dir2 + " n'est pas un dossier.");
@@ -125,6 +159,12 @@ class FileGenerationDeterminismTest {
     }
 
 
+    /**
+     * Supprime récursivement un dossier ou un fichier.
+     *
+     * @param path chemin vers le fichier ou dossier à supprimer
+     * @throws IOException si une erreur survient lors de la suppression
+     */
     private void deleteRecursively(Path path) throws IOException {
         if (Files.notExists(path)) return;
 

@@ -8,6 +8,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.Locale;
 
+
+/** A tool class for the network format. 
+ */
 public class UpgradedNetworkFormat {
 
 	public static final int NUMBER_COLUMNS = 10;

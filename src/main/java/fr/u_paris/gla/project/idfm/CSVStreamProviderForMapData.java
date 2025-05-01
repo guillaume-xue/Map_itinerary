@@ -14,6 +14,15 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import java.text.MessageFormat;
 
+/**
+ * Fournisseur de lignes CSV représentant les segments du réseau de transport pour la carte.
+ * Utile pour le remplissage du fichier client sur les informations de carte.
+ * <p>
+ * Cette classe parcourt les paires d'arrêts consécutifs (segments) d'une ligne et génère pour chacun
+ * une ligne formatée contenant : informations sur la ligne, coordonnées des arrêts de début et de fin,
+ * distance entre eux, et durée estimée du trajet.
+ * </p>
+ */
 public class CSVStreamProviderForMapData implements Supplier<String[]> {
 
 	private static final NumberFormat GPS_FORMATTER = UpgradedNetworkFormat
@@ -23,7 +32,7 @@ public class CSVStreamProviderForMapData implements Supplier<String[]> {
     static {
         MINUTES_SECOND_FORMATTER.setMinimumIntegerDigits(2);
     }
-    /** Number of seconds in a minute. */
+
     private static final int  SECONDS_IN_MINUTES = 60;
     private static final long SECONDS_IN_HOURS   = 3_600;
     
@@ -37,12 +46,23 @@ public class CSVStreamProviderForMapData implements Supplier<String[]> {
     private String currentLineColor;
     private String[] line = new String[UpgradedNetworkFormat.NUMBER_COLUMNS];
     
-    
+
+    /**
+     * Construit un fournisseur à partir d'une carte de traces représentant les lignes de transport.
+     *
+     * @param traces une map où chaque entrée représente une ligne de transport et ses données associées
+     */
     public CSVStreamProviderForMapData(Map<String, TraceEntry> traces) {
         this.tracesIterator = traces.entrySet().iterator();
         advanceToNextValidTrace(); 
     }
     
+    /**
+     * Renvoie une ligne CSV décrivant un segment entre deux arrêts consécutifs d'une ligne,
+     * ou {@code null} s’il n’y a plus de données à traiter.
+     *
+     * @return un tableau de chaînes représentant un segment de ligne au format CSV
+     */
     @Override
     public String[] get() {
         if (!adjacentStopsIterator.hasNext() && !advanceToNextValidTrace()) {
@@ -68,6 +88,11 @@ public class CSVStreamProviderForMapData implements Supplier<String[]> {
         return line;
     }
     
+    /**
+     * Passe à la prochaine ligne ({@code TraceEntry}) qui possède au moins une paire d’arrêts consécutifs.
+     *
+     * @return {@code true} si une nouvelle ligne a été trouvée, {@code false} sinon
+     */
     private boolean advanceToNextValidTrace() {
         while (tracesIterator.hasNext()) {
             Map.Entry<String, TraceEntry> traceEntry = tracesIterator.next();
@@ -84,6 +109,13 @@ public class CSVStreamProviderForMapData implements Supplier<String[]> {
         return false; 
     }
     
+    /**
+     * Remplit une station (nom et coordonnées gps) dans une ligne CSV.
+     *
+     * @param stop      l’arrêt à ajouter
+     * @param nextLine  le tableau représentant la ligne CSV à remplir
+     * @param index     l’index de départ dans le tableau
+     */
     private static void fillStation(StopEntry stop, String[] nextLine, int index) {
         nextLine[index] = stop.getStopName();
         nextLine[index + 1] = MessageFormat.format("{0}, {1}", //$NON-NLS-1$
@@ -91,7 +123,13 @@ public class CSVStreamProviderForMapData implements Supplier<String[]> {
                 GPS_FORMATTER.format(stop.longitude));
     }
     
-    //retourne un temps en h
+    /**
+     * Calcule un temps estimé de trajet (en heures) en fonction de la distance et du type de ligne.
+     *
+     * @param distance         distance en kilomètres entre deux arrêts
+     * @param currentLineType  type de ligne (Bus, Tram, Subway, etc.)
+     * @return temps estimé en heures
+     */
     private static double distanceToTime(double distance, String currentLineType) {
     	int speed; 
 
@@ -109,7 +147,6 @@ public class CSVStreamProviderForMapData implements Supplier<String[]> {
                 speed = UpgradedNetworkFormat.BUS_AVG_SPEED;
                 break;
             default:
-                //throw new IllegalArgumentException("Type de ligne inconnu : " + this.currentLineType);
             	speed = UpgradedNetworkFormat.OTHER_AVG_SPEED;
             	break;
         }

@@ -27,11 +27,11 @@ public class SegmentItineraire {
             stopsString.setLength(stopsString.length() - 4);  // Enlève le dernier " -> "
         }
 
-        String sublineName = (subline != null && subline.getAssociatedLine() != null) 
+        String lineName = (subline != null && subline.getAssociatedLine() != null) 
             ? subline.getAssociatedLine().getName()
-            : "Aucune sous-ligne";
+            : "Aucune ligne";
 
-        return "Sous-ligne: " + sublineName + "\n" +
+        return "Ligne: " + lineName + "\n" +
                "Arrêts: " + stopsString.toString() + "\n" +
                "Heure de départ: " + heureDepart + "\n" +
                "Heure d'arrivée: " + heureArrivee;

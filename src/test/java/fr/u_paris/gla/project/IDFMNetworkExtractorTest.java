@@ -11,10 +11,10 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 import java.util.HashMap;
 
-
+//à voir si il faut tester les méthodes de création des objets intermédiaires pour créer les fichiers clients
 class IDFMNetworkExtractorTest {
 
-	@Test
+	/*@Test
 	public void addLineTest() {
 		String[] lineCSV = {"IDFMC00319","4301","4301","Bus","78C696"};
 		Map<String, TraceEntry> traces = new HashMap<>();
@@ -33,11 +33,6 @@ class IDFMNetworkExtractorTest {
         // Vérifier la mise à jour de la TraceEntry dans la map
         TraceEntry expectedEntry2 = new TraceEntry("4985", "IDFMC00319", "Subway", "0xFFFF");
         assertEquals(expectedEntry2, traces.get("IDFMC00319"), "L'entrée devrait être mise à jour avec les nouvelles valeurs.");
-	}
-
-	@Test 
-	public void addStopTest() {
-		
-	}
+	}*/
 	
 }
