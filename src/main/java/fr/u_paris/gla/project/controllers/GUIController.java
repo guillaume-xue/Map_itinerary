@@ -13,7 +13,7 @@ import org.json.JSONObject;
 
 import fr.u_paris.gla.project.astar.CostFunction;
 import fr.u_paris.gla.project.astar.CostFunctionFactory;
-import fr.u_paris.gla.project.astar.AStarBis;
+import fr.u_paris.gla.project.astar.AStar;
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.astar.SegmentItineraire;
@@ -218,7 +218,7 @@ public class GUIController {
       } else {
         costFunction = CostFunctionFactory.getCostFunction(CostFunctionFactory.Mode.DURATION);
       }
-      AStarBis astar = new AStarBis(costFunction);
+      AStar astar = new AStar(costFunction);
 
       // Remove all markers and polygons from the map
       gui.getMapViewer().removeAllMapMarkers();
@@ -242,8 +242,7 @@ public class GUIController {
           LocalTime heureDepart = LocalTime.now();
 
           // pour le nouveau format
-          System.out.println("Recherche du chemin avec nouvel algo");
-          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath2(stopA, stopB, heureDepart);
+          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(stopA, stopB, heureDepart);
           displayItinerary(itinerary);
 
           // Display the path on the map
