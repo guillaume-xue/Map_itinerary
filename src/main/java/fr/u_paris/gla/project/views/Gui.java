@@ -33,6 +33,7 @@ public class Gui extends JFrame {
   private JScrollPane textStart;
   private JScrollPane textEnd;
   private JPanel contentPanel;
+  private JScrollPane contentScrollPane;
   private JMapViewer mapViewer;
   private JButton researchButton;
   private JCheckBox distCheckBox;
@@ -136,9 +137,9 @@ public class Gui extends JFrame {
     createFloatingWindow();
 
     // Add the research panel to a scroll pane
-    JScrollPane scrollPane = new JScrollPane(contentPanel);
-    scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-    scrollPane.getVerticalScrollBar().setUnitIncrement(16); // Smoother scrolling
+    contentScrollPane = new JScrollPane(contentPanel);
+    contentScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+    contentScrollPane.getVerticalScrollBar().setUnitIncrement(16); // Smoother scrolling
 
     // Create a split pane to separate the research panel and the content panel
     JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -146,7 +147,7 @@ public class Gui extends JFrame {
     splitPane.setEnabled(false);
 
     splitPane.add(researchPanel, JSplitPane.TOP);
-    splitPane.add(scrollPane, JSplitPane.BOTTOM);
+    splitPane.add(contentScrollPane, JSplitPane.BOTTOM);
 
     // Add the split pane and the map panel to the main content panel
     JPanel mainContentPanel = new JPanel();
@@ -432,11 +433,9 @@ public class Gui extends JFrame {
     // Clear the map and content panel before displaying new paths
     mapViewer.removeAllMapMarkers();
     mapViewer.removeAllMapPolygons();
-    mapViewer.repaint();
     // Clear the content panel
     contentPanel.removeAll();
     contentPanel.revalidate();
-    contentPanel.repaint();
     // Create a new panel to display the paths
     JPanel pathPanel = new JPanel();
     pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
@@ -445,11 +444,14 @@ public class Gui extends JFrame {
     // Iterate through the segments and display each one
     for (SegmentItineraire segment : segments) {
       // Print the number of stops
-      JTextArea sublineTextArea = createTextAreaOutput(segment.getSubline().getAssociatedLine().getName() + " - "
-          + segment.getSubline().getSublineType());
-      pathPanel.add(sublineTextArea);
+      String timeDepart = segment.getHeureDepart().toString().substring(0, 5);
+      String timeArrivee = segment.getHeureArrivee().toString().substring(0, 5);
+
       if (segment.getSubline().getSublineType() == TransportTypes.Walk) {
-        pathPanel.add(Box.createRigidArea(new Dimension(0, 30))); // Add spacing between segments
+        JTextArea sublineTextArea = createTextAreaOutput(segment.getSubline().getAssociatedLine().getName()
+            + " - " + timeDepart + " - " + timeArrivee);
+        pathPanel.add(sublineTextArea);
+        pathPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add spacing between segments
         Stop startStop = segment.getStops().get(0);
         Stop endStop = segment.getStops().get(segment.getStops().size() - 1);
         Coordinate mStart = new Coordinate(startStop.getLongitude(), startStop.getLatitude());
@@ -458,10 +460,20 @@ public class Gui extends JFrame {
         mapViewer.addMapPolygon(grayPolygon);
         continue; // Skip if the subline type is "Walk"
       }
+      // Print the subline name
+      JTextArea sublineTextArea = createTextAreaOutput(segment.getSubline().getAssociatedLine().getName() + " - "
+          + segment.getSubline().getSublineType() + " - " + timeDepart + " - "
+          + timeArrivee);
+      pathPanel.add(sublineTextArea);
+
       // Print the first subline name
       Stop startStop = segment.getStops().get(0);
+      pathPanel.add(Box.createRigidArea(new Dimension(0, 20))); // Add spacing between segments
+
       JTextArea startTextArea = createTextAreaOutput(startStop.getNameOfAssociatedStation());
+      startTextArea.setBorder(BorderFactory.createEmptyBorder(0, 20, 60, 0)); // Add bottom margin
       pathPanel.add(startTextArea);
+
       Coordinate mStart = new Coordinate(startStop.getLongitude(), startStop.getLatitude());
       mapViewer.setDisplayPosition(mStart, 12);
       MapMarkerDot parisMarker = new MapMarkerDot(mStart);
@@ -471,6 +483,7 @@ public class Gui extends JFrame {
         Stop stop = segment.getStops().get(i);
         // add TextArea for the stop
         JTextArea stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
+        stopTextArea.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0)); // Add bottom margin
         pathPanel.add(stopTextArea);
         // draw the path
         Coordinate mEnd = new Coordinate(stop.getLongitude(), stop.getLatitude()); // Paris center
@@ -482,8 +495,9 @@ public class Gui extends JFrame {
         // update the start
         mStart = mEnd;
       }
-      pathPanel.add(Box.createRigidArea(new Dimension(0, 30))); // Add spacing between segments
     }
+    mapViewer.repaint();
+    contentPanel.repaint();
     return pathPanel;
   }
 
@@ -548,10 +562,28 @@ public class Gui extends JFrame {
     pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
     pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
     pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
+
     JTextArea stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
+    stopTextArea.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0)); // Add bottom margin
     pathPanel.add(stopTextArea);
-    pathPanel.add(Box.createRigidArea(new Dimension(0, 30))); // Add spacing between segments
+
+    ArrayList<Subline> uniqueSublineList = new ArrayList<>();
     for (Subline subline : departures.keySet()) {
+      boolean isUnique = true;
+      for (Subline existingSubline : uniqueSublineList) {
+        if (existingSubline.getAssociatedLine().getName().equals(subline.getAssociatedLine().getName())
+            && existingSubline.getDestination().getNameOfAssociatedStation()
+                .equals(subline.getDestination().getNameOfAssociatedStation())) {
+          isUnique = false;
+          break;
+        }
+      }
+      if (isUnique) {
+        uniqueSublineList.add(subline);
+      }
+    }
+    for (Subline subline : uniqueSublineList) {
+
       JTextArea sublineTextArea = createTextAreaOutput(
           subline.getAssociatedLine().getName() + " - " + subline.getDestination().getNameOfAssociatedStation());
       pathPanel.add(sublineTextArea);
