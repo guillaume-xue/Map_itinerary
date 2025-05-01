@@ -15,6 +15,7 @@ import javax.swing.border.AbstractBorder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.graph.Graph;
@@ -370,6 +371,12 @@ public class Gui extends JFrame {
       pathPanel.add(sublineTextArea);
       if (segment.getSubline().getSublineType() == TransportTypes.Walk) {
         pathPanel.add(Box.createRigidArea(new Dimension(0, 30))); // Add spacing between segments
+        Stop startStop = segment.getStops().get(0);
+        Stop endStop = segment.getStops().get(segment.getStops().size() - 1);
+        Coordinate mStart = new Coordinate(startStop.getLongitude(), startStop.getLatitude());
+        Coordinate mEnd = new Coordinate(endStop.getLongitude(), endStop.getLatitude());
+        MapPolygon grayPolygon = new GrayDashedMapPolygon(mStart, mEnd, mStart);
+        mapViewer.addMapPolygon(grayPolygon);
         continue; // Skip if the subline type is "Walk"
       }
       // Print the first subline name
@@ -442,6 +449,17 @@ public class Gui extends JFrame {
       timesPanel.setVisible(false); // Initially hidden
 
       ArrayList<LocalTime> times = departures.get(subline);
+
+      if (times == null || times.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "No departures available for this subline.",
+            "No Departures", JOptionPane.INFORMATION_MESSAGE);
+        mapViewer.removeAllMapMarkers();
+        mapViewer.removeAllMapPolygons();
+        mapViewer.repaint();
+        pathPanel.removeAll();
+        break;
+      }
+
       for (LocalTime time : times) {
         JTextArea timeTextArea = createTextAreaOutput(time.toString());
         timesPanel.add(timeTextArea);
@@ -468,7 +486,31 @@ public class Gui extends JFrame {
       }
       Graphics2D g2d = (Graphics2D) g;
       g2d.setColor(color); // Set the custom color
-      g2d.setStroke(new java.awt.BasicStroke(2)); // Optional: Set stroke thickness
+      g2d.setStroke(new java.awt.BasicStroke(4)); // Optional: Set stroke thickness
+      for (int i = 1; i < points.size(); i++) {
+        Point p1 = points.get(i - 1);
+        Point p2 = points.get(i);
+        g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
+      }
+    }
+  }
+
+  public class GrayDashedMapPolygon extends MapPolygonImpl {
+    private static final Color GRAY_COLOR = Color.GRAY;
+
+    public GrayDashedMapPolygon(Coordinate start, Coordinate end, Coordinate middle) {
+      super(start, end, middle);
+    }
+
+    @Override
+    public void paint(Graphics g, java.util.List<Point> points) {
+      if (points == null || points.size() < 2) {
+        return;
+      }
+      Graphics2D g2d = (Graphics2D) g;
+      g2d.setColor(GRAY_COLOR); // Set the color to gray
+      float[] dashPattern = { 10, 10 }; // Define dash pattern (10 pixels on, 10 pixels off)
+      g2d.setStroke(new java.awt.BasicStroke(4, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, dashPattern, 0));
       for (int i = 1; i < points.size(); i++) {
         Point p1 = points.get(i - 1);
         Point p2 = points.get(i);
@@ -482,6 +524,7 @@ public class Gui extends JFrame {
    */
   public void launch() {
     setVisible(true);
+    requestFocusInWindow();
   }
 
   /**
