@@ -15,7 +15,6 @@ import javax.swing.border.AbstractBorder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.graph.Graph;
@@ -38,10 +37,15 @@ public class Gui extends JFrame {
   private JButton researchButton;
   private JCheckBox distCheckBox;
   private JCheckBox timeCheckBox;
+  private JScrollPane numLine;
+  private JCheckBox metroLineCheckBox;
+  private JCheckBox busLineCheckBox;
+  private JButton viewLineButton;
   private static final Color textColor = new Color(11, 22, 44);
   private static final Color bordeColor = new Color(88, 88, 88);
   private static final Color primaryBackgroundColor = new Color(240, 240, 240);
   private static final Color accentColor = new Color(76, 175, 80);
+  private JDialog floatingWindow; // Fenêtre flottante
 
   /**
    * Constructor.
@@ -97,6 +101,7 @@ public class Gui extends JFrame {
     contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
     contentPanel.setBackground(primaryBackgroundColor);
 
+    // Create checkboxes for choosing the best route by distance or time
     JLabel label = new JLabel("Best route by : ");
     this.distCheckBox = new JCheckBox("Distance");
     this.distCheckBox.setSelected(true); // Default to distance
@@ -127,6 +132,9 @@ public class Gui extends JFrame {
     researchPanel.add(buttonPanel);
     researchPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
+    // Create a floating window
+    createFloatingWindow();
+
     // Add the research panel to a scroll pane
     JScrollPane scrollPane = new JScrollPane(contentPanel);
     scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -147,6 +155,77 @@ public class Gui extends JFrame {
     mainContentPanel.add(mapPanel, BorderLayout.CENTER);
 
     add(mainContentPanel);
+  }
+
+  private void createFloatingWindow() {
+    floatingWindow = new JDialog(this, "Floating Window", false);
+    floatingWindow.setSize(200, 150);
+    floatingWindow.setLocationRelativeTo(this);
+    floatingWindow.setUndecorated(true); // Enlever la barre de titre et de fermeture
+    floatingWindow.setAlwaysOnTop(true); // Toujours au-dessus de la fenêtre principale
+    floatingWindow.setLayout(new BorderLayout());
+    floatingWindow.setBackground(primaryBackgroundColor);
+
+    JPanel panel = new JPanel();
+    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+    panel.setBackground(primaryBackgroundColor);
+
+    JPanel titlePanel = new JPanel();
+    JLabel label = new JLabel("Display Line");
+    titlePanel.add(label);
+
+    // Set the textArea for the line number
+    JPanel textPanel = new JPanel();
+    this.numLine = new JScrollPane();
+    JTextArea textArea = new JTextArea("Line number");
+    textArea.setForeground(textColor);
+    textArea.setBackground(primaryBackgroundColor);
+    textArea.setAlignmentX(Component.CENTER_ALIGNMENT);
+    textArea.setAlignmentY(Component.CENTER_ALIGNMENT);
+    textArea.setCaretColor(Color.BLACK);
+    textArea.setLineWrap(false); // Disable line wrapping
+    textArea.setWrapStyleWord(false); // Disable word wrapping
+    textArea.setEditable(true);
+    this.numLine.setViewportView(textArea);
+    this.numLine.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+    this.numLine.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    textPanel.add(numLine);
+
+    // Create checkboxes for bus and metro lines
+    JPanel checkBoxPanel = new JPanel();
+    checkBoxPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+    this.busLineCheckBox = new JCheckBox("Bus");
+    this.busLineCheckBox.setSelected(true); // Default to bus
+    this.metroLineCheckBox = new JCheckBox("Metro");
+    this.metroLineCheckBox.setSelected(false); // Default to metro
+    checkBoxPanel.add(busLineCheckBox);
+    checkBoxPanel.add(metroLineCheckBox);
+
+    // Create a button to view the line
+    this.viewLineButton = new JButton("View Line");
+    JPanel buttonPanel = new JPanel();
+    buttonPanel.add(viewLineButton);
+
+    panel.add(titlePanel);
+    panel.add(textPanel);
+    panel.add(checkBoxPanel);
+    panel.add(buttonPanel);
+    this.floatingWindow.add(panel, BorderLayout.CENTER);
+
+    // Ajouter un écouteur pour suivre le déplacement de la fenêtre principale
+    this.addComponentListener(new java.awt.event.ComponentAdapter() {
+      @Override
+      public void componentMoved(java.awt.event.ComponentEvent e) {
+        Point mainWindowLocation = Gui.this.getLocation();
+        floatingWindow.setLocation(mainWindowLocation.x + (Gui.this.getWidth() - floatingWindow.getWidth() - 50),
+            mainWindowLocation.y + (Gui.this.getHeight() - floatingWindow.getHeight() - 50));
+      }
+    });
+
+  }
+
+  private void toggleFloatingWindow() {
+    floatingWindow.setVisible(!floatingWindow.isVisible());
   }
 
   /**
@@ -408,6 +487,39 @@ public class Gui extends JFrame {
     return pathPanel;
   }
 
+  public void displayLine(ArrayList<Line> lines, TransportTypes type, String lineNum) {
+    mapViewer.removeAllMapMarkers();
+    mapViewer.removeAllMapPolygons();
+    for (Line line : lines) {
+      if (line.getType() != type || !line.getName().equals(lineNum)) {
+        continue;
+      } else {
+        for (Subline subline : line.getListOfSublines()) {
+          for (Stop stop : subline.getListOfStops()) {
+            Coordinate coord = new Coordinate(stop.getLongitude(), stop.getLatitude());
+            MapMarkerDot marker = new MapMarkerDot(coord);
+            mapViewer.addMapMarker(marker);
+          }
+          for (Stop stop : subline.getListOfStops()) {
+            for (Stop adjacentStop : stop.getAdjacentStops()) {
+              if (subline.getListOfStops().contains(adjacentStop)) {
+                Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
+                Coordinate mEnd = new Coordinate(adjacentStop.getLongitude(), adjacentStop.getLatitude());
+                String color = "#" + line.getColor();
+                MapPolygon mLine = new ColoredMapPolygon(mStart, mEnd, mEnd, Color.decode(color));
+                mapViewer.addMapPolygon(mLine);
+              }
+            }
+          }
+        }
+        mapViewer.setDisplayPosition(new Coordinate(48.8566, 2.3522), 10);
+        mapViewer.repaint();
+        break;
+      }
+    }
+    mapViewer.repaint();
+  }
+
   /**
    * Adds a toggle functionality to expand or collapse the list of times when
    * clicking on a subline text.
@@ -524,6 +636,7 @@ public class Gui extends JFrame {
    */
   public void launch() {
     setVisible(true);
+    toggleFloatingWindow(); // Show the floating window
     requestFocusInWindow();
   }
 
@@ -610,6 +723,22 @@ public class Gui extends JFrame {
   public JCheckBox getTimeCheckBox() {
     return timeCheckBox;
 
+  }
+
+  public JCheckBox getBusLineCheckBox() {
+    return busLineCheckBox;
+  }
+
+  public JButton getViewLineButton() {
+    return viewLineButton;
+  }
+
+  public JCheckBox getMetroLineCheckBox() {
+    return metroLineCheckBox;
+  }
+
+  public JTextArea getnumLine() {
+    return (JTextArea) numLine.getViewport().getView();
   }
 
 }

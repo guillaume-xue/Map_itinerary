@@ -30,8 +30,9 @@ public class Launcher {
     // This is for MacOS to use the menu bar at the top of the screen
     System.setProperty("apple.laf.useScreenMenuBar", "true");
     // Initialize the GUI
-    new GUIController(args);
+    GUIController guiController = new GUIController(args);
     splashScreen.dispose();
+    guiController.launch();
   }
 
   /**
