@@ -11,7 +11,7 @@ import static fr.u_paris.gla.project.io.UpgradedNetworkFormat.WALK_AVG_SPEED;
 
 public class Graph {
     //constante pour la ligne de marche
-    public static double MAX_DISTANCE_WALKABLE = 0.1;
+    public static double MAX_DISTANCE_WALKABLE = 0.25;
     public static final Line WALK_LINE = new Line("IDWALK", "Marche a pied", "Walk", "808080");
     private ArrayList<Stop> listOfStops = new ArrayList<>();
     
@@ -71,11 +71,11 @@ public class Graph {
             }
             else {
                 distance = startStop.calculateDistance(e);
-                if (distance < MAX_DISTANCE_WALKABLE + 0.20) {
+                if (distance < MAX_DISTANCE_WALKABLE) {
                     startStop.addAdjacentStop(e, "Walk", calculateWalkingTime(distance), (float) distance);
                 }
                 distance = finishStop.calculateDistance(e);
-                if (distance < MAX_DISTANCE_WALKABLE + 0.20) {
+                if (distance < MAX_DISTANCE_WALKABLE) {
                     e.addAdjacentStop(finishStop, "Walk", calculateWalkingTime(distance), (float) distance);
                 }
             }   
@@ -130,7 +130,7 @@ public class Graph {
             "The expected waiting time is very high.");
         }
         for(int x = 0; x < size; x ++){
-            System.out.println("X: " + x + "SIZE: " + size);
+
             //get current Stop to compare
             a = listOfStops.get(x);
 

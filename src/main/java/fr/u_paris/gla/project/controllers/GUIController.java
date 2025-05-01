@@ -47,7 +47,7 @@ public class GUIController {
       if (graph == null) System.exit(0);
       
       //This should not be called if the default maximum distance between Stops has not been changed, as it takes really long.
-      graph.connectStopsByWalking();
+      //graph.connectStopsByWalking();
       
       // init Controllers
       new KeyboardController(gui.getTextStart());
@@ -248,7 +248,7 @@ public class GUIController {
           LocalTime heureDepart = LocalTime.now();
 
           // pour le nouveau format
-          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(stopA, stopB, heureDepart);
+          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(startFinish.getLeft(), startFinish.getRight(), heureDepart);
 
           displayItinerary(itinerary);
 
