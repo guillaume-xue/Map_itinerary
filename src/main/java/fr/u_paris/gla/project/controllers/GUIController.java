@@ -26,6 +26,8 @@ import okhttp3.Response;
 
 import fr.u_paris.gla.project.views.Gui;
 import fr.u_paris.gla.project.utils.Pair;
+import fr.u_paris.gla.project.utils.TransportTypes;
+
 import java.time.LocalTime;
 
 public class GUIController {
@@ -59,8 +61,6 @@ public class GUIController {
       initActionListennerCheckBox();
       // init Menu bar
       initMenuBar();
-      // Set the visibility to true
-      this.gui.launch();
       // Check the internet connection.
       if (!isInternetAvailable()) {
         JOptionPane.showMessageDialog(this.gui,
@@ -143,11 +143,15 @@ public class GUIController {
       public void focusGained(java.awt.event.FocusEvent evt) {
         JTextArea textStartArea = gui.getTextStart();
         JTextArea textEndArea = gui.getTextEnd();
+        JTextArea viewLineNumLine = gui.getnumLine();
         if (textStartArea.getText().equals("From")) {
           textStartArea.setText("");
         }
         if (textEndArea.getText().equals("")) {
           textEndArea.setText("To");
+        }
+        if (viewLineNumLine.getText().equals("")) {
+          viewLineNumLine.setText("Line number");
         }
       }
     });
@@ -156,11 +160,32 @@ public class GUIController {
       public void focusGained(java.awt.event.FocusEvent evt) {
         JTextArea textStartArea = gui.getTextStart();
         JTextArea textEndArea = gui.getTextEnd();
+        JTextArea viewLineNumLine = gui.getnumLine();
         if (textEndArea.getText().equals("To")) {
           textEndArea.setText("");
         }
         if (textStartArea.getText().equals("")) {
           textStartArea.setText("From");
+        }
+        if (viewLineNumLine.getText().equals("")) {
+          viewLineNumLine.setText("Line number");
+        }
+      }
+    });
+
+    gui.getnumLine().addFocusListener(new java.awt.event.FocusAdapter() {
+      public void focusGained(java.awt.event.FocusEvent evt) {
+        JTextArea viewLineNumLine = gui.getnumLine();
+        JTextArea textStartArea = gui.getTextStart();
+        JTextArea textEndArea = gui.getTextEnd();
+        if (viewLineNumLine.getText().equals("Line number")) {
+          viewLineNumLine.setText("");
+        }
+        if (textStartArea.getText().equals("")) {
+          textStartArea.setText("From");
+        }
+        if (textEndArea.getText().equals("")) {
+          textEndArea.setText("To");
         }
       }
     });
@@ -181,6 +206,20 @@ public class GUIController {
         gui.getDistCheckBox().setSelected(true);
       }
     });
+    gui.getBusLineCheckBox().addActionListener(e -> {
+      if (gui.getBusLineCheckBox().isSelected()) {
+        gui.getMetroLineCheckBox().setSelected(false);
+      } else {
+        gui.getMetroLineCheckBox().setSelected(true);
+      }
+    });
+    gui.getMetroLineCheckBox().addActionListener(e -> {
+      if (gui.getMetroLineCheckBox().isSelected()) {
+        gui.getBusLineCheckBox().setSelected(false);
+      } else {
+        gui.getBusLineCheckBox().setSelected(true);
+      }
+    });
   }
 
   /**
@@ -189,6 +228,31 @@ public class GUIController {
    * path on the map.
    */
   private void initActionListenner() {
+    gui.getViewLineButton().addActionListener(e -> {
+      if (gui.getnumLine().getText().equals("Line number")) {
+        JOptionPane.showMessageDialog(this.gui, "Veuillez entrer un numéro de ligne.",
+            "Erreur",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+      } else if (gui.getnumLine().getText().equals("")) {
+        JOptionPane.showMessageDialog(this.gui, "Veuillez entrer un numéro de ligne.",
+            "Erreur",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+      }
+      String lineNumber = gui.getnumLine().getText();
+      if (gui.getBusLineCheckBox().isSelected()) {
+        gui.displayLine(graph.getListOfLines(), TransportTypes.Bus, lineNumber);
+      } else if (gui.getMetroLineCheckBox().isSelected()) {
+        gui.displayLine(graph.getListOfLines(), TransportTypes.Subway, lineNumber);
+      } else {
+        JOptionPane.showMessageDialog(this.gui, "Veuillez sélectionner une ligne de bus ou de métro.",
+            "Erreur",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+      }
+    });
+
     gui.getResearchButton().addActionListener(e -> {
       if (gui.getTextStart().getText().equals("From") || gui.getTextEnd().getText().equals("To")) {
         JOptionPane.showMessageDialog(this.gui, "Veuillez entrer une adresse de départ et d'arrivée.",
@@ -327,6 +391,10 @@ public class GUIController {
         gui.cleanMap();
       }
     });
+  }
+
+  public void launch() {
+    gui.launch();
   }
 
 }

@@ -4,6 +4,7 @@ import java.awt.Point;
 
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseEvent;
@@ -85,6 +86,10 @@ public class MouseController {
 
   /// Custom mouse adapter to handle mouse events
   private class CustomMouseAdapter extends MouseAdapter {
+
+    private int leftClickCount = 0;
+    private Timer singleClickTimer;
+
     @Override
     public void mousePressed(MouseEvent e) {
       if (SwingUtilities.isLeftMouseButton(e)) {
@@ -99,37 +104,60 @@ public class MouseController {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-      if (e.getClickCount() == 3 && SwingUtilities.isLeftMouseButton(e)) {
-        mapViewer.removeAllMapMarkers();
-        mapViewer.removeAllMapPolygons();
-        gui.getContentPanel().removeAll();
-        gui.getContentPanel().revalidate();
-        gui.getContentPanel().repaint();
-        Point clickPoint = e.getPoint();
-        Coordinate coord = new Coordinate(mapViewer.getPosition(clickPoint).getLat(),
-            mapViewer.getPosition(clickPoint).getLon());
-        mapViewer.addMapMarker(new MapMarkerDot(coord));
-        try {
-          Stop stop = graph.getClosestStop(coord.getLat(), coord.getLon());
-          gui.getContentPanel().add(gui.displayListOfStopDeparture(stop));
-        } catch (Exception e1) {
-          // TODO Auto-generated catch block
-          e1.printStackTrace();
+      if (SwingUtilities.isRightMouseButton(e)) {
+        if (e.getClickCount() == 2) {
+          mapViewer.zoomOut();
         }
-      } else if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)
-          && (startTextArea.isFocusOwner() || endTextArea.isFocusOwner())) {
-        mapViewer.removeAllMapMarkers();
-        mapViewer.removeAllMapPolygons();
-        Point clickPoint = e.getPoint();
-        Coordinate coord = new Coordinate(mapViewer.getPosition(clickPoint).getLat(),
-            mapViewer.getPosition(clickPoint).getLon());
-        mapViewer.addMapMarker(new MapMarkerDot(coord));
-        if (startTextArea.isFocusOwner()) {
-          startTextArea.setText(coord.getLat() + ", " + coord.getLon());
-        } else if (endTextArea.isFocusOwner()) {
-          endTextArea.setText(coord.getLat() + ", " + coord.getLon());
+      } else if (SwingUtilities.isLeftMouseButton(e)) {
+        if (e.getClickCount() == 2) {
+          if (singleClickTimer != null) {
+            singleClickTimer.stop(); // Cancel the single-click action
+          }
+          mapViewer.zoomIn();
+        } else if (e.getClickCount() == 1) {
+          singleClickTimer = new Timer(200, actionEvent -> {
+            // Handle single click only if no double click occurs
+            if (!startTextArea.isFocusOwner() && !endTextArea.isFocusOwner()) {
+              mapViewer.removeAllMapMarkers();
+              mapViewer.removeAllMapPolygons();
+              gui.getContentPanel().removeAll();
+              gui.getContentPanel().revalidate();
+              gui.getContentPanel().repaint();
+
+              if (leftClickCount == 0) {
+                Point clickPoint = e.getPoint();
+                Coordinate coord = new Coordinate(mapViewer.getPosition(clickPoint).getLat(),
+                    mapViewer.getPosition(clickPoint).getLon());
+                mapViewer.addMapMarker(new MapMarkerDot(coord));
+                try {
+                  Stop stop = graph.getClosestStop(coord.getLat(), coord.getLon());
+                  gui.getContentPanel().add(gui.displayListOfStopDeparture(stop));
+                } catch (Exception e1) {
+                  e1.printStackTrace();
+                }
+                leftClickCount++;
+              } else {
+                leftClickCount = 0;
+              }
+            } else if (startTextArea.isFocusOwner() || endTextArea.isFocusOwner()) {
+              mapViewer.removeAllMapMarkers();
+              mapViewer.removeAllMapPolygons();
+              Point clickPoint = e.getPoint();
+              Coordinate coord = new Coordinate(mapViewer.getPosition(clickPoint).getLat(),
+                  mapViewer.getPosition(clickPoint).getLon());
+              mapViewer.addMapMarker(new MapMarkerDot(coord));
+              if (startTextArea.isFocusOwner()) {
+                startTextArea.setText(coord.getLat() + ", " + coord.getLon());
+              } else if (endTextArea.isFocusOwner()) {
+                endTextArea.setText(coord.getLat() + ", " + coord.getLon());
+              }
+              addInitialMarkers();
+              gui.requestFocusInWindow();
+            }
+          });
+          singleClickTimer.setRepeats(false);
+          singleClickTimer.start();
         }
-        addInitialMarkers();
       }
     }
   }
