@@ -427,7 +427,7 @@ public class Gui extends JFrame {
             continue;
           }
           tmpLineStop.add(stop);
-          Coordinate coord = new Coordinate(stop.getLongitude(), stop.getLatitude());
+          Coordinate coord = new Coordinate(stop.getLatitude(), stop.getLongitude());
           MapMarkerDot marker = new MapMarkerDot(coord);
           mapViewer.addMapMarker(marker);
         }
@@ -436,8 +436,8 @@ public class Gui extends JFrame {
     for (Stop stop : tmpLineStop) {
       for (Stop adjacentStop : stop.getAdjacentStops()) {
         if (tmpLineStop.contains(adjacentStop)) {
-          Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
-          Coordinate mEnd = new Coordinate(adjacentStop.getLongitude(), adjacentStop.getLatitude());
+          Coordinate mStart = new Coordinate(stop.getLatitude(), stop.getLongitude());
+          Coordinate mEnd = new Coordinate(adjacentStop.getLatitude(), adjacentStop.getLongitude());
           MapPolygon mLine = new MapPolygonImpl(mStart, mEnd, mStart);
           mapViewer.addMapPolygon(mLine);
         }
@@ -486,8 +486,8 @@ public class Gui extends JFrame {
         pathPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add spacing between segments
         Stop startStop = segment.getStops().get(0);
         Stop endStop = segment.getStops().get(segment.getStops().size() - 1);
-        Coordinate mStart = new Coordinate(startStop.getLongitude(), startStop.getLatitude());
-        Coordinate mEnd = new Coordinate(endStop.getLongitude(), endStop.getLatitude());
+        Coordinate mStart = new Coordinate(startStop.getLatitude(), startStop.getLongitude());
+        Coordinate mEnd = new Coordinate(endStop.getLatitude(), endStop.getLongitude());
         MapPolygon grayPolygon = new GrayDashedMapPolygon(mStart, mEnd, mStart);
         mapViewer.addMapPolygon(grayPolygon);
         continue; // Skip if the subline type is "Walk"
@@ -506,7 +506,7 @@ public class Gui extends JFrame {
       startTextArea.setBorder(BorderFactory.createEmptyBorder(0, 20, 60, 0)); // Add bottom margin
       pathPanel.add(startTextArea);
 
-      Coordinate mStart = new Coordinate(startStop.getLongitude(), startStop.getLatitude());
+      Coordinate mStart = new Coordinate(startStop.getLatitude(), startStop.getLongitude());
       mapViewer.setDisplayPosition(mStart, 12);
       MapMarkerDot parisMarker = new MapMarkerDot(mStart);
       mapViewer.addMapMarker(parisMarker);
@@ -518,7 +518,7 @@ public class Gui extends JFrame {
         stopTextArea.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0)); // Add bottom margin
         pathPanel.add(stopTextArea);
         // draw the path
-        Coordinate mEnd = new Coordinate(stop.getLongitude(), stop.getLatitude()); // Paris center
+        Coordinate mEnd = new Coordinate(stop.getLatitude(), stop.getLongitude()); // Paris center
         String color = "#" + segment.getSubline().getAssociatedLine().getColor();
         MapPolygon coloredPolygon = new ColoredMapPolygon(mStart, mEnd, mStart, Color.decode(color));
         MapMarkerDot markerDot = new MapMarkerDot(mEnd);
@@ -542,15 +542,15 @@ public class Gui extends JFrame {
       } else {
         for (Subline subline : line.getListOfSublines()) {
           for (Stop stop : subline.getListOfStops()) {
-            Coordinate coord = new Coordinate(stop.getLongitude(), stop.getLatitude());
+            Coordinate coord = new Coordinate(stop.getLatitude(), stop.getLongitude());
             MapMarkerDot marker = new MapMarkerDot(coord);
             mapViewer.addMapMarker(marker);
           }
           for (Stop stop : subline.getListOfStops()) {
             for (Stop adjacentStop : stop.getAdjacentStops()) {
               if (subline.getListOfStops().contains(adjacentStop)) {
-                Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
-                Coordinate mEnd = new Coordinate(adjacentStop.getLongitude(), adjacentStop.getLatitude());
+                Coordinate mStart = new Coordinate(stop.getLatitude(), stop.getLongitude());
+                Coordinate mEnd = new Coordinate(adjacentStop.getLatitude(), adjacentStop.getLongitude());
                 String color = "#" + line.getColor();
                 MapPolygon mLine = new ColoredMapPolygon(mStart, mEnd, mEnd, Color.decode(color));
                 mapViewer.addMapPolygon(mLine);

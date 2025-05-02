@@ -294,6 +294,7 @@ public class GUIController {
 
       // Get the coordinates from the addresses
       // Use the Nominatim API to get the coordinates
+      // [lat, lon]
       double[] startCoordinates = getCoordinatesFromAddress(startAddress);
       double[] endCoordinates = getCoordinatesFromAddress(endAddress);
 
@@ -301,6 +302,7 @@ public class GUIController {
         try {
 
           // Create and get Start and Finish Stops
+          // expects: lon, lat, lon, lat
           MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(startCoordinates[0], startCoordinates[1],
               endCoordinates[0], endCoordinates[1]);
 
