@@ -39,6 +39,8 @@ public class Gui extends JFrame {
   private JCheckBox distCheckBox;
   private JCheckBox timeCheckBox;
   private JScrollPane numLine;
+  private JComboBox<String> comboBoxHours;
+  private JComboBox<String> comboBoxMinutes;
   private JComboBox<String> lineTypeDropdown;
   private JButton viewLineButton;
   private static final Color textColor = new Color(11, 22, 44);
@@ -111,9 +113,32 @@ public class Gui extends JFrame {
     this.timeCheckBox = new JCheckBox("Time");
     JPanel checkBoxPanel = new JPanel();
     checkBoxPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+
+    String[] hours = new String[] { "Now", "00", "01", "02", "03", "04", "05", "06", "07", "08", "09",
+        "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
+        "23" };
+
+    String[] minutes = new String[] { "Now", "00", "01", "02", "03", "04", "05", "06", "07", "08",
+        "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
+        "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32",
+        "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44",
+        "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56",
+        "57", "58", "59" };
+
+    comboBoxHours = new JComboBox<>(hours);
+    comboBoxMinutes = new JComboBox<>(minutes);
+    comboBoxHours.setEnabled(false); // Disable the combo box
+    comboBoxMinutes.setEnabled(false); // Disable the combo box
+
     checkBoxPanel.add(label);
     checkBoxPanel.add(distCheckBox);
     checkBoxPanel.add(timeCheckBox);
+
+    JPanel comboBoxPanel = new JPanel();
+
+    comboBoxPanel.add(comboBoxHours);
+    comboBoxPanel.add(new JLabel(":")); // Add spacing
+    comboBoxPanel.add(comboBoxMinutes);
 
     // Create a panel for the research area
     JPanel researchPanel = new JPanel();
@@ -124,10 +149,12 @@ public class Gui extends JFrame {
     researchPanel.add(startPanel);
     researchPanel.add(endPanel);
     researchPanel.add(checkBoxPanel);
+    researchPanel.add(comboBoxPanel);
 
     // Create a container for the button to center it
     JPanel buttonPanel = new JPanel();
-    buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER)); // Center the button within the panel
+    buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER)); // Center the button
+                                                              // within the panel
     buttonPanel.setBackground(primaryBackgroundColor); // Ensure the background matches
     buttonPanel.add(this.researchButton); // Add the search button to this centered panel
 
@@ -141,11 +168,13 @@ public class Gui extends JFrame {
     // Add the research panel to a scroll pane
     contentScrollPane = new JScrollPane(contentPanel);
     contentScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-    contentScrollPane.getVerticalScrollBar().setUnitIncrement(16); // Smoother scrolling
+    contentScrollPane.getVerticalScrollBar().setUnitIncrement(16); // Smoother
+                                                                   // scrolling
 
     // Create a split pane to separate the research panel and the content panel
-    JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-    splitPane.setDividerLocation(280);
+    JSplitPane splitPane = new JSplitPane(
+        JSplitPane.VERTICAL_SPLIT);
+    splitPane.setDividerLocation(310);
     splitPane.setEnabled(false);
 
     splitPane.add(researchPanel, JSplitPane.TOP);
@@ -534,6 +563,13 @@ public class Gui extends JFrame {
         break;
       }
     }
+    if (mapViewer.getComponentCount() == 0) {
+      JOptionPane.showMessageDialog(this, "No line found with the given number.",
+          "Line Not Found", JOptionPane.INFORMATION_MESSAGE);
+      mapViewer.removeAllMapMarkers();
+      mapViewer.removeAllMapPolygons();
+      mapViewer.repaint();
+    }
     mapViewer.repaint();
   }
 
@@ -774,4 +810,13 @@ public class Gui extends JFrame {
   public JComboBox<String> getLineTypeDropdown() {
     return lineTypeDropdown;
   }
+
+  public JComboBox<String> getComboBoxHours() {
+    return comboBoxHours;
+  }
+
+  public JComboBox<String> getComboBoxMinutes() {
+    return comboBoxMinutes;
+  }
+
 }
