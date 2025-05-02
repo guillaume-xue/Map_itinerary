@@ -294,7 +294,6 @@ public class GUIController {
 
       // Get the coordinates from the addresses
       // Use the Nominatim API to get the coordinates
-      // [lat, lon]
       double[] startCoordinates = getCoordinatesFromAddress(startAddress);
       double[] endCoordinates = getCoordinatesFromAddress(endAddress);
 
@@ -302,13 +301,12 @@ public class GUIController {
         try {
 
           // Create and get Start and Finish Stops
-          // expects: lon, lat, lon, lat
           MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(startCoordinates[0], startCoordinates[1],
               endCoordinates[0], endCoordinates[1]);
 
           LocalTime heureDepart;
-          if (gui.getComboBoxHours().getSelectedItem().toString().equals("") &&
-              gui.getComboBoxMinutes().getSelectedItem().toString().equals("")) {
+          if (gui.getComboBoxHours().getSelectedItem().toString().equals("Now") &&
+              gui.getComboBoxMinutes().getSelectedItem().toString().equals("Now")) {
             heureDepart = LocalTime.now();
           } else {
             heureDepart = LocalTime.of(Integer.parseInt(gui.getComboBoxHours().getSelectedItem().toString()),
