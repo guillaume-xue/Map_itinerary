@@ -45,8 +45,7 @@ volontairement skipped avec les autres commandes
 Suggestion d'usage pour démonstration du gui :  
 ```
 mvn clean package
-mvn verify  
-java -jar target/project-2025.1.0.0-PROTOTYPE-jar-with-dependencies.jar --gui 
+java -jar target/project-2025.1.1.0-PROTOTYPE.jar --gui  
 ```
 
 
