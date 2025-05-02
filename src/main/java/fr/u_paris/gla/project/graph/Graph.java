@@ -22,7 +22,7 @@ public class Graph {
         this.listOfStops = listOfStops;
     }
 
-    public Stop getStop(double longitude, double latitude) throws Exception{
+    public Stop getStop(double latitude, double longitude) throws Exception{
         for(Stop st : listOfStops){
             if(st.getLongitude() == longitude && st.getLatitude() == latitude){
                 return st;
@@ -31,13 +31,13 @@ public class Graph {
         throw new Exception(String.format("Stop was not found at coordinates x = %f, y = %f", longitude, latitude));
     }
 
-    public Stop getClosestStop(double longitude, double latitude) throws Exception{
+    public Stop getClosestStop(double latitude, double longitude) throws Exception{
 
         if(listOfStops.isEmpty()){
             throw new Exception("The list of stops is empty");
         }
 
-        listOfStops.sort((Stop a, Stop b) -> a.calculateDistance(longitude, latitude).compareTo(b.calculateDistance(longitude, latitude)));
+        listOfStops.sort((Stop a, Stop b) -> a.calculateDistance(latitude, longitude).compareTo(b.calculateDistance(latitude, longitude)));
 
         System.out.println(
             String.format(
@@ -54,13 +54,12 @@ public class Graph {
      * Previous StartStop and FinishStops will be removed from the listOfStops, but their connections will not be severed (seen comments in Graph.connectStopsByWalking() )
      * Return a MutablePair<Stop, Stop>, with MutablePair.left <- startStop, MutablePair.right <- finishStop
      */
-
-    public MutablePair<Stop, Stop> addStartAndFinish(double longitudeS, double latitudeS, double longitudeF, double latitudeF) throws Exception{
+    public MutablePair<Stop, Stop> addStartAndFinish(double latitudeS, double longitudeS, double latitudeF, double longitudeF) throws Exception{
         if(listOfStops.isEmpty()){
             throw new Exception("The graph is empty");
         }
-        Stop startStop = new Stop(longitudeS, latitudeS, "StartPoint");
-        Stop finishStop = new Stop(longitudeF, latitudeF, "FinishPoint");
+        Stop startStop = new Stop(latitudeS, longitudeS, "StartPoint");
+        Stop finishStop = new Stop(latitudeF, longitudeF, "FinishPoint");
 
         double distance;
 

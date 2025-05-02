@@ -34,19 +34,19 @@ public class Stop {
     */
     private HashMap<Subline, ArrayList<LocalTime>> departures = new HashMap<>();
 
-    public Stop(double longitude, double latitude, String nameOfAssociatedStation){
-        this.longitude = longitude;
+    public Stop(double latitude, double longitude, String nameOfAssociatedStation){
         this.latitude = latitude;
+        this.longitude = longitude;
 
         this.nameOfAssociatedStation = nameOfAssociatedStation;
     }
 
-    public double getLongitude() {
-        return longitude;
-    }
-
     public double getLatitude() {
         return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
     }
 
     public String getNameOfAssociatedStation() {
@@ -67,10 +67,6 @@ public class Stop {
 
     public void addDeparture(Subline subline, LocalTime time) {
         departures.computeIfAbsent(subline, k -> new ArrayList<>()).add(time);
-    }
-    
-    public double distanceBetweenAdjacentStop(Stop stop) {
-        return GPS.distance(this.getLatitude(), this.getLongitude(), stop.getLatitude(), stop.getLongitude());
     }
     
     //à voir si cette fonction est encore utilisée qqpart
@@ -241,11 +237,11 @@ public class Stop {
         return String.format(
             "Stop [" +
             "name: '%s'," +
-            " longitude: %.6f," +
-            " latitude: %.6f" +
+            " latitude: %.6f," +
+            " longitude: %.6f" +
             " connecting stops : %s" +
             "]\n",
-            nameOfAssociatedStation, longitude, latitude, getAllConnections()
+            nameOfAssociatedStation, latitude, longitude, getAllConnections()
         );    
     }
 
@@ -259,7 +255,7 @@ public class Stop {
 
     @Override
     public int hashCode() {
-        return Objects.hash(longitude, latitude, nameOfAssociatedStation);
+        return Objects.hash(latitude, longitude, nameOfAssociatedStation);
     }
 
     @Override
@@ -279,12 +275,13 @@ public class Stop {
 
     //calculates the distance between two stops
     public Double calculateDistance(Stop s){
-        return GPS.distance(this.longitude, this.latitude, s.longitude, s.latitude);
+        return GPS.distance(this.latitude, this.longitude, s.latitude, s.longitude);
     }
     
     //calculates the distance between a stop and the given coordinates
-    public Double calculateDistance(double targetLongitude, double targetLatitude){
-        return GPS.distance(this.longitude, this.latitude, targetLongitude, targetLatitude);
+    public Double calculateDistance(double targetLatitude, double targetLongitude){
+        return GPS.distance(this.latitude, this.longitude, targetLatitude, targetLongitude);
     }
+    
 }
 
