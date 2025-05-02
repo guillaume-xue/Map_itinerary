@@ -39,8 +39,7 @@ public class Gui extends JFrame {
   private JCheckBox distCheckBox;
   private JCheckBox timeCheckBox;
   private JScrollPane numLine;
-  private JCheckBox metroLineCheckBox;
-  private JCheckBox busLineCheckBox;
+  private JComboBox<String> lineTypeDropdown;
   private JButton viewLineButton;
   private static final Color textColor = new Color(11, 22, 44);
   private static final Color bordeColor = new Color(88, 88, 88);
@@ -70,8 +69,11 @@ public class Gui extends JFrame {
     JMenu viewMenu = new JMenu("View");
     JMenuItem busMenu = new JMenuItem("Bus");
     JMenuItem metroMenu = new JMenuItem("Metro");
+    JMenuItem floatingWindowMenu = new JMenuItem("Line");
     viewMenu.add(busMenu);
     viewMenu.add(metroMenu);
+    viewMenu.add(new JSeparator());
+    viewMenu.add(floatingWindowMenu);
     menuBar.add(viewMenu);
     this.setJMenuBar(menuBar);
 
@@ -163,7 +165,7 @@ public class Gui extends JFrame {
     floatingWindow.setSize(200, 150);
     floatingWindow.setLocationRelativeTo(this);
     floatingWindow.setUndecorated(true); // Enlever la barre de titre et de fermeture
-    floatingWindow.setAlwaysOnTop(true); // Toujours au-dessus de la fenêtre principale
+    floatingWindow.setAlwaysOnTop(false); // Toujours au-dessus de la fenêtre principale
     floatingWindow.setLayout(new BorderLayout());
     floatingWindow.setBackground(primaryBackgroundColor);
 
@@ -176,6 +178,7 @@ public class Gui extends JFrame {
     titlePanel.add(label);
 
     // Set the textArea for the line number
+
     JPanel textPanel = new JPanel();
     this.numLine = new JScrollPane();
     JTextArea textArea = new JTextArea("Line number");
@@ -187,20 +190,21 @@ public class Gui extends JFrame {
     textArea.setLineWrap(false); // Disable line wrapping
     textArea.setWrapStyleWord(false); // Disable word wrapping
     textArea.setEditable(true);
+    textArea.setPreferredSize(new Dimension(100, 18)); // Fixed preferred size
+    textArea.setMaximumSize(new Dimension(100, 18)); // Fixed maximum size
     this.numLine.setViewportView(textArea);
     this.numLine.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
     this.numLine.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     textPanel.add(numLine);
 
-    // Create checkboxes for bus and metro lines
-    JPanel checkBoxPanel = new JPanel();
-    checkBoxPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-    this.busLineCheckBox = new JCheckBox("Bus");
-    this.busLineCheckBox.setSelected(true); // Default to bus
-    this.metroLineCheckBox = new JCheckBox("Metro");
-    this.metroLineCheckBox.setSelected(false); // Default to metro
-    checkBoxPanel.add(busLineCheckBox);
-    checkBoxPanel.add(metroLineCheckBox);
+    JPanel comboBox = new JPanel();
+    // Create a dropdown menu (JComboBox) for selecting line types
+    lineTypeDropdown = new JComboBox<>(new String[] { "Bus", "Subway", "Tram", "Rail", "Funicular" });
+    lineTypeDropdown.setPreferredSize(new Dimension(100, 25));
+    lineTypeDropdown.setBackground(primaryBackgroundColor);
+    lineTypeDropdown.setForeground(textColor);
+    lineTypeDropdown.setFocusable(false);
+    comboBox.add(lineTypeDropdown);
 
     // Create a button to view the line
     this.viewLineButton = new JButton("View Line");
@@ -209,7 +213,7 @@ public class Gui extends JFrame {
 
     panel.add(titlePanel);
     panel.add(textPanel);
-    panel.add(checkBoxPanel);
+    panel.add(comboBox);
     panel.add(buttonPanel);
     this.floatingWindow.add(panel, BorderLayout.CENTER);
 
@@ -222,11 +226,10 @@ public class Gui extends JFrame {
             mainWindowLocation.y + (Gui.this.getHeight() - floatingWindow.getHeight() - 50));
       }
     });
-
   }
 
-  private void toggleFloatingWindow() {
-    floatingWindow.setVisible(!floatingWindow.isVisible());
+  public void toggleFloatingWindow(boolean visible) {
+    floatingWindow.setVisible(visible);
   }
 
   /**
@@ -668,7 +671,6 @@ public class Gui extends JFrame {
    */
   public void launch() {
     setVisible(true);
-    toggleFloatingWindow(); // Show the floating window
     requestFocusInWindow();
   }
 
@@ -757,20 +759,19 @@ public class Gui extends JFrame {
 
   }
 
-  public JCheckBox getBusLineCheckBox() {
-    return busLineCheckBox;
-  }
-
   public JButton getViewLineButton() {
     return viewLineButton;
-  }
-
-  public JCheckBox getMetroLineCheckBox() {
-    return metroLineCheckBox;
   }
 
   public JTextArea getnumLine() {
     return (JTextArea) numLine.getViewport().getView();
   }
 
+  public JDialog getFloatingWindow() {
+    return floatingWindow;
+  }
+
+  public JComboBox<String> getLineTypeDropdown() {
+    return lineTypeDropdown;
+  }
 }

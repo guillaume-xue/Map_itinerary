@@ -24,7 +24,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import fr.u_paris.gla.project.views.Gui;
 import fr.u_paris.gla.project.utils.Pair;
 import fr.u_paris.gla.project.utils.TransportTypes;
 
@@ -46,14 +45,13 @@ public class GUIController {
       // init Graph class
       this.graph = CSVExtractor.makeObjectsFromCSV(args);
 
-      if (graph == null) System.exit(0);
-      
-      //This should not be called if the default maximum distance between Stops has not been changed, as it takes really long.
-      //graph.connectStopsByWalking();
-      
+      if (graph == null)
+        System.exit(0);
+
       // init Controllers
       new KeyboardController(gui.getTextStart());
       new KeyboardController(gui.getTextEnd());
+      new KeyboardController(gui.getnumLine());
       new MouseController(gui.getMapViewer(), gui.getTextStart(), gui.getTextEnd(), this.graph, this.gui);
       // init Listenners
       initFocusListenerToTextArea();
@@ -206,20 +204,6 @@ public class GUIController {
         gui.getDistCheckBox().setSelected(true);
       }
     });
-    gui.getBusLineCheckBox().addActionListener(e -> {
-      if (gui.getBusLineCheckBox().isSelected()) {
-        gui.getMetroLineCheckBox().setSelected(false);
-      } else {
-        gui.getMetroLineCheckBox().setSelected(true);
-      }
-    });
-    gui.getMetroLineCheckBox().addActionListener(e -> {
-      if (gui.getMetroLineCheckBox().isSelected()) {
-        gui.getBusLineCheckBox().setSelected(false);
-      } else {
-        gui.getBusLineCheckBox().setSelected(true);
-      }
-    });
   }
 
   /**
@@ -240,17 +224,11 @@ public class GUIController {
             JOptionPane.ERROR_MESSAGE);
         return;
       }
+
       String lineNumber = gui.getnumLine().getText();
-      if (gui.getBusLineCheckBox().isSelected()) {
-        gui.displayLine(graph.getListOfLines(), TransportTypes.Bus, lineNumber);
-      } else if (gui.getMetroLineCheckBox().isSelected()) {
-        gui.displayLine(graph.getListOfLines(), TransportTypes.Subway, lineNumber);
-      } else {
-        JOptionPane.showMessageDialog(this.gui, "Veuillez sélectionner une ligne de bus ou de métro.",
-            "Erreur",
-            JOptionPane.ERROR_MESSAGE);
-        return;
-      }
+      TransportTypes type = TransportTypes.valueOf(gui.getLineTypeDropdown().getSelectedItem().toString());
+      gui.displayLine(graph.getListOfLines(), type, lineNumber);
+
     });
 
     gui.getResearchButton().addActionListener(e -> {
@@ -306,13 +284,15 @@ public class GUIController {
       if (startCoordinates != null && endCoordinates != null) {
         try {
 
-          //Create and get Start and Finish Stops
-          MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(startCoordinates[0], startCoordinates[1], endCoordinates[0], endCoordinates[1]);
+          // Create and get Start and Finish Stops
+          MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(startCoordinates[0], startCoordinates[1],
+              endCoordinates[0], endCoordinates[1]);
 
           LocalTime heureDepart = LocalTime.now();
 
           // pour le nouveau format
-          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(startFinish.getLeft(), startFinish.getRight(), heureDepart);
+          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(startFinish.getLeft(), startFinish.getRight(),
+              heureDepart);
 
           displayItinerary(itinerary);
 
@@ -390,6 +370,11 @@ public class GUIController {
       } else {
         gui.cleanMap();
       }
+    });
+    JMenuItem LineMenuItem = gui.getMenuItem(0, 3);
+    LineMenuItem.addActionListener(e -> {
+      gui.toggleCheckmark(LineMenuItem);
+      gui.toggleFloatingWindow(gui.isCheckmarkEnabled(LineMenuItem));
     });
   }
 
