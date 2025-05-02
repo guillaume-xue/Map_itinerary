@@ -49,8 +49,7 @@ public class GUIController {
         System.exit(0);
 
       // init Controllers
-      new KeyboardController(gui.getTextStart());
-      new KeyboardController(gui.getTextEnd());
+      new KeyboardController(gui.getTextStart(), gui.getTextEnd(), gui.getResearchButton());
       new KeyboardController(gui.getnumLine());
       new MouseController(gui.getMapViewer(), gui.getTextStart(), gui.getTextEnd(), this.graph, this.gui);
       // init Listenners
@@ -193,15 +192,23 @@ public class GUIController {
     gui.getDistCheckBox().addActionListener(e -> {
       if (gui.getDistCheckBox().isSelected()) {
         gui.getTimeCheckBox().setSelected(false);
+        gui.getComboBoxHours().setEnabled(false);
+        gui.getComboBoxMinutes().setEnabled(false);
       } else {
         gui.getTimeCheckBox().setSelected(true);
+        gui.getComboBoxHours().setEnabled(true);
+        gui.getComboBoxMinutes().setEnabled(true);
       }
     });
     gui.getTimeCheckBox().addActionListener(e -> {
       if (gui.getTimeCheckBox().isSelected()) {
         gui.getDistCheckBox().setSelected(false);
+        gui.getComboBoxHours().setEnabled(true);
+        gui.getComboBoxMinutes().setEnabled(true);
       } else {
         gui.getDistCheckBox().setSelected(true);
+        gui.getComboBoxHours().setEnabled(false);
+        gui.getComboBoxMinutes().setEnabled(false);
       }
     });
   }
@@ -257,6 +264,15 @@ public class GUIController {
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
         return;
+      } else if (gui.getTimeCheckBox().isSelected()) {
+        if (gui.getComboBoxHours().getSelectedItem() == "Now" && gui.getComboBoxMinutes().getSelectedItem() != "Now") {
+          JOptionPane.showMessageDialog(this.gui, "Veuillez choisir l'heure.", "Erreur", JOptionPane.ERROR_MESSAGE);
+          return;
+        } else if (gui.getComboBoxHours().getSelectedItem() != "Now"
+            && gui.getComboBoxMinutes().getSelectedItem() == "Now") {
+          JOptionPane.showMessageDialog(this.gui, "Veuillez choisir les minutes.", "Erreur", JOptionPane.ERROR_MESSAGE);
+          return;
+        }
       }
 
       // Choose the cost function based on the selected checkbox
@@ -288,7 +304,14 @@ public class GUIController {
           MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(startCoordinates[0], startCoordinates[1],
               endCoordinates[0], endCoordinates[1]);
 
-          LocalTime heureDepart = LocalTime.now();
+          LocalTime heureDepart;
+          if (gui.getComboBoxHours().getSelectedItem().toString().equals("") &&
+              gui.getComboBoxMinutes().getSelectedItem().toString().equals("")) {
+            heureDepart = LocalTime.now();
+          } else {
+            heureDepart = LocalTime.of(Integer.parseInt(gui.getComboBoxHours().getSelectedItem().toString()),
+                Integer.parseInt(gui.getComboBoxMinutes().getSelectedItem().toString()));
+          }
 
           // pour le nouveau format
           ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(startFinish.getLeft(), startFinish.getRight(),
