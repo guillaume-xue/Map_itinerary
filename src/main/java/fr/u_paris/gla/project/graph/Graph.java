@@ -2,7 +2,6 @@ package fr.u_paris.gla.project.graph;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import fr.u_paris.gla.project.utils.TransportTypes;
 import java.util.Collections;
 
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -11,7 +10,7 @@ import static fr.u_paris.gla.project.io.UpgradedNetworkFormat.WALK_AVG_SPEED;
 
 public class Graph {
     //constante pour la ligne de marche
-    public static double MAX_DISTANCE_WALKABLE = 0.500;
+    public static double MAX_DISTANCE_WALKABLE = 0.200;
     public static final Line WALK_LINE = new Line("IDWALK", "Marche a pied", "Walk", "808080");
     private ArrayList<Stop> listOfStops = new ArrayList<>();
     
@@ -64,12 +63,12 @@ public class Graph {
         Stop finishStop = new Stop(longitudeF, latitudeF, "FinishPoint");
 
         double distance;
+
+        listOfStops.removeIf( s -> (s.getNameOfAssociatedStation().equals("StartPoint") || s.getNameOfAssociatedStation().equals("FinishPoint")));
+
         for(Stop e : listOfStops){
             //Remove previous startPoints that may have been generated.
-            if(e.getNameOfAssociatedStation().equals("StartPoint") || e.getNameOfAssociatedStation().equals("FinishPoint")){
-                listOfStops.remove(e);
-            }
-            else {
+            {
                 distance = startStop.calculateDistance(e);
                 if (distance < MAX_DISTANCE_WALKABLE * 1.33) {
                     startStop.addAdjacentStop(e, "Walk", calculateWalkingTime(distance), (float) distance);
@@ -124,7 +123,7 @@ public class Graph {
         unless we decide to multithread this. However, due to concurrent acceses of shared variables (Stop.timeDistancePerAdjacentStop), I would be wary.
          */ 
         System.out.println("\nConnecting all Nodes by walking. This may take a while, please be patient.");
-        System.out.println("Current maximum distance between 2 points is " + MAX_DISTANCE_WALKABLE + "m");
+        System.out.println("Current maximum distance between 2 points is " + MAX_DISTANCE_WALKABLE + "km");
         if(MAX_DISTANCE_WALKABLE > 0.5){
             System.out.println("You have selected a maximum walkable distance between stations above 0.5km. " + 
             "The expected waiting time is very high.");
@@ -145,7 +144,7 @@ public class Graph {
                     //we assume that the time to go from one Stop to another is identical in both ways (a to e and e to a). 
                     //If this is not the case (for instance, if we take into account extra effort / time due to elevation changes), 
                     //one should run additional checks here.
-                    if (distance < MAX_DISTANCE_WALKABLE) {
+                    if (distance < MAX_DISTANCE_WALKABLE * 1.33) {
                         a.addAdjacentStop(e, "Walk", calculateWalkingTime(distance), (float) distance);
                         e.addAdjacentStop(a, "Walk", calculateWalkingTime(distance), (float) distance);
                     }
