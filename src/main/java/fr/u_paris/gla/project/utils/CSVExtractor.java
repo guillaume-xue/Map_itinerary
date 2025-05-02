@@ -252,8 +252,8 @@ public final class CSVExtractor {
 
         // On lit les coordonnées du premiet arrêt
         String[] stopACoordString = line[UpgradedNetworkFormat.START_INDEX+1].split(",");
-        double stopAlon = Double.parseDouble(stopACoordString[0]);
-        double stopAlat = Double.parseDouble(stopACoordString[1]);
+        double stopAlat = Double.parseDouble(stopACoordString[0]);
+        double stopAlon = Double.parseDouble(stopACoordString[1]);
         // On en fait une paire qui sert de clef primaire
         Pair<Double,Double> stopACoord = new Pair<>(stopAlon,stopAlat);
         
@@ -262,8 +262,8 @@ public final class CSVExtractor {
 
         // Pareil avec le deuxième arrêt
         String[] stopBCoordString = line[UpgradedNetworkFormat.STOP_INDEX+1].split(",");
-        double stopBlon = Double.parseDouble(stopBCoordString[0]);
-        double stopBlat = Double.parseDouble(stopBCoordString[1]);
+        double stopBlat = Double.parseDouble(stopBCoordString[0]);
+        double stopBlon = Double.parseDouble(stopBCoordString[1]);
         Pair<Double,Double> stopBCoord = new Pair<>(stopBlon,stopBlat);
 
         mapOfStops.putIfAbsent(stopBCoord, new Stop(stopBlon,stopBlat,line[UpgradedNetworkFormat.STOP_INDEX]));

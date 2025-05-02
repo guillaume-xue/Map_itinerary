@@ -1,25 +1,21 @@
-package fr.u_paris.gla.project;
+package fr.u_paris.gla.project.utils;
 
-import fr.u_paris.gla.project.graph.*;
-import fr.u_paris.gla.project.utils.*;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
-import java.io.File;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
+import fr.u_paris.gla.project.io.UpgradedNetworkFormat;
+
+/**
+ * Test class to verify the integrity of the Csv Extractor
+ */
 public class TestCSVExtractor{
-
-    // @Test
-    // void TwoStopsWithSameCoordTest(){
-
-    // 	String testFile = new File(ClassLoader.getSystemResource("Test2.csv").getFile()).getPath();
-
-    // 	String[] args = {"",testFile,"",""};
-    // 	Graph graph = CSVExtractor.makeOjectsFromCSV(args);
-
-    // 	assertEquals(3,graph.getListOfStops().size());
-    // }
 
 }
