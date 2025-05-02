@@ -105,8 +105,15 @@ public class AStar {
 	                LocalTime departureTime = currentNode.getArrivalTime();
 	                TraversalNode neighborNode = nodeMap.computeIfAbsent(neighborStop, stop -> new TraversalNode(stop));
 
+	                
+	                //cout supplémentaire de 30sec pour chgmt de ligne
+	                double coutChgmtLigne = (currentNode.getSublineUsed() == null || usedSubline == null)
+	                	    ? 0.0
+	                	    : (currentNode.getSublineUsed().equals(usedSubline) ? 0.0 : 30.0);
+	                
 	                double tentativeG = currentNode.getG() +
-	                    costFunction.costBetween(currentStop, neighborStop, currentNode.getArrivalTime());
+	                    costFunction.costBetween(currentStop, neighborStop, currentNode.getArrivalTime()) +
+	                    coutChgmtLigne;
 
 	                if (tentativeG < neighborNode.getG()) {
 	                    neighborNode.setCameFrom(currentNode);
