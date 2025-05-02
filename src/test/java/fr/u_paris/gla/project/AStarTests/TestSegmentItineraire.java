@@ -43,11 +43,15 @@ public class TestSegmentItineraire {
         ArrayList<Stop> stops = new ArrayList<>();
 
         // Itinéraires avec Google Maps
-        Stop stop1 = new Stop(48.82822980391691, 2.3785645488372444, "Bibliothèque François Mitterrand");
-        Stop stop2 = new Stop(48.29349975242116, 2.4013079931164656, "Gare de Malesherbes");
+        Stop stop1 = new Stop(48.85374687714646, 2.344673154515588, "Saint Michel Notre Dame");
+        Stop stop2 = new Stop(48.82822980391691, 2.3785645488372444, "Bibliothèque François Mitterrand");
+        Stop stop3 = new Stop(48.689207543366216, 2.383635586069716, "Gare de Juvisy");
+        Stop stop4 = new Stop(48.29349975242116, 2.4013079931164656, "Gare de Malesherbes");
 
         stops.add(stop1);
         stops.add(stop2);
+        stops.add(stop3);
+        stops.add(stop4);
 
         LocalTime heureDepart = LocalTime.of(10, 0);
         LocalTime heureArrivee = LocalTime.of(11, 0);
@@ -64,9 +68,17 @@ public class TestSegmentItineraire {
 
         ArrayList<Line> lines = new ArrayList<>();
         Graph graph = new Graph(stops, lines);
-        System.out.println(graph.getClosestStop(48.82, 2.37).getNameOfAssociatedStation() + "\n"); // Bibliothèque François Mitterrand
-        System.out.println(graph.getClosestStop(48.29, 2.40).getNameOfAssociatedStation() + "\n"); // Gare de Malesherbes
+
+        System.out.println(stop1.getNameOfAssociatedStation()); // Saint Michel Notre Dame
+        assertEquals(graph.getClosestStop(48.85, 2.34).getNameOfAssociatedStation(), "Saint Michel Notre Dame");
+
+        System.out.println(stop2.getNameOfAssociatedStation()); // Bibliothèque François Mitterrand
         assertEquals(graph.getClosestStop(48.82, 2.37).getNameOfAssociatedStation(), "Bibliothèque François Mitterrand");
+
+        System.out.println(stop3.getNameOfAssociatedStation()); // Gare de Juvisy
+        assertEquals(graph.getClosestStop(48.68, 2.38).getNameOfAssociatedStation(), "Gare de Juvisy");
+
+        System.out.println(stop4.getNameOfAssociatedStation()); // Gare de Malesherbes
         assertEquals(graph.getClosestStop(48.29, 2.40).getNameOfAssociatedStation(), "Gare de Malesherbes");
 
     }
