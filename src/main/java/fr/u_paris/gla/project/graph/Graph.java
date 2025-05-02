@@ -10,7 +10,7 @@ import static fr.u_paris.gla.project.io.UpgradedNetworkFormat.WALK_AVG_SPEED;
 
 public class Graph {
     //constante pour la ligne de marche
-    public static double MAX_DISTANCE_WALKABLE = 0.200;
+    public static double MAX_DISTANCE_WALKABLE = 0.500;
     public static final Line WALK_LINE = new Line("IDWALK", "Marche a pied", "Walk", "808080");
     private ArrayList<Stop> listOfStops = new ArrayList<>();
     
