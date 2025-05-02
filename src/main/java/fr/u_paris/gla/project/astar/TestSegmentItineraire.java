@@ -66,9 +66,6 @@ public class TestSegmentItineraire {
         System.out.println(graph.getClosestStop(48.82, 2.37).getNameOfAssociatedStation() + "\n"); // Bibliothèque François Mitterrand
         System.out.println(graph.getClosestStop(48.29, 2.40).getNameOfAssociatedStation() + "\n"); // Gare de Malesherbes
 
-
-
-
     }
 }
 
