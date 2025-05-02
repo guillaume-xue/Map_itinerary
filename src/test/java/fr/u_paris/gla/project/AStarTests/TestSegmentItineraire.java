@@ -1,5 +1,6 @@
-package fr.u_paris.gla.project.astar;
+package fr.u_paris.gla.project.AStarTests;
 
+import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Line;
 import fr.u_paris.gla.project.graph.Stop;
