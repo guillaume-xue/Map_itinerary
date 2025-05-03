@@ -18,14 +18,34 @@ import java.time.LocalTime;
 import org.apache.commons.lang3.tuple.Triple;
 import fr.u_paris.gla.project.utils.TransportTypes;
 
+
+/**
+ * Cette classe implémente l'algorithme A* pour rechercher le chemin optimal entre deux arrêts (Stop)
+ * dans un réseau de transport. Le coût utilisé pour évaluer les chemins peut être basé sur la distance
+ * ou sur la durée, selon l'implémentation de {@link CostFunction}.
+ * 
+ * L'algorithme tient compte des changements de ligne (Subline) en ajoutant un coût supplémentaire
+ * lors d'une correspondance. Il reconstruit le chemin final sous forme de segments (SegmentItineraire),
+ * chacun correspondant à une portion d'itinéraire sur une même ligne.
+ * 
+ * 
+ */
 public class AStar {
-	//c'est dans costFunction qu'on décide de choisir un cout entre deux stop en distance ou en durée
+	 /** Fonction de coût entre deux arrêts (distance ou durée) */
 	 private final CostFunction costFunction; 
 
+	 	
 	    public AStar(CostFunction costFunction) {
 	        this.costFunction = costFunction;
 	    }
 	
+	    /**
+	     * Reconstruit le chemin optimal en segments à partir du dernier nœud (goal).
+	     * Chaque segment représente un parcours continu sur la même ligne de transport.
+	     *
+	     * @param endNode Le dernier nœud atteint par l'algorithme A* (objectif).
+	     * @return Une liste ordonnée de {@link SegmentItineraire} représentant le chemin complet.
+	     */
 	    private ArrayList<SegmentItineraire> reconstructPath(TraversalNode endNode) {
 	        ArrayList<SegmentItineraire> result = new ArrayList<>();
 
@@ -60,16 +80,21 @@ public class AStar {
 
 	            current = previous;
 	        }
-
-	        // Ajouter le dernier segment (du début de l'itinéraire)
-	        //inutile si on dit qu'on part du stop le plus proche de l'endroit qu'on entre ds l'interface
-	        //result.add(0, new SegmentItineraire(currentSubline, new ArrayList<>(currentStops), heureDepart, heureArrivee));
-
 	        return result;
 	    }
 
 
 	    
+	    /**
+	     * Trouve le chemin le plus court entre deux arrêts à une heure donnée, en utilisant l'algorithme A*.
+	     * Prend en compte les temps d'attente, les coûts de changement de ligne, et la fonction de coût choisie.
+	     * 
+	     * @param start      L'arrêt de départ.
+	     * @param goal       L'arrêt d'arrivée.
+	     * @param startTime  L'heure de départ.
+	     * @return Une liste de {@link SegmentItineraire} représentant le chemin optimal trouvé, 
+	     *         ou une liste vide si aucun chemin n'existe.
+	     */
 	    public ArrayList<SegmentItineraire> findShortestPath(Stop start, Stop goal, LocalTime startTime) {
 	        PriorityQueue<TraversalNode> openSet = new PriorityQueue<>();
 	        Map<Stop, TraversalNode> nodeMap = new HashMap<>();
@@ -89,7 +114,12 @@ public class AStar {
 
 	            if (currentStop.equals(goal)) {
 	            	System.out.println("Un chemin trouvé ! reconstruction en cours...");
-	                return reconstructPath(currentNode);
+	            	ArrayList<SegmentItineraire> path = reconstructPath(currentNode);
+	            	//nettoyage des nodes visités
+	            	for (TraversalNode node : nodeMap.values()) {
+	            	    node.reset();
+	            	}
+	                return path;
 	            }
 
 	            closedSet.add(currentStop);
@@ -130,10 +160,14 @@ public class AStar {
 	                }
 	            }
 	        }
+	      //nettoyage des nodes visités
+	        for (TraversalNode node : nodeMap.values()) {
+	            node.reset();
+	        }
 	        return new ArrayList<>();
 	    }
 	    
-	   
+	    
 	    
 	   
 }

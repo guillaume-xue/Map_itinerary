@@ -4,6 +4,13 @@ import fr.u_paris.gla.project.graph.*;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
+/**
+ * Représente une portion de trajet effectuée sur une même sous-ligne,
+ * entre plusieurs arrêts consécutifs.
+ * <p>
+ * Un segment contient la sous-ligne utilisée, la liste des arrêts desservis pendant ce segment,
+ * ainsi que les heures de debut et de fin du parcours du segment.
+ */
 public class SegmentItineraire {
     private Subline subline;
     private ArrayList<Stop> stops;
@@ -24,7 +31,7 @@ public class SegmentItineraire {
             stopsString.append(stop.getNameOfAssociatedStation()).append(" -> ");
         }
         if (stopsString.length() > 0) {
-            stopsString.setLength(stopsString.length() - 4);  // Enlève le dernier " -> "
+            stopsString.setLength(stopsString.length() - 4); 
         }
 
         String lineName = (subline != null && subline.getAssociatedLine() != null) 

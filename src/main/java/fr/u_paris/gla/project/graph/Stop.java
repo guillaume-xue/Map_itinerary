@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Collections;
 
 import fr.u_paris.gla.project.utils.Pair;
 import fr.u_paris.gla.project.utils.GPS;
@@ -100,7 +101,6 @@ public class Stop {
     }
 
 
-    //si il y a plusieurs façons d'attendre le prochain stop, renvoie la durée la plus courte
     public Duration getTimeTo(Stop to, LocalTime departTime) {
         ArrayList<Triple<Stop, Subline, LocalTime>> nextStops = this.giveNextStopsArrivalTime(departTime);
         Duration minDuration = Duration.ofHours(9999); 
@@ -114,7 +114,6 @@ public class Stop {
         }
         return minDuration;
     }
-
     
     
     public void showTimeDistancePerAdjacentStop() {
@@ -190,6 +189,7 @@ public class Stop {
         return filterByEarliestArrivalTimePerStop(result);
        
     }
+
     
     //on ne garde que les triples tels que la subline est celle qui permet d'arriver le plus tôt au nextStop si pour nextStop on pouvait y arriver de différentes manières
     public static ArrayList<Triple<Stop, Subline, LocalTime>> filterByEarliestArrivalTimePerStop(

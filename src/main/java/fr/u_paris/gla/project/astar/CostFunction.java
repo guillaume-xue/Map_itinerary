@@ -10,7 +10,7 @@ public interface CostFunction {
      * @param from l'arrêt de départ
      * @param to l'arrêt d'arrivée
      * @param departTime l'heure de départ estimée
-     * @return le coût (en distance, en durée, ou autre selon l'implémentation)
+     * @return le coût (en distance ou en durée selon l'implémentation)
      */
     double costBetween(Stop from, Stop to, LocalTime departTime);
 }
