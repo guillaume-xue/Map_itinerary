@@ -127,8 +127,6 @@ public class Gui extends JFrame {
 
     comboBoxHours = new JComboBox<>(hours);
     comboBoxMinutes = new JComboBox<>(minutes);
-    comboBoxHours.setEnabled(false); // Disable the combo box
-    comboBoxMinutes.setEnabled(false); // Disable the combo box
 
     checkBoxPanel.add(label);
     checkBoxPanel.add(distCheckBox);
