@@ -192,23 +192,15 @@ public class GUIController {
     gui.getDistCheckBox().addActionListener(e -> {
       if (gui.getDistCheckBox().isSelected()) {
         gui.getTimeCheckBox().setSelected(false);
-        gui.getComboBoxHours().setEnabled(false);
-        gui.getComboBoxMinutes().setEnabled(false);
       } else {
         gui.getTimeCheckBox().setSelected(true);
-        gui.getComboBoxHours().setEnabled(true);
-        gui.getComboBoxMinutes().setEnabled(true);
       }
     });
     gui.getTimeCheckBox().addActionListener(e -> {
       if (gui.getTimeCheckBox().isSelected()) {
         gui.getDistCheckBox().setSelected(false);
-        gui.getComboBoxHours().setEnabled(true);
-        gui.getComboBoxMinutes().setEnabled(true);
       } else {
         gui.getDistCheckBox().setSelected(true);
-        gui.getComboBoxHours().setEnabled(false);
-        gui.getComboBoxMinutes().setEnabled(false);
       }
     });
   }
@@ -264,15 +256,14 @@ public class GUIController {
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
         return;
-      } else if (gui.getTimeCheckBox().isSelected()) {
-        if (gui.getComboBoxHours().getSelectedItem() == "Now" && gui.getComboBoxMinutes().getSelectedItem() != "Now") {
-          JOptionPane.showMessageDialog(this.gui, "Veuillez choisir l'heure.", "Erreur", JOptionPane.ERROR_MESSAGE);
-          return;
-        } else if (gui.getComboBoxHours().getSelectedItem() != "Now"
-            && gui.getComboBoxMinutes().getSelectedItem() == "Now") {
-          JOptionPane.showMessageDialog(this.gui, "Veuillez choisir les minutes.", "Erreur", JOptionPane.ERROR_MESSAGE);
-          return;
-        }
+      } else if (gui.getComboBoxHours().getSelectedItem() == "Now"
+          && gui.getComboBoxMinutes().getSelectedItem() != "Now") {
+        JOptionPane.showMessageDialog(this.gui, "Veuillez choisir l'heure.", "Erreur", JOptionPane.ERROR_MESSAGE);
+        return;
+      } else if (gui.getComboBoxHours().getSelectedItem() != "Now"
+          && gui.getComboBoxMinutes().getSelectedItem() == "Now") {
+        JOptionPane.showMessageDialog(this.gui, "Veuillez choisir les minutes.", "Erreur", JOptionPane.ERROR_MESSAGE);
+        return;
       }
 
       // Choose the cost function based on the selected checkbox
