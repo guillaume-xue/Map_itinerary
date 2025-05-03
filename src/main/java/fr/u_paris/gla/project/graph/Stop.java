@@ -2,6 +2,8 @@ package fr.u_paris.gla.project.graph;
 
 import java.time.Duration;
 import java.time.LocalTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -107,7 +109,7 @@ public class Stop {
         Duration minDuration = Duration.ofHours(9999); 
         for (Triple<Stop, Subline, LocalTime> triple : nextStops) {
             if (triple.getLeft().equals(to)) {
-                Duration duration = Duration.between(departTime, triple.getRight());
+                Duration duration = durationWithMidnightWrap(departTime, triple.getRight());
                 if (duration.compareTo(minDuration) < 0) {
                     minDuration = duration;
                 }
@@ -141,6 +143,31 @@ public class Stop {
     	return null;
     }
     
+    public static LocalTime veryNextDeparture(LocalTime referenceTime, ArrayList<LocalTime> departures) {
+        if (departures == null || departures.isEmpty()) return null;
+        Duration minPositiveDuration = durationWithMidnightWrap(referenceTime, departures.get(0));
+        LocalTime bestCandidate = departures.get(0);
+
+        for (LocalTime time : departures) {
+            Duration d = durationWithMidnightWrap(referenceTime, time);
+            if (d.compareTo(minPositiveDuration) < 0) {
+            	minPositiveDuration = d;
+                bestCandidate = time;
+            }
+        }
+        return bestCandidate;
+    }
+
+    
+    //renvoie soit le depart du prochain train sur la subline si c'est un transport et si c'est de la marche à pied ça renverra juste departureTime
+    public LocalTime giveDepartureTimeFromUsedSubline(LocalTime departureTime, Subline usedSubline) {
+    	ArrayList<LocalTime> horaires = departures.get(usedSubline);
+    	LocalTime next = veryNextDeparture(departureTime, horaires);
+        return (next != null) ? next : departureTime;
+    }
+
+
+    
     /*en disant qu'on est au stop this au moment departTime alors ça nous dis à quelle 
     heure on pourra et devra être au stop suivant
     cad que si c'est un trajet à pied on aura la plus petite heure du depart du prochain 
@@ -163,13 +190,9 @@ public class Stop {
             Pair<Duration, Float> timeDist = timeDistancePerAdjacentStop.get(key);
             if (timeDist != null) {
             	Duration travelTime = timeDist.getKey();
-                for (LocalTime departure : departureTimes) {
-             		if (!departure.isBefore(departTime.plus(travelTime))) {
-               			result.add(Triple.of(nextStop, subline, departure));
-                        alreadyProcessed.add(new Pair(nextStop, subline));
-                        break;
-                    }
-             	}
+            	LocalTime departure = veryNextDeparture(departTime, departureTimes);
+            	result.add(Triple.of(nextStop, subline, departure.plus(travelTime)));
+                alreadyProcessed.add(new Pair(nextStop, subline));
             }
         }
 
@@ -186,28 +209,44 @@ public class Stop {
             }
         }
 
-        return filterByEarliestArrivalTimePerStop(result);
+        return filterByEarliestArrivalTimePerStop(result, departTime);
        
     }
 
+    public static Duration durationWithMidnightWrap(LocalTime t1, LocalTime t2) {
+        if (t2.isBefore(t1)) {
+            return Duration.between(t1, t2).plusHours(24); //on ajoute 24h à la durée négative pr simuler le fait d'etre le lendemain
+        } else {
+            return Duration.between(t1, t2);
+        }
+    }
     
-    //on ne garde que les triples tels que la subline est celle qui permet d'arriver le plus tôt au nextStop si pour nextStop on pouvait y arriver de différentes manières
+    //on ne garde que les triples tels que la subline est celle qui permet d'arriver le plus tôt au nextStop si pour nextStop on pouvait y arriver de différentes manières    
     public static ArrayList<Triple<Stop, Subline, LocalTime>> filterByEarliestArrivalTimePerStop(
-            ArrayList<Triple<Stop, Subline, LocalTime>> originalList) {
+            ArrayList<Triple<Stop, Subline, LocalTime>> originalList, LocalTime departTime) {
 
         Map<Stop, Triple<Stop, Subline, LocalTime>> bestByStop = new HashMap<>();
 
         for (Triple<Stop, Subline, LocalTime> triple : originalList) {
             Stop stop = triple.getLeft();
-            LocalTime time = triple.getRight();
+            LocalTime arrivalTime = triple.getRight();
+            Duration arrivalDelay = durationWithMidnightWrap(departTime, arrivalTime);
 
-            if (!bestByStop.containsKey(stop) || time.isBefore(bestByStop.get(stop).getRight())) {
+            if (!bestByStop.containsKey(stop)) {
                 bestByStop.put(stop, triple);
+            } else {
+                LocalTime currentBestTime = bestByStop.get(stop).getRight();
+                Duration currentDelay = durationWithMidnightWrap(departTime, currentBestTime);
+
+                if (arrivalDelay.minus(currentDelay).isNegative()) {
+                    bestByStop.put(stop, triple);
+                }
             }
         }
 
         return new ArrayList<>(bestByStop.values());
     }
+
 
 
     private Subline getOrCreateWalkingSubline(Stop neighborStop) {

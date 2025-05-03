@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.HashSet;
 
 import java.time.LocalTime;
+import java.time.Duration;
 import org.apache.commons.lang3.tuple.Triple;
 import fr.u_paris.gla.project.utils.TransportTypes;
 
@@ -100,6 +101,11 @@ public class AStar {
 	        Map<Stop, TraversalNode> nodeMap = new HashMap<>();
 	        Set<Stop> closedSet = new HashSet<>();
 
+	        
+	        System.out.println("Durée en minutes : " + Stop.durationWithMidnightWrap(LocalTime.of(05, 14), LocalTime.of(05, 14)).toSeconds() + " sec");
+	        Duration d1 = Duration.ofMinutes(6);
+	        Duration d2 = Duration.ofMinutes(10);
+	        System.out.println("comparaison de 6 avec 10s : " + d1.compareTo(d2));
 	        TraversalNode startNode = new TraversalNode(start);
 	        startNode.setG(0);
 	        startNode.setH(start.calculateDistance(goal));
@@ -152,7 +158,8 @@ public class AStar {
 	                    neighborNode.updateF();
 	                    neighborNode.setArrivalTime(arrivalTimeAtNeighbor);
 	                    neighborNode.setSublineUsed(usedSubline); 
-	                    neighborNode.setDepartureTime(departureTime); 
+	                    
+	                    neighborNode.setDepartureTime(neighborStop.giveDepartureTimeFromUsedSubline(departureTime,usedSubline)); 
 
 	                    if (!openSet.contains(neighborNode)) {
 	                        openSet.add(neighborNode);
