@@ -94,23 +94,5 @@ public class TraversalNode implements Comparable<TraversalNode> {
     public int compareTo(TraversalNode other) {
         return Double.compare(this.f, other.f);
     }
-    
-    /**
-     * Réinitialise l'état du nœud pour permettre sa réutilisation.
-     * Réinitialise les valeurs de coût (g, h, f), les horaires, la ligne utilisée,
-     * ainsi que le pointeur vers le nœud précédent.
-     * 
-     * Cette méthode est utile après la fin de la recherche A* afin d'éviter la conservation
-     * d'états intermédiaires et ne pas fausser les résultats des prochains appels de A*.
-     */
-    public void reset() {
-        this.g = Double.POSITIVE_INFINITY;
-        this.h = 0;
-        this.f = Double.POSITIVE_INFINITY;
-        this.cameFrom = null;
-        this.arrivalTime = null;
-        this.departureTime = null;
-        this.sublineUsed = null;
-    }
 }
 

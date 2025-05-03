@@ -100,12 +100,7 @@ public class AStar {
 	        PriorityQueue<TraversalNode> openSet = new PriorityQueue<>();
 	        Map<Stop, TraversalNode> nodeMap = new HashMap<>();
 	        Set<Stop> closedSet = new HashSet<>();
-
 	        
-	        System.out.println("Durée en minutes : " + Stop.durationWithMidnightWrap(LocalTime.of(05, 14), LocalTime.of(05, 14)).toSeconds() + " sec");
-	        Duration d1 = Duration.ofMinutes(6);
-	        Duration d2 = Duration.ofMinutes(10);
-	        System.out.println("comparaison de 6 avec 10s : " + d1.compareTo(d2));
 	        TraversalNode startNode = new TraversalNode(start);
 	        startNode.setG(0);
 	        startNode.setH(start.calculateDistance(goal));
@@ -121,10 +116,6 @@ public class AStar {
 	            if (currentStop.equals(goal)) {
 	            	System.out.println("Un chemin trouvé ! reconstruction en cours...");
 	            	ArrayList<SegmentItineraire> path = reconstructPath(currentNode);
-	            	//nettoyage des nodes visités
-	            	for (TraversalNode node : nodeMap.values()) {
-	            	    node.reset();
-	            	}
 	                return path;
 	            }
 
@@ -141,7 +132,6 @@ public class AStar {
 	                LocalTime departureTime = currentNode.getArrivalTime();
 	                TraversalNode neighborNode = nodeMap.computeIfAbsent(neighborStop, stop -> new TraversalNode(stop));
 
-	                
 	                //cout supplémentaire de 30sec pour chgmt de ligne
 	                double coutChgmtLigne = (currentNode.getSublineUsed() == null || usedSubline == null)
 	                	    ? 0.0
@@ -167,14 +157,6 @@ public class AStar {
 	                }
 	            }
 	        }
-	      //nettoyage des nodes visités
-	        for (TraversalNode node : nodeMap.values()) {
-	            node.reset();
-	        }
 	        return new ArrayList<>();
-	    }
-	    
-	    
-	    
-	   
+	    }   
 }
