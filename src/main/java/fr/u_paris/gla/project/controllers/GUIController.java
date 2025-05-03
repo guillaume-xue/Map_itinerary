@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -18,12 +19,14 @@ import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.utils.CSVExtractor;
+import fr.u_paris.gla.project.views.Gui;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import fr.u_paris.gla.project.views.Gui;
 import fr.u_paris.gla.project.utils.Pair;
+import fr.u_paris.gla.project.utils.TransportTypes;
+
 import java.time.LocalTime;
 
 public class GUIController {
@@ -41,11 +44,13 @@ public class GUIController {
       this.gui = new Gui();
       // init Graph class
       this.graph = CSVExtractor.makeObjectsFromCSV(args);
+
       if (graph == null)
         System.exit(0);
+
       // init Controllers
-      new KeyboardController(gui.getTextStart());
-      new KeyboardController(gui.getTextEnd());
+      new KeyboardController(gui.getTextStart(), gui.getTextEnd(), gui.getResearchButton());
+      new KeyboardController(gui.getnumLine());
       new MouseController(gui.getMapViewer(), gui.getTextStart(), gui.getTextEnd(), this.graph, this.gui);
       // init Listenners
       initFocusListenerToTextArea();
@@ -53,8 +58,6 @@ public class GUIController {
       initActionListennerCheckBox();
       // init Menu bar
       initMenuBar();
-      // Set the visibility to true
-      this.gui.launch();
       // Check the internet connection.
       if (!isInternetAvailable()) {
         JOptionPane.showMessageDialog(this.gui,
@@ -137,11 +140,15 @@ public class GUIController {
       public void focusGained(java.awt.event.FocusEvent evt) {
         JTextArea textStartArea = gui.getTextStart();
         JTextArea textEndArea = gui.getTextEnd();
+        JTextArea viewLineNumLine = gui.getnumLine();
         if (textStartArea.getText().equals("From")) {
           textStartArea.setText("");
         }
         if (textEndArea.getText().equals("")) {
           textEndArea.setText("To");
+        }
+        if (viewLineNumLine.getText().equals("")) {
+          viewLineNumLine.setText("Line number");
         }
       }
     });
@@ -150,11 +157,32 @@ public class GUIController {
       public void focusGained(java.awt.event.FocusEvent evt) {
         JTextArea textStartArea = gui.getTextStart();
         JTextArea textEndArea = gui.getTextEnd();
+        JTextArea viewLineNumLine = gui.getnumLine();
         if (textEndArea.getText().equals("To")) {
           textEndArea.setText("");
         }
         if (textStartArea.getText().equals("")) {
           textStartArea.setText("From");
+        }
+        if (viewLineNumLine.getText().equals("")) {
+          viewLineNumLine.setText("Line number");
+        }
+      }
+    });
+
+    gui.getnumLine().addFocusListener(new java.awt.event.FocusAdapter() {
+      public void focusGained(java.awt.event.FocusEvent evt) {
+        JTextArea viewLineNumLine = gui.getnumLine();
+        JTextArea textStartArea = gui.getTextStart();
+        JTextArea textEndArea = gui.getTextEnd();
+        if (viewLineNumLine.getText().equals("Line number")) {
+          viewLineNumLine.setText("");
+        }
+        if (textStartArea.getText().equals("")) {
+          textStartArea.setText("From");
+        }
+        if (textEndArea.getText().equals("")) {
+          textEndArea.setText("To");
         }
       }
     });
@@ -164,15 +192,23 @@ public class GUIController {
     gui.getDistCheckBox().addActionListener(e -> {
       if (gui.getDistCheckBox().isSelected()) {
         gui.getTimeCheckBox().setSelected(false);
+        gui.getComboBoxHours().setEnabled(false);
+        gui.getComboBoxMinutes().setEnabled(false);
       } else {
         gui.getTimeCheckBox().setSelected(true);
+        gui.getComboBoxHours().setEnabled(true);
+        gui.getComboBoxMinutes().setEnabled(true);
       }
     });
     gui.getTimeCheckBox().addActionListener(e -> {
       if (gui.getTimeCheckBox().isSelected()) {
         gui.getDistCheckBox().setSelected(false);
+        gui.getComboBoxHours().setEnabled(true);
+        gui.getComboBoxMinutes().setEnabled(true);
       } else {
         gui.getDistCheckBox().setSelected(true);
+        gui.getComboBoxHours().setEnabled(false);
+        gui.getComboBoxMinutes().setEnabled(false);
       }
     });
   }
@@ -183,6 +219,25 @@ public class GUIController {
    * path on the map.
    */
   private void initActionListenner() {
+    gui.getViewLineButton().addActionListener(e -> {
+      if (gui.getnumLine().getText().equals("Line number")) {
+        JOptionPane.showMessageDialog(this.gui, "Veuillez entrer un numéro de ligne.",
+            "Erreur",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+      } else if (gui.getnumLine().getText().equals("")) {
+        JOptionPane.showMessageDialog(this.gui, "Veuillez entrer un numéro de ligne.",
+            "Erreur",
+            JOptionPane.ERROR_MESSAGE);
+        return;
+      }
+
+      String lineNumber = gui.getnumLine().getText();
+      TransportTypes type = TransportTypes.valueOf(gui.getLineTypeDropdown().getSelectedItem().toString());
+      gui.displayLine(graph.getListOfLines(), type, lineNumber);
+
+    });
+
     gui.getResearchButton().addActionListener(e -> {
       if (gui.getTextStart().getText().equals("From") || gui.getTextEnd().getText().equals("To")) {
         JOptionPane.showMessageDialog(this.gui, "Veuillez entrer une adresse de départ et d'arrivée.",
@@ -209,6 +264,15 @@ public class GUIController {
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
         return;
+      } else if (gui.getTimeCheckBox().isSelected()) {
+        if (gui.getComboBoxHours().getSelectedItem() == "Now" && gui.getComboBoxMinutes().getSelectedItem() != "Now") {
+          JOptionPane.showMessageDialog(this.gui, "Veuillez choisir l'heure.", "Erreur", JOptionPane.ERROR_MESSAGE);
+          return;
+        } else if (gui.getComboBoxHours().getSelectedItem() != "Now"
+            && gui.getComboBoxMinutes().getSelectedItem() == "Now") {
+          JOptionPane.showMessageDialog(this.gui, "Veuillez choisir les minutes.", "Erreur", JOptionPane.ERROR_MESSAGE);
+          return;
+        }
       }
 
       // Choose the cost function based on the selected checkbox
@@ -235,14 +299,24 @@ public class GUIController {
 
       if (startCoordinates != null && endCoordinates != null) {
         try {
-          Stop stopA = graph.getClosestStop(startCoordinates[0], startCoordinates[1]);
-          Stop stopB = graph.getClosestStop(endCoordinates[0], endCoordinates[1]);
 
-          // v2 astar
-          LocalTime heureDepart = LocalTime.now();
+          // Create and get Start and Finish Stops
+          MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(startCoordinates[0], startCoordinates[1],
+              endCoordinates[0], endCoordinates[1]);
+
+          LocalTime heureDepart;
+          if (gui.getComboBoxHours().getSelectedItem().toString().equals("Now") &&
+              gui.getComboBoxMinutes().getSelectedItem().toString().equals("Now")) {
+            heureDepart = LocalTime.now();
+          } else {
+            heureDepart = LocalTime.of(Integer.parseInt(gui.getComboBoxHours().getSelectedItem().toString()),
+                Integer.parseInt(gui.getComboBoxMinutes().getSelectedItem().toString()));
+          }
 
           // pour le nouveau format
-          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(stopA, stopB, heureDepart);
+          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(startFinish.getLeft(), startFinish.getRight(),
+              heureDepart);
+
           displayItinerary(itinerary);
 
           // Display the path on the map
@@ -320,6 +394,15 @@ public class GUIController {
         gui.cleanMap();
       }
     });
+    JMenuItem LineMenuItem = gui.getMenuItem(0, 3);
+    LineMenuItem.addActionListener(e -> {
+      gui.toggleCheckmark(LineMenuItem);
+      gui.toggleFloatingWindow(gui.isCheckmarkEnabled(LineMenuItem));
+    });
+  }
+
+  public void launch() {
+    gui.launch();
   }
 
 }
