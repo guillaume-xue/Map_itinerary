@@ -8,5 +8,6 @@ target/
 
 #Misc
 *.csv
+!src/test/resources/*.csv
 dependency-reduced-pom.xml
 **/.DS_Store
