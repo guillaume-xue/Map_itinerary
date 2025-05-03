@@ -20,7 +20,7 @@ public class Launcher {
   /**
    * Constructor.
    */
-  public Launcher(String[] args) {
+  public Launcher(String[] args, boolean isCSVCreate) {
     // Create and display the splash screen
     JWindow splashScreen = createSplashScreen();
     splashScreen.setVisible(true);
@@ -30,7 +30,7 @@ public class Launcher {
     // This is for MacOS to use the menu bar at the top of the screen
     System.setProperty("apple.laf.useScreenMenuBar", "true");
     // Initialize the GUI
-    GUIController guiController = new GUIController(args);
+    GUIController guiController = new GUIController(args, isCSVCreate);
     splashScreen.dispose();
     guiController.launch();
   }

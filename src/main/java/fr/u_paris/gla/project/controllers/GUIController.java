@@ -17,6 +17,7 @@ import fr.u_paris.gla.project.astar.CostFunctionFactory;
 import fr.u_paris.gla.project.astar.AStar;
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
+import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
 import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.utils.CSVExtractor;
 import fr.u_paris.gla.project.views.Gui;
@@ -38,16 +39,18 @@ public class GUIController {
    * Constructor for GUIController.
    * Initializes the GUI and sets up event listeners.
    */
-  public GUIController(String[] args) {
+  public GUIController(String[] args, Boolean isCSVCreate) {
     SwingUtilities.invokeLater(() -> {
-      // Create the main window
-      this.gui = new Gui();
+
+      if (isCSVCreate) {
+        IDFMNetworkExtractor.parse(args);
+      }
       // init Graph class
       this.graph = CSVExtractor.makeObjectsFromCSV(args);
-
       if (graph == null)
         System.exit(0);
-
+      // Create the main window
+      this.gui = new Gui();
       // init Controllers
       new KeyboardController(gui.getTextStart(), gui.getTextEnd(), gui.getResearchButton());
       new KeyboardController(gui.getnumLine());
