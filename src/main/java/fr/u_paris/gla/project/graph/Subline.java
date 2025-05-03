@@ -10,7 +10,6 @@ public class Subline {
     private String name;
 
     private TransportTypes sublineType;
-    //needed for printing the itinerary
     private Line associatedLine;
     
     //The first Stop should ALWAYS be the departure Stop.
@@ -21,7 +20,16 @@ public class Subline {
         this.name = name;
     }
 
-    //à n'utiliser que pour la création des sous-lignes pr la ligne WALK_LINE
+    /**
+     * Constructeur spécifique à utiliser uniquement pour créer des sous-lignes associées à la ligne de marche {@code WALK_LINE}.
+     * <p>
+     * Ce constructeur initialise une {@link Subline} de type {@code Walk} entre deux arrêts donnés. 
+     * Le nom de la sous-ligne est généré automatiquement à partir des hashcodes des arrêts.
+     * La sous-ligne est automatiquement liée à la ligne statique {@code Graph.WALK_LINE}.
+     *
+     * @param departure L'arrêt de départ de la sous-ligne.
+     * @param arrival   L'arrêt d'arrivée de la sous-ligne.
+     */
     public Subline(Stop departure, Stop arrival) {
     	this.name = "walking_subline_" + departure.hashCode() + "_" + arrival.hashCode();
     	this.sublineType = TransportTypes.Walk;
