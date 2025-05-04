@@ -49,6 +49,9 @@ public class GUIController {
       this.graph = CSVExtractor.makeObjectsFromCSV(args);
       if (graph == null)
         System.exit(0);
+
+      //graph.connectStopsByWalkingV2();
+
       // Create the main window
       this.gui = new Gui();
       // init Controllers
@@ -307,6 +310,7 @@ public class GUIController {
                 Integer.parseInt(gui.getComboBoxMinutes().getSelectedItem().toString()));
           }
 
+          System.out.println("Recherche de trajet en cours...");
           // pour le nouveau format
           ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(startFinish.getLeft(), startFinish.getRight(),
               heureDepart);

@@ -18,7 +18,7 @@ public class UpgradedNetworkFormat {
     
     //vitesses des différents type de transport, en km/h
     public static final int RAIL_AVG_SPEED = 54;
-    public static final int BUS_AVG_SPEED = 11;
+    public static final int BUS_AVG_SPEED = 8;
     public static final int SUBWAY_AVG_SPEED = 22;
     public static final int TRAM_AVG_SPEED = 18;
     public static final int WALK_AVG_SPEED = 4;
