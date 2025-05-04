@@ -87,13 +87,16 @@ Pour des explications plus détaillées de l'utilisation du programme, se réfé
 
 ## Auteurs
 
-/contacts.md
+[contacts](contacts.md)
 
 
 ## Historique des versions
 
 * 1.1.0
-    * Schedules
+    * Ajout de la gestion des horaires
+    * Optimisation des résultats
+    * Amélioration de l'UI
+
 * 1.0.0
     * Prototype
 
