@@ -43,7 +43,7 @@ Ou:
 mvn verify
 ```
 
-### Lancement du programme et utilisatation
+### Utilisation
 
 * Suggestion d'usage pour démarrage rapide:
 
@@ -52,19 +52,34 @@ make run
 ```
 Permet de lancer la configuration (création des fichiers de données) et lancer l'interface graphique.  
 
-Pour une utilisation plus en détails le Jar créé après la compilation possède plusieurs options de lancements:
+* Pour une utilisation plus en détails le Jar créé après la compilation possède plusieurs options de lancements:
 
 ```
 java -jar target/project-2025.1.1.0-PROTOTYPE.jar [options...]
 ```
-:warning: Attention à utiliser la dernière version en date du jar, le plus simple étant de prendre celle utilisée dans le Makefile.
+:warning: Attention à utiliser la dernière version en date du Jar, le plus simple étant de prendre celle utilisée dans le Makefile.
 
 * Options de lancement
     * `--info` -> affiche dans la console les informations de l'application.
     * `--help` -> affiche dans la console le manuel d'utilisation des options de lancement.
-    * `--create-files`
-    * `--parse`
-    * `--gui`
+    * `--create-files` -> créer les 3 fichiers de données nécessaires à la lecture du réseau.  
+    * `--parse` -> parse les 3 fichiers de données et créer le modèle du programme.
+    * `--gui` -> lance l'interface graphique du programme en gérant automatiquement les options précédentes.
+
+### Tests
+
+Deux tests optionnels peuvent être lancés indépendamment du reste:
+
+* Un test de déterminisme (assez long à éxécuter) pour la génération des fichiers:
+```
+mvn test -D runDeterminismTest=true
+```
+
+* Un test plutôt destiné à des fins de debug et d'optimisation de l'algorithme:
+```
+mvn test -D runEfficiencyTest=true
+```
+Génère un log avec une suite de résultats de recherche de trajets ainsi que leur temps d'éxécution.
 
 ## Aide
 
@@ -78,8 +93,7 @@ Pour des explications plus détaillées de l'utilisation du programme, se réfé
 ## Historique des versions
 
 * 1.1.0
-    * Various bug fixes and optimizations
-    * See [commit change]() or See [release history]()
+    * Schedules
 * 1.0.0
     * Prototype
 
