@@ -6,14 +6,14 @@ Planificateur d'itinéraire urbain.
 
 ## Description
 
-Logiciel de planification d'itinéraire fait en Java. Permet de lire un réseau de transport selon un format prédéfini et de calculer le trajet le plus court d'un point A ( adresse ou coordonnées ) à un point B, en temps comme en distance.
+Logiciel de planification d'itinéraire. Permet de lire un réseau de transport selon un format prédéfini et de calculer le trajet le plus court d'un point A (adresse ou coordonnées) à un point B (adresse ou coordonnées), en temps ou distance.
 
 ## Lancement du programme
 
 ### Dependances & pré-requis
 
-* Java JDK 17. 
-* Une connexion internet pour afficher la carte et faire les recherches par adresses.  
+* Java JDK 17 minimum.
+* Une connexion internet pour afficher la carte et faire les recherches par adresses. En l'absence de connexion, il est necessaire de fournir des coordonnées GPS valides situées en Ile de France pour les addresses de départ et d'arrivée. 
 
 ### Installation
 
@@ -40,17 +40,17 @@ make all
 ```
 Ou:  
 ```
-mvn verify
+mvn clean package
 ```
 
 ### Utilisation
 
-* Suggestion d'usage pour démarrage rapide (nécessite d'avoir compiler):
+* Suggestion d'usage pour démarrage rapide (nécessite d'avoir compilé):
 
 ```
 make run
 ```
-Permet de lancer la configuration (création des fichiers de données) et l'interface graphique.  
+Permet de lancer la configuration (création des fichiers de données) et l'interface graphique en utilisant les fichiers csv données par l'API RATP du réseau Ile de France.
 
 * Pour une utilisation plus en détails, le Jar créé après la compilation peut être utilisé avec plusieurs options de lancements:
 
@@ -59,14 +59,15 @@ Pour utiliser le jar:
 java -jar target/project-2025.1.1.0-PROTOTYPE.jar [options...]
 ```
 
-:warning: Attention à utiliser la dernière version en date du Jar, le plus simple étant de prendre celle utilisée dans le Makefile.
+:warning: Attention à utiliser la dernière version en date du Jar, le plus simple étant de prendre celle utilisée dans le Makefile :
+target/project-2025.1.1.0-PROTOTYPE.jar
 
 * Options de lancement
-    * `--info` -> affiche dans la console les informations de l'application.
+    * `--info` -> affiche dans la console la version et les auteurs de l'application.
     * `--help` -> affiche dans la console le manuel d'utilisation des options de lancement.
-    * `--create-files` -> créer les 3 fichiers de données nécessaires à la lecture du réseau.  
-    * `--parse` -> parse les 3 fichiers de données et créer le modèle du programme.
-    * `--gui` -> lance l'interface graphique du programme en gérant automatiquement les options précédentes.
+    * `--create-files` -> créer les 2 fichiers (.csv) de données nécessaires à la lecture du réseau et le dossier contenant les fichiers d'horaires (.csv)
+    * `--parse` -> parse lles 2 fichiers (.csv) de données nécessaires à la lecture du réseau et le dossier contenant les fichiers d'horaires (.csv) et crée le modèle du programme. (Fonction de DEBUG)
+    * `--gui` -> lance l'interface graphique du programme en gérant automatiquement les options précédentes. 
 
 ### Tests
 
