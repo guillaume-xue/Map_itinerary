@@ -74,9 +74,16 @@ public class Gui extends JFrame {
     JMenuItem floatingWindowMenu = new JMenuItem("Line");
     viewMenu.add(busMenu);
     viewMenu.add(metroMenu);
-    viewMenu.add(new JSeparator());
+    viewMenu.addSeparator();
     viewMenu.add(floatingWindowMenu);
     menuBar.add(viewMenu);
+
+    JMenu devMenu = new JMenu("Dev");
+    JMenuItem connectStopsItem = new JMenuItem("Connect stops...");
+    devMenu.add(connectStopsItem);
+    devMenu.addSeparator();
+
+    menuBar.add(devMenu);
     this.setJMenuBar(menuBar);
 
     // Create text areas for the start and end

@@ -35,6 +35,8 @@ public class GUIController {
   private Gui gui;
   private Graph graph;
 
+  private boolean areStopsConnected = false;
+
   /**
    * Constructor for GUIController.
    * Initializes the GUI and sets up event listeners.
@@ -49,6 +51,9 @@ public class GUIController {
       this.graph = CSVExtractor.makeObjectsFromCSV(args);
       if (graph == null)
         System.exit(0);
+
+      //graph.connectStopsByWalkingV2();
+
       // Create the main window
       this.gui = new Gui();
       // init Controllers
@@ -307,6 +312,7 @@ public class GUIController {
                 Integer.parseInt(gui.getComboBoxMinutes().getSelectedItem().toString()));
           }
 
+          System.out.println("Recherche de trajet en cours...");
           // pour le nouveau format
           ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(startFinish.getLeft(), startFinish.getRight(),
               heureDepart);
@@ -388,11 +394,32 @@ public class GUIController {
         gui.cleanMap();
       }
     });
-    JMenuItem LineMenuItem = gui.getMenuItem(0, 3);
-    LineMenuItem.addActionListener(e -> {
-      gui.toggleCheckmark(LineMenuItem);
-      gui.toggleFloatingWindow(gui.isCheckmarkEnabled(LineMenuItem));
+    JMenuItem lineMenuItem = gui.getMenuItem(0, 3);
+    lineMenuItem.addActionListener(e -> {
+      gui.toggleCheckmark(lineMenuItem);
+      gui.toggleFloatingWindow(gui.isCheckmarkEnabled(lineMenuItem));
     });
+
+    JMenuItem connectStopsMenuItem = gui.getMenuItem(1,0);
+    connectStopsMenuItem.addActionListener(e -> {
+      if ( !areStopsConnected ){
+        int confirm = JOptionPane.showConfirmDialog(
+        this.gui, 
+        "Attention option expérimentale. Connecter les stations entre-elles pour les trajets à pied\n" + 
+        " prend du temps et rend l'algorithme de recherche plus lent. Si vous confirmez l'action\n" + 
+        " garder un oeil sur le terminal pour savoir quand les connections ont fini d'être créées.\n"
+        ,"Confirmation requise"
+        , JOptionPane.YES_NO_OPTION);
+        if ( confirm == 0 ){
+          graph.connectStopsByWalkingV2();
+          this.areStopsConnected = true;
+        } 
+      } else {
+        JOptionPane.showMessageDialog(this.gui, "Stations déjà connectées. Relancer l'application pour enlever cette option.",
+            "Info",
+            JOptionPane.ERROR_MESSAGE);
+      }
+    }); 
   }
 
   public void launch() {

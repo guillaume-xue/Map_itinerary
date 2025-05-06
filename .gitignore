@@ -7,6 +7,7 @@ target/
 .classpath
 
 #Misc
+results/
 *.csv
 !src/test/resources/*.csv
 dependency-reduced-pom.xml

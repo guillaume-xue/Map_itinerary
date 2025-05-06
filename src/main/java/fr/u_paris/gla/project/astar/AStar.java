@@ -152,8 +152,9 @@ public class AStar {
 	                    neighborNode.setDepartureTime(neighborStop.giveDepartureTimeFromUsedSubline(departureTime,usedSubline)); 
 
 	                    if (!openSet.contains(neighborNode)) {
-	                        openSet.add(neighborNode);
+	                    	openSet.add(neighborNode);
 	                    }
+
 	                }
 	            }
 	        }
