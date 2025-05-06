@@ -41,12 +41,12 @@ public class Graph {
 
         listOfStops.sort((Stop a, Stop b) -> a.calculateDistance(latitude, longitude).compareTo(b.calculateDistance(latitude, longitude)));
 
-        System.out.println(
-            String.format(
-                "Closest Stop found = %s ", 
-                listOfStops.get(0).toString() 
-            )
-        );
+        // System.out.println(
+        //     String.format(
+        //         "Closest Stop found = %s ", 
+        //         listOfStops.get(0).toString() 
+        //     )
+        // );
         return listOfStops.get(0);
     }
 

@@ -33,6 +33,6 @@ public class TestDistanceCostFunction {
         double cost = distanceCostFunction.costBetween(stopA, stopB, LocalTime.ofSecondOfDay(120));
 
         // Print the result
-        System.out.println("Cost between stopA and stopB: " + cost);
+        //System.out.println("Cost between stopA and stopB: " + cost);
     }
 }

@@ -34,7 +34,7 @@ public class TestSegmentItineraire {
         String result = segment.toString();
 
         // Print the result
-        System.out.println(result);
+        //System.out.println(result);
     }
 
     @Test
@@ -60,7 +60,7 @@ public class TestSegmentItineraire {
 
         // Itinéraires avec IDFM
 
-        System.out.println("SegmentItineraire: " + segment + "\n");
+        //System.out.println("SegmentItineraire: " + segment + "\n");
         assertEquals(subline, segment.getSubline());
         assertEquals(heureDepart, segment.getHeureDepart());
         assertEquals(heureArrivee, segment.getHeureArrivee());
@@ -69,16 +69,16 @@ public class TestSegmentItineraire {
         ArrayList<Line> lines = new ArrayList<>();
         Graph graph = new Graph(stops, lines);
 
-        System.out.println(stop1.getNameOfAssociatedStation()); // Saint Michel Notre Dame
+        //System.out.println(stop1.getNameOfAssociatedStation()); // Saint Michel Notre Dame
         assertEquals(graph.getClosestStop(48.85, 2.34).getNameOfAssociatedStation(), "Saint Michel Notre Dame");
 
-        System.out.println(stop2.getNameOfAssociatedStation()); // Bibliothèque François Mitterrand
+        //System.out.println(stop2.getNameOfAssociatedStation()); // Bibliothèque François Mitterrand
         assertEquals(graph.getClosestStop(48.82, 2.37).getNameOfAssociatedStation(), "Bibliothèque François Mitterrand");
 
-        System.out.println(stop3.getNameOfAssociatedStation()); // Gare de Juvisy
+        //System.out.println(stop3.getNameOfAssociatedStation()); // Gare de Juvisy
         assertEquals(graph.getClosestStop(48.68, 2.38).getNameOfAssociatedStation(), "Gare de Juvisy");
 
-        System.out.println(stop4.getNameOfAssociatedStation()); // Gare de Malesherbes
+        //System.out.println(stop4.getNameOfAssociatedStation()); // Gare de Malesherbes
         assertEquals(graph.getClosestStop(48.29, 2.40).getNameOfAssociatedStation(), "Gare de Malesherbes");
 
     }

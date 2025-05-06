@@ -67,9 +67,9 @@ public class TestSubline {
 
         //subline2.addDepartureTimes(stop2, departureTimes);
 
-        for(LocalTime time : departureTimesAtStartOfSubline){
-            System.out.println(time);
-        }
+        // for(LocalTime time : departureTimesAtStartOfSubline){
+        //     System.out.println(time);
+        // }
 
 
     }

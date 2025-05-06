@@ -52,8 +52,6 @@ public class GUIController {
       if (graph == null)
         System.exit(0);
 
-      //graph.connectStopsByWalkingV2();
-
       // Create the main window
       this.gui = new Gui();
       // init Controllers

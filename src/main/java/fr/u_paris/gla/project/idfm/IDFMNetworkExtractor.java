@@ -39,7 +39,7 @@ import java.util.Iterator;
 
 /**
  * Extracteur de données pour le réseau de transport Île-de-France Mobilités (IDFM).
- * <p>
+ * 
  * Cette classe permet de télécharger, parser et transformer des données publiques
  * de transport fournies par IDFM. Elle génère des fichiers CSV utilisés par d'autres
  * parties du projet, à partir de plusieurs sources de données :
@@ -48,20 +48,17 @@ import java.util.Iterator;
  *   <li>Les arrêts associés à ces lignes</li>
  *   <li>Les horaires et trajets (au format GTFS dans un fichier .zip)</li>
  * </ul>
- * </p>
- * <p>
+ * 
  * Le processus d'extraction comprend plusieurs étapes :
  * <ol>
  *   <li>Lecture et nettoyage des données de traces</li>
  *   <li>Construction des correspondances entre routes, trips et arrêts</li>
  *   <li>Création de fichiers CSV pour l'affichage sur carte, les horaires et les correspondances</li>
  * </ol>
- * </p>
- * <p>
+ * 
  * Pour lancer l'extraction, utiliser la méthode {@link #parse(String[])} en fournissant trois
  * chemins de fichiers en argument (dans l'ordre : fichier pour la carte, fichier de correspondances,
  * dossier de sortie pour les horaires).
- * </p>
  *  
  */
 public class IDFMNetworkExtractor {

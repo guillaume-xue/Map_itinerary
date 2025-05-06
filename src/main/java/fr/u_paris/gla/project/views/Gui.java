@@ -470,16 +470,35 @@ public class Gui extends JFrame {
     // Clear the map and content panel before displaying new paths
     mapViewer.removeAllMapMarkers();
     mapViewer.removeAllMapPolygons();
+
     // Clear the content panel
     contentPanel.removeAll();
     contentPanel.revalidate();
+
     // Create a new panel to display the paths
     JPanel pathPanel = new JPanel();
     pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
     pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
     pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
+
     // Iterate through the segments and display each one
     for (SegmentItineraire segment : segments) {
+      // Point de départ
+      if ( segments.indexOf(segment) == 0 ){
+        Stop departStop = segment.getStops().get(0);
+        MapMarkerDot departDot= new MapMarkerDot(Color.RED, departStop.getLatitude(), departStop.getLongitude());
+        departDot.setBackColor(Color.RED);
+        mapViewer.addMapMarker(departDot);        
+      }
+
+      // Point d'arrivée
+      if ( segments.indexOf(segment) == segments.size() - 1 ){
+        Stop arriveStop = segment.getStops().get(segment.getStops().size()-1);
+        MapMarkerDot arriveDot= new MapMarkerDot(Color.BLUE, arriveStop.getLatitude(), arriveStop.getLongitude());
+        arriveDot.setBackColor(Color.BLUE);
+        mapViewer.addMapMarker(arriveDot);
+      }
+
       // Print the number of stops
       String timeDepart = segment.getHeureDepart().toString().substring(0, 5);
       String timeArrivee = segment.getHeureArrivee().toString().substring(0, 5);
@@ -505,6 +524,7 @@ public class Gui extends JFrame {
 
       // Print the first subline name
       Stop startStop = segment.getStops().get(0);
+      Stop finishStop = segment.getStops().get(segment.getStops().size()-1);
       pathPanel.add(Box.createRigidArea(new Dimension(0, 20))); // Add spacing between segments
 
       JTextArea startTextArea = createTextAreaOutput(startStop.getNameOfAssociatedStation());
@@ -513,8 +533,10 @@ public class Gui extends JFrame {
 
       Coordinate mStart = new Coordinate(startStop.getLatitude(), startStop.getLongitude());
       mapViewer.setDisplayPosition(mStart, 12);
-      MapMarkerDot parisMarker = new MapMarkerDot(mStart);
-      mapViewer.addMapMarker(parisMarker);
+      MapMarkerDot startMarker = new MapMarkerDot(startStop.getLatitude(), startStop.getLongitude());
+      mapViewer.addMapMarker(startMarker);
+      MapMarkerDot finishMarker = new MapMarkerDot(finishStop.getLatitude(), finishStop.getLongitude());
+      mapViewer.addMapMarker(finishMarker);    
       // draw the path and add TextAreas for each stop
       for (int i = 1; i < segment.getStops().size(); i++) {
         Stop stop = segment.getStops().get(i);
@@ -528,10 +550,12 @@ public class Gui extends JFrame {
         MapPolygon coloredPolygon = new ColoredMapPolygon(mStart, mEnd, mStart, Color.decode(color));
         MapMarkerDot markerDot = new MapMarkerDot(mEnd);
         mapViewer.addMapPolygon(coloredPolygon);
-        mapViewer.addMapMarker(markerDot);
+        //mapViewer.addMapMarker(markerDot);
         // update the start
         mStart = mEnd;
       }
+
+
     }
     mapViewer.repaint();
     contentPanel.repaint();
@@ -672,16 +696,52 @@ public class Gui extends JFrame {
       if (points == null || points.size() < 2) {
         return;
       }
+      
       Graphics2D g2d = (Graphics2D) g;
-      g2d.setColor(color); // Set the custom color
-      g2d.setStroke(new java.awt.BasicStroke(4)); // Optional: Set stroke thickness
-      for (int i = 1; i < points.size(); i++) {
-        Point p1 = points.get(i - 1);
-        Point p2 = points.get(i);
-        g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
-      }
+
+      Stroke originalStroke = g2d.getStroke();
+      Paint originalPaint = g2d.getPaint();
+      Color originalColor = g2d.getColor();
+      RenderingHints originalHints = g2d.getRenderingHints();
+
+      float borderWidth = 6.0f;
+      Stroke borderStroke = new BasicStroke(
+          borderWidth,       
+          BasicStroke.CAP_BUTT,
+          BasicStroke.JOIN_ROUND // pour une jointure smooth
+      );
+
+      float mainWidth = 5.0f;
+      Stroke mainStroke = new BasicStroke(
+          mainWidth,
+          BasicStroke.CAP_BUTT,
+          BasicStroke.JOIN_ROUND
+      );
+
+      g2d.setColor(Color.BLACK);
+      g2d.setStroke(borderStroke);
+      drawLines(g2d, points);
+
+      g2d.setColor(color);
+      g2d.setStroke(mainStroke);
+      drawLines(g2d, points);
+
+      g2d.setStroke(originalStroke);
+      g2d.setPaint(originalPaint);
+      g2d.setColor(originalColor);
+      g2d.setRenderingHints(originalHints);
     }
   }
+
+  // Helper function to draw a line between points
+  private void drawLines(Graphics2D g2d, java.util.List<Point> points) {
+    for (int i = 1; i < points.size(); i++) {
+      Point p1 = points.get(i - 1);
+      Point p2 = points.get(i);
+      g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
+    }
+  }
+
 
   public class GrayDashedMapPolygon extends MapPolygonImpl {
     private static final Color GRAY_COLOR = Color.GRAY;
@@ -696,6 +756,12 @@ public class Gui extends JFrame {
         return;
       }
       Graphics2D g2d = (Graphics2D) g;
+
+      Stroke originalStroke = g2d.getStroke();
+      Paint originalPaint = g2d.getPaint();
+      Color originalColor = g2d.getColor();
+      RenderingHints originalHints = g2d.getRenderingHints();
+
       g2d.setColor(GRAY_COLOR); // Set the color to gray
       float[] dashPattern = { 10, 10 }; // Define dash pattern (10 pixels on, 10 pixels off)
       g2d.setStroke(new java.awt.BasicStroke(4, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, dashPattern, 0));
@@ -704,6 +770,11 @@ public class Gui extends JFrame {
         Point p2 = points.get(i);
         g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
       }
+
+      g2d.setStroke(originalStroke);
+      g2d.setPaint(originalPaint);
+      g2d.setColor(originalColor);
+      g2d.setRenderingHints(originalHints);
     }
   }
 
