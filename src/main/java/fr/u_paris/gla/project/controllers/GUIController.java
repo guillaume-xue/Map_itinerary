@@ -1,5 +1,6 @@
 package fr.u_paris.gla.project.controllers;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 
 import javax.swing.JMenuItem;
@@ -12,23 +13,19 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import fr.u_paris.gla.project.astar.AStar;
 import fr.u_paris.gla.project.astar.CostFunction;
 import fr.u_paris.gla.project.astar.CostFunctionFactory;
-import fr.u_paris.gla.project.astar.AStar;
+import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
-import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.utils.CSVExtractor;
+import fr.u_paris.gla.project.utils.Pair;
+import fr.u_paris.gla.project.utils.TransportTypes;
 import fr.u_paris.gla.project.views.Gui;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import fr.u_paris.gla.project.views.Gui;
-import fr.u_paris.gla.project.utils.Pair;
-import fr.u_paris.gla.project.utils.TransportTypes;
-
-import java.time.LocalTime;
 
 public class GUIController {
 
@@ -45,6 +42,7 @@ public class GUIController {
       this.gui = new Gui();
       // init Graph class
       this.graph = CSVExtractor.makeObjectsFromCSV(args);
+      //graph.connectStopsByWalking();
 
       if (graph == null) System.exit(0);
       
@@ -317,10 +315,23 @@ public class GUIController {
           displayItinerary(itinerary);
 
           // Display the path on the map
+          gui.getTextItineraryPanel().add(gui.displayTextItinerary(itinerary));
+
+          
+          //Scroll the JScrollPane used to display the textual itinerary to the top
+          
+
+
           gui.getContentPanel().add(gui.displayPath(itinerary));
           gui.getContentPanel().add(new JPanel());
-          gui.getContentPanel().revalidate();
-          gui.getContentPanel().repaint();
+          
+
+          gui.getTextItineraryPanel().revalidate();
+          gui.getTextItineraryPanel().repaint();
+
+          gui.getContentPane().revalidate();
+          gui.getContentPane().repaint();
+
         } catch (Exception except) {
           // Show an error message if the path is not found
           except.printStackTrace();
