@@ -252,21 +252,21 @@ public final class CSVExtractor {
 
         // On lit les coordonnées du premiet arrêt
         String[] stopACoordString = line[UpgradedNetworkFormat.START_INDEX+1].split(",");
-        double stopAlon = Double.parseDouble(stopACoordString[0]);
-        double stopAlat = Double.parseDouble(stopACoordString[1]);
+        double stopAlat = Double.parseDouble(stopACoordString[0]);
+        double stopAlon = Double.parseDouble(stopACoordString[1]);
         // On en fait une paire qui sert de clef primaire
-        Pair<Double,Double> stopACoord = new Pair<>(stopAlon,stopAlat);
+        Pair<Double,Double> stopACoord = new Pair<>(stopAlat,stopAlon);
         
         // On ajoute l'arrêt si il n'a pas déjà été rencontré
-        mapOfStops.putIfAbsent(stopACoord, new Stop(stopAlon,stopAlat,line[UpgradedNetworkFormat.START_INDEX]));
+        mapOfStops.putIfAbsent(stopACoord, new Stop(stopAlat,stopAlon,line[UpgradedNetworkFormat.START_INDEX]));
 
         // Pareil avec le deuxième arrêt
         String[] stopBCoordString = line[UpgradedNetworkFormat.STOP_INDEX+1].split(",");
-        double stopBlon = Double.parseDouble(stopBCoordString[0]);
-        double stopBlat = Double.parseDouble(stopBCoordString[1]);
-        Pair<Double,Double> stopBCoord = new Pair<>(stopBlon,stopBlat);
+        double stopBlat = Double.parseDouble(stopBCoordString[0]);
+        double stopBlon = Double.parseDouble(stopBCoordString[1]);
+        Pair<Double,Double> stopBCoord = new Pair<>(stopBlat,stopBlon);
 
-        mapOfStops.putIfAbsent(stopBCoord, new Stop(stopBlon,stopBlat,line[UpgradedNetworkFormat.STOP_INDEX]));
+        mapOfStops.putIfAbsent(stopBCoord, new Stop(stopBlat,stopBlon,line[UpgradedNetworkFormat.STOP_INDEX]));
 
         // On recupère les objets Stop à partir de la map pour avoir la bonne référence
         Stop stopA = mapOfStops.get(stopACoord);
@@ -324,7 +324,7 @@ public final class CSVExtractor {
         // La liste de stations finale à ajouter à la subline
         ArrayList<Stop> listOfStops = buildPotentialLine(stops, listOfStopsEntry, ligne, line[JunctionsFormat.VARIANT_INDEX]);
         if ( listOfStops.isEmpty() ){
-            LOGGER.warning("Suppression de la sous-ligne");
+            //LOGGER.warning("Suppression de la sous-ligne");
             return;
         }
 
@@ -371,7 +371,7 @@ public final class CSVExtractor {
             }
         }
 
-        LOGGER.warning("Pas de chemin potentiel trouvé pour la sous-ligne " + ligne + ", variant " + variant + "\n" );
+        //LOGGER.warning("Pas de chemin potentiel trouvé pour la sous-ligne " + ligne + ", variant " + variant + "\n" );
         return new ArrayList<>();
     }
 
@@ -457,7 +457,6 @@ public final class CSVExtractor {
                 + "\nExpected: " + expectedTerminus + " | Found: " + actualTerminus );
                 return;
             }
-
 
             try{
                 Stop departureStop = stops.get(0);

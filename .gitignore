@@ -7,7 +7,8 @@ target/
 .classpath
 
 #Misc
-Makefile
+results/
 *.csv
+!src/test/resources/*.csv
 dependency-reduced-pom.xml
 **/.DS_Store

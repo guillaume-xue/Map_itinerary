@@ -54,6 +54,19 @@ import org.openstreetmap.gui.jmapviewer.MapPolygonImpl;
 import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
+<<<<<<< src/main/java/fr/u_paris/gla/project/views/Gui.java
+=======
+import java.awt.*;
+import java.time.LocalTime;
+
+import javax.swing.*;
+import javax.swing.border.AbstractBorder;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+>>>>>>> src/main/java/fr/u_paris/gla/project/views/Gui.java
 import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Line;
@@ -63,6 +76,7 @@ import fr.u_paris.gla.project.utils.TransportTypes;
 import fr.u_paris.gla.project.views.Gui.ColoredMapPolygon;
 import fr.u_paris.gla.project.views.Gui.GrayDashedMapPolygon;
 
+
 public class Gui extends JFrame {
 
   private static final int SCREEN_WIDTH = 900;
@@ -70,6 +84,9 @@ public class Gui extends JFrame {
   private static final int RESEARCH_PANEL_WIDTH = 350;
   private static final int MIN_SCREEN_WIDTH = 600;
   private static final int MIN_SCREEN_HEIGHT = 300;
+  private static final Coordinate PARIS_CENTER = new Coordinate(48.8566, 2.3522);
+  private static final int DEFAULT_ZOOM = 10;
+
   private JScrollPane textStart;
   private JScrollPane textEnd;
   private JPanel contentPanel;
@@ -80,9 +97,11 @@ public class Gui extends JFrame {
   private JButton researchButton;
   private JCheckBox distCheckBox;
   private JCheckBox timeCheckBox;
+  private JCheckBox showAllLinesCheckBox;
   private JScrollPane numLine;
-  private JCheckBox metroLineCheckBox;
-  private JCheckBox busLineCheckBox;
+  private JComboBox<String> comboBoxHours;
+  private JComboBox<String> comboBoxMinutes;
+  private JComboBox<String> lineTypeDropdown;
   private JButton viewLineButton;
   private static final Color textColor = new Color(11, 22, 44);
   private static final Color bordeColor = new Color(88, 88, 88);
@@ -110,11 +129,16 @@ public class Gui extends JFrame {
     // Create a menu bar
     JMenuBar menuBar = new JMenuBar();
     JMenu viewMenu = new JMenu("View");
-    JMenuItem busMenu = new JMenuItem("Bus");
-    JMenuItem metroMenu = new JMenuItem("Metro");
-    viewMenu.add(busMenu);
-    viewMenu.add(metroMenu);
+    JMenuItem floatingWindowMenu = new JMenuItem("Network");
+    viewMenu.add(floatingWindowMenu);
     menuBar.add(viewMenu);
+
+    JMenu devMenu = new JMenu("Dev");
+    JMenuItem connectStopsItem = new JMenuItem("Connect stops...");
+    devMenu.add(connectStopsItem);
+    devMenu.addSeparator();
+
+    menuBar.add(devMenu);
     this.setJMenuBar(menuBar);
 
     // Create text areas for the start and end
@@ -158,9 +182,30 @@ public class Gui extends JFrame {
     this.timeCheckBox = new JCheckBox("Time");
     JPanel checkBoxPanel = new JPanel();
     checkBoxPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+
+    String[] hours = new String[] { "Now", "00", "01", "02", "03", "04", "05", "06", "07", "08", "09",
+        "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
+        "23" };
+
+    String[] minutes = new String[] { "Now", "00", "01", "02", "03", "04", "05", "06", "07", "08",
+        "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
+        "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32",
+        "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44",
+        "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56",
+        "57", "58", "59" };
+
+    comboBoxHours = new JComboBox<>(hours);
+    comboBoxMinutes = new JComboBox<>(minutes);
+
     checkBoxPanel.add(label);
     checkBoxPanel.add(distCheckBox);
     checkBoxPanel.add(timeCheckBox);
+
+    JPanel comboBoxPanel = new JPanel();
+
+    comboBoxPanel.add(comboBoxHours);
+    comboBoxPanel.add(new JLabel(":")); // Add spacing
+    comboBoxPanel.add(comboBoxMinutes);
 
     // Create a panel for the research area
     JPanel researchPanel = new JPanel();
@@ -171,10 +216,12 @@ public class Gui extends JFrame {
     researchPanel.add(startPanel);
     researchPanel.add(endPanel);
     researchPanel.add(checkBoxPanel);
+    researchPanel.add(comboBoxPanel);
 
     // Create a container for the button to center it
     JPanel buttonPanel = new JPanel();
-    buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER)); // Center the button within the panel
+    buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER)); // Center the button
+                                                              // within the panel
     buttonPanel.setBackground(primaryBackgroundColor); // Ensure the background matches
     buttonPanel.add(this.researchButton); // Add the search button to this centered panel
 
@@ -199,8 +246,9 @@ public class Gui extends JFrame {
 
 
     // Create a split pane to separate the research panel and the content panel
-    JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-    splitPane.setDividerLocation(280);
+    JSplitPane splitPane = new JSplitPane(
+        JSplitPane.VERTICAL_SPLIT);
+    splitPane.setDividerLocation(310);
     splitPane.setEnabled(false);
 
     splitPane.add(researchPanel, JSplitPane.TOP);
@@ -215,12 +263,16 @@ public class Gui extends JFrame {
     add(mainContentPanel);
   }
 
+  public boolean isShowAllLinesSelected() {
+      return showAllLinesCheckBox != null && showAllLinesCheckBox.isSelected();
+  }
+
   private void createFloatingWindow() {
     floatingWindow = new JDialog(this, "Floating Window", false);
-    floatingWindow.setSize(200, 150);
+    floatingWindow.setSize(200, 200);
     floatingWindow.setLocationRelativeTo(this);
     floatingWindow.setUndecorated(true); // Enlever la barre de titre et de fermeture
-    floatingWindow.setAlwaysOnTop(true); // Toujours au-dessus de la fenêtre principale
+    floatingWindow.setAlwaysOnTop(false); // Toujours au-dessus de la fenêtre principale
     floatingWindow.setLayout(new BorderLayout());
     floatingWindow.setBackground(primaryBackgroundColor);
 
@@ -229,10 +281,11 @@ public class Gui extends JFrame {
     panel.setBackground(primaryBackgroundColor);
 
     JPanel titlePanel = new JPanel();
-    JLabel label = new JLabel("Display Line");
+    JLabel label = new JLabel("Display Network");
     titlePanel.add(label);
 
     // Set the textArea for the line number
+
     JPanel textPanel = new JPanel();
     this.numLine = new JScrollPane();
     JTextArea textArea = new JTextArea("Line number");
@@ -244,20 +297,27 @@ public class Gui extends JFrame {
     textArea.setLineWrap(false); // Disable line wrapping
     textArea.setWrapStyleWord(false); // Disable word wrapping
     textArea.setEditable(true);
+    textArea.setPreferredSize(new Dimension(100, 18)); // Fixed preferred size
+    textArea.setMaximumSize(new Dimension(100, 18)); // Fixed maximum size
     this.numLine.setViewportView(textArea);
     this.numLine.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
     this.numLine.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     textPanel.add(numLine);
 
-    // Create checkboxes for bus and metro lines
+    JPanel comboBox = new JPanel();
+    // Create a dropdown menu (JComboBox) for selecting line types
+    lineTypeDropdown = new JComboBox<>(new String[] { "Bus", "Subway", "Tram", "Rail", "Funicular" });
+    lineTypeDropdown.setPreferredSize(new Dimension(100, 25));
+    lineTypeDropdown.setBackground(primaryBackgroundColor);
+    lineTypeDropdown.setForeground(textColor);
+    lineTypeDropdown.setFocusable(false);
+    comboBox.add(lineTypeDropdown);
+
     JPanel checkBoxPanel = new JPanel();
-    checkBoxPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-    this.busLineCheckBox = new JCheckBox("Bus");
-    this.busLineCheckBox.setSelected(true); // Default to bus
-    this.metroLineCheckBox = new JCheckBox("Metro");
-    this.metroLineCheckBox.setSelected(false); // Default to metro
-    checkBoxPanel.add(busLineCheckBox);
-    checkBoxPanel.add(metroLineCheckBox);
+    showAllLinesCheckBox = new JCheckBox("Show all lines");
+    showAllLinesCheckBox.setBackground(primaryBackgroundColor);
+    showAllLinesCheckBox.setForeground(textColor);
+    checkBoxPanel.add(showAllLinesCheckBox);
 
     // Create a button to view the line
     this.viewLineButton = new JButton("View Line");
@@ -266,6 +326,7 @@ public class Gui extends JFrame {
 
     panel.add(titlePanel);
     panel.add(textPanel);
+    panel.add(comboBox);
     panel.add(checkBoxPanel);
     panel.add(buttonPanel);
     this.floatingWindow.add(panel, BorderLayout.CENTER);
@@ -280,10 +341,21 @@ public class Gui extends JFrame {
       }
     });
 
+    showAllLinesCheckBox.addActionListener(e -> {
+        boolean showAll = showAllLinesCheckBox.isSelected();
+        textArea.setEnabled(!showAll);
+        numLine.setEnabled(!showAll);
+        if (showAll) {
+            textArea.setBackground(new Color(220, 220, 220));
+        } else {
+            textArea.setBackground(primaryBackgroundColor);
+        }
+    });
+
   }
 
-  private void toggleFloatingWindow() {
-    floatingWindow.setVisible(!floatingWindow.isVisible());
+  public void toggleFloatingWindow(boolean visible) {
+    floatingWindow.setVisible(visible);
   }
 
   /**
@@ -428,48 +500,75 @@ public class Gui extends JFrame {
   }
 
   /**
-   * Displays all bus stops on the map.
-   * 
-   * @param graph the graph containing the bus stops
+   * Adds a marker to the map.
+   *
+   * @param      latitude   The latitude
+   * @param      longitude  The longitude
+   * @param      color      The color
    */
-  public void viewLine(Graph graph, String type) {
-    mapViewer.removeAllMapMarkers();
-    mapViewer.removeAllMapPolygons();
-    ArrayList<Line> tmpLine = new ArrayList<>();
-    ArrayList<Subline> tmpLineSub = new ArrayList<>();
-    ArrayList<Stop> tmpLineStop = new ArrayList<>();
-    for (Line line : graph.getListOfLines()) {
-      if (tmpLine.contains(line) || line.getType() != TransportTypes.valueOf(type)) {
-        continue;
-      }
-      tmpLine.add(line);
-      for (Subline subline : line.getListOfSublines()) {
-        if (tmpLineSub.contains(subline)) {
-          continue;
-        }
-        for (Stop stop : subline.getListOfStops()) {
-          if (tmpLineStop.contains(stop)) {
-            continue;
+  private void addMarker(double latitude, double longitude, Color color){
+    MapMarkerDot marker;
+
+    if (color != null) {
+        marker = new MapMarkerDot(color, latitude, longitude);
+        marker.setBackColor(color);
+    } else {
+        marker = new MapMarkerDot(latitude, longitude);
+    }
+    
+    mapViewer.addMapMarker(marker);
+  }
+
+  /**
+   * Displays the specific transport type on the map with all their lines.
+   *
+   * @param      lines  The list of lines of the graph
+   * @param      type   The type to display
+   */
+  public void displayTransportType(ArrayList<Line> lines, TransportTypes type) {
+      cleanMap();
+
+      for (Line line : lines) {
+          if (line.getType() != type) {
+              continue;
           }
-          tmpLineStop.add(stop);
-          Coordinate coord = new Coordinate(stop.getLongitude(), stop.getLatitude());
-          MapMarkerDot marker = new MapMarkerDot(coord);
-          mapViewer.addMapMarker(marker);
-        }
+          
+          Color lineColor = Color.decode("#" + line.getColor());
+          
+          for (Subline subline : line.getListOfSublines()) {
+              for (int i = 0; i < subline.getListOfStops().size() - 1; i++) {
+                  Stop stop = subline.getListOfStops().get(i);
+                  Stop nextStop = subline.getListOfStops().get(i + 1);
+                  
+                  Coordinate start = new Coordinate(stop.getLatitude(), stop.getLongitude());
+                  Coordinate end = new Coordinate(nextStop.getLatitude(), nextStop.getLongitude());
+                  addPolygonLine(start, end, lineColor, false);
+              }
+          }
       }
+      
+      mapViewer.setDisplayPosition(new Coordinate(48.8566, 2.3522), 10);
+      mapViewer.repaint();
+  }
+
+  /**
+   * Adds a polygon line to link stops.
+   *
+   * @param      start   The start coordinates
+   * @param      end     The end coordinates
+   * @param      color   The color
+   * @param      isDash  isDash for walking
+   */
+  private void addPolygonLine(Coordinate start, Coordinate end, Color color, boolean isDash){
+    MapPolygon line;
+    if (isDash) {
+        line = new GrayDashedMapPolygon(start, end, start);
+    } else if (color != null) {
+        line = new ColoredMapPolygon(start, end, start, color);
+    } else {
+        line = new ColoredMapPolygon(start, end, start, Color.BLACK);
     }
-    for (Stop stop : tmpLineStop) {
-      for (Stop adjacentStop : stop.getAdjacentStops()) {
-        if (tmpLineStop.contains(adjacentStop)) {
-          Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
-          Coordinate mEnd = new Coordinate(adjacentStop.getLongitude(), adjacentStop.getLatitude());
-          MapPolygon mLine = new MapPolygonImpl(mStart, mEnd, mStart);
-          mapViewer.addMapPolygon(mLine);
-        }
-      }
-    }
-    mapViewer.setDisplayPosition(new Coordinate(48.8566, 2.3522), 10);
-    mapViewer.repaint();
+    mapViewer.addMapPolygon(line);
   }
 
   /**
@@ -488,18 +587,36 @@ public class Gui extends JFrame {
    */
   public JPanel displayPath(ArrayList<SegmentItineraire> segments) {
     // Clear the map and content panel before displaying new paths
-    mapViewer.removeAllMapMarkers();
-    mapViewer.removeAllMapPolygons();
+    cleanMap();
+
     // Clear the content panel
     contentPanel.removeAll();
     contentPanel.revalidate();
+
     // Create a new panel to display the paths
     JPanel pathPanel = new JPanel();
     pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
     pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
     pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
+
     // Iterate through the segments and display each one
     for (SegmentItineraire segment : segments) {
+      // Point de départ
+      if ( segments.indexOf(segment) == 0 ){
+        Stop departStop = segment.getStops().get(0);
+        MapMarkerDot departDot= new MapMarkerDot(Color.RED, departStop.getLatitude(), departStop.getLongitude());
+        departDot.setBackColor(Color.RED);
+        mapViewer.addMapMarker(departDot);        
+      }
+
+      // Point d'arrivée
+      if ( segments.indexOf(segment) == segments.size() - 1 ){
+        Stop arriveStop = segment.getStops().get(segment.getStops().size()-1);
+        MapMarkerDot arriveDot= new MapMarkerDot(Color.BLUE, arriveStop.getLatitude(), arriveStop.getLongitude());
+        arriveDot.setBackColor(Color.BLUE);
+        mapViewer.addMapMarker(arriveDot);
+      }
+
       // Print the number of stops
       String timeDepart = segment.getHeureDepart().toString().substring(0, 5);
       String timeArrivee = segment.getHeureArrivee().toString().substring(0, 5);
@@ -511,8 +628,8 @@ public class Gui extends JFrame {
         pathPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add spacing between segments
         Stop startStop = segment.getStops().get(0);
         Stop endStop = segment.getStops().get(segment.getStops().size() - 1);
-        Coordinate mStart = new Coordinate(startStop.getLongitude(), startStop.getLatitude());
-        Coordinate mEnd = new Coordinate(endStop.getLongitude(), endStop.getLatitude());
+        Coordinate mStart = new Coordinate(startStop.getLatitude(), startStop.getLongitude());
+        Coordinate mEnd = new Coordinate(endStop.getLatitude(), endStop.getLongitude());
         MapPolygon grayPolygon = new GrayDashedMapPolygon(mStart, mEnd, mStart);
         mapViewer.addMapPolygon(grayPolygon);
         continue; // Skip if the subline type is "Walk"
@@ -525,16 +642,19 @@ public class Gui extends JFrame {
 
       // Print the first subline name
       Stop startStop = segment.getStops().get(0);
+      Stop finishStop = segment.getStops().get(segment.getStops().size()-1);
       pathPanel.add(Box.createRigidArea(new Dimension(0, 20))); // Add spacing between segments
 
       JTextArea startTextArea = createTextAreaOutput(startStop.getNameOfAssociatedStation());
       startTextArea.setBorder(BorderFactory.createEmptyBorder(0, 20, 60, 0)); // Add bottom margin
       pathPanel.add(startTextArea);
 
-      Coordinate mStart = new Coordinate(startStop.getLongitude(), startStop.getLatitude());
+      Coordinate mStart = new Coordinate(startStop.getLatitude(), startStop.getLongitude());
       mapViewer.setDisplayPosition(mStart, 12);
-      MapMarkerDot parisMarker = new MapMarkerDot(mStart);
-      mapViewer.addMapMarker(parisMarker);
+      MapMarkerDot startMarker = new MapMarkerDot(startStop.getLatitude(), startStop.getLongitude());
+      mapViewer.addMapMarker(startMarker);
+      MapMarkerDot finishMarker = new MapMarkerDot(finishStop.getLatitude(), finishStop.getLongitude());
+      mapViewer.addMapMarker(finishMarker);    
       // draw the path and add TextAreas for each stop
       for (int i = 1; i < segment.getStops().size(); i++) {
         Stop stop = segment.getStops().get(i);
@@ -543,21 +663,24 @@ public class Gui extends JFrame {
         stopTextArea.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0)); // Add bottom margin
         pathPanel.add(stopTextArea);
         // draw the path
-        Coordinate mEnd = new Coordinate(stop.getLongitude(), stop.getLatitude()); // Paris center
+        Coordinate mEnd = new Coordinate(stop.getLatitude(), stop.getLongitude()); // Paris center
         String color = "#" + segment.getSubline().getAssociatedLine().getColor();
         MapPolygon coloredPolygon = new ColoredMapPolygon(mStart, mEnd, mStart, Color.decode(color));
         MapMarkerDot markerDot = new MapMarkerDot(mEnd);
         mapViewer.addMapPolygon(coloredPolygon);
-        mapViewer.addMapMarker(markerDot);
+        //mapViewer.addMapMarker(markerDot);
         // update the start
         mStart = mEnd;
       }
+
+
     }
     mapViewer.repaint();
     contentPanel.repaint();
     return pathPanel;
   }
 
+<<<<<<< src/main/java/fr/u_paris/gla/project/views/Gui.java
   public class SolidColoredLine extends JPanel {
     private final Color color;
 
@@ -1076,9 +1199,67 @@ public class Gui extends JFrame {
         mapViewer.setDisplayPosition(new Coordinate(48.8566, 2.3522), 10);
         mapViewer.repaint();
         break;
+=======
+  /**
+   * Calls the displaySpecificLine to display one line on the map.
+   *
+   * @param      lines    The list of lines
+   * @param      type     The type
+   * @param      lineNum  The line number
+   */
+  public void displayLine(ArrayList<Line> lines, TransportTypes type, String lineNum){
+      boolean lineFound = displaySpecificLine(lines, type, lineNum);
+      if (!lineFound) {
+          JOptionPane.showMessageDialog(this, "No line found with the given number.",
+              "Line Not Found", JOptionPane.INFORMATION_MESSAGE);
+>>>>>>> src/main/java/fr/u_paris/gla/project/views/Gui.java
       }
-    }
-    mapViewer.repaint();
+  }
+
+  /**
+   * Adds the specific line to the map.
+   *
+   * @param      lines    The list of lines
+   * @param      type     The type
+   * @param      lineNum  The line number
+   *
+   * @return     Returns if the line was found
+   */
+  private boolean displaySpecificLine(ArrayList<Line> lines, TransportTypes type, String lineNum) {
+      cleanMap();
+
+      boolean lineFound = false;
+      
+      for (Line line : lines) {
+          if (line.getType() != type || !line.getName().equals(lineNum)) {
+              continue;
+          }
+          
+          lineFound = true;
+          Color lineColor = Color.decode("#" + line.getColor());
+          
+          for (Subline subline : line.getListOfSublines()) {
+              for (Stop stop : subline.getListOfStops()) {
+                  addMarker(stop.getLatitude(), stop.getLongitude(), null);
+              }
+              
+              for (int i = 0; i < subline.getListOfStops().size() - 1; i++) {
+                  Stop stop = subline.getListOfStops().get(i);
+                  Stop nextStop = subline.getListOfStops().get(i + 1);
+                  
+                  Coordinate start = new Coordinate(stop.getLatitude(), stop.getLongitude());
+                  Coordinate end = new Coordinate(nextStop.getLatitude(), nextStop.getLongitude());
+                  addPolygonLine(start, end, lineColor, false);
+              }
+          }
+          
+          // Center the map
+          mapViewer.setDisplayPosition(PARIS_CENTER, DEFAULT_ZOOM);
+          mapViewer.repaint();
+          break;
+      }
+      
+      return lineFound;
   }
 
   /**
@@ -1103,6 +1284,13 @@ public class Gui extends JFrame {
     });
   }
 
+  /**
+   * Makes a JPanel to display the schedules for a stop.
+   *
+   * @param      stop  The stop
+   *
+   * @return     The JPanel.
+   */
   public JPanel displayListOfStopDeparture(Stop stop) {
     textItineraryPanel.removeAll();
     HashMap<Subline, ArrayList<LocalTime>> departures = stop.getDepartures();
@@ -1169,6 +1357,9 @@ public class Gui extends JFrame {
     return pathPanel;
   }
 
+  /**
+   * Custom MapPolygon to make a line between two stops.
+   */
   public class ColoredMapPolygon extends MapPolygonImpl {
     private final Color color;
 
@@ -1182,17 +1373,42 @@ public class Gui extends JFrame {
       if (points == null || points.size() < 2) {
         return;
       }
+      
       Graphics2D g2d = (Graphics2D) g;
-      g2d.setColor(color); // Set the custom color
-      g2d.setStroke(new java.awt.BasicStroke(4)); // Optional: Set stroke thickness
-      for (int i = 1; i < points.size(); i++) {
-        Point p1 = points.get(i - 1);
-        Point p2 = points.get(i);
-        g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
-      }
+
+      Stroke originalStroke = g2d.getStroke();
+      Paint originalPaint = g2d.getPaint();
+      Color originalColor = g2d.getColor();
+      RenderingHints originalHints = g2d.getRenderingHints();
+
+      g2d.setColor(Color.BLACK);
+      g2d.setStroke( new BasicStroke(6.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+      drawLines(g2d, points);
+
+      g2d.setColor(color);
+      g2d.setStroke(new BasicStroke(5.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
+      drawLines(g2d, points);
+
+      g2d.setStroke(originalStroke);
+      g2d.setPaint(originalPaint);
+      g2d.setColor(originalColor);
+      g2d.setRenderingHints(originalHints);
     }
   }
 
+  // Helper function to draw a line between points
+  private void drawLines(Graphics2D g2d, java.util.List<Point> points) {
+    for (int i = 1; i < points.size(); i++) {
+      Point p1 = points.get(i - 1);
+      Point p2 = points.get(i);
+      g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
+    }
+  }
+
+
+  /**
+   * Custom MapPolygon to make a line between two stops, for walking.
+   */
   public class GrayDashedMapPolygon extends MapPolygonImpl {
     private static final Color GRAY_COLOR = Color.GRAY;
 
@@ -1206,14 +1422,25 @@ public class Gui extends JFrame {
         return;
       }
       Graphics2D g2d = (Graphics2D) g;
+
+      Stroke originalStroke = g2d.getStroke();
+      Paint originalPaint = g2d.getPaint();
+      Color originalColor = g2d.getColor();
+      RenderingHints originalHints = g2d.getRenderingHints();
+
       g2d.setColor(GRAY_COLOR); // Set the color to gray
       float[] dashPattern = { 10, 10 }; // Define dash pattern (10 pixels on, 10 pixels off)
-      g2d.setStroke(new java.awt.BasicStroke(4, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, dashPattern, 0));
+      g2d.setStroke( new BasicStroke(4, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, dashPattern, 0));
       for (int i = 1; i < points.size(); i++) {
         Point p1 = points.get(i - 1);
         Point p2 = points.get(i);
         g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
       }
+
+      g2d.setStroke(originalStroke);
+      g2d.setPaint(originalPaint);
+      g2d.setColor(originalColor);
+      g2d.setRenderingHints(originalHints);
     }
   }
 
@@ -1222,7 +1449,6 @@ public class Gui extends JFrame {
    */
   public void launch() {
     setVisible(true);
-    toggleFloatingWindow(); // Show the floating window
     requestFocusInWindow();
   }
 
@@ -1322,20 +1548,28 @@ public class Gui extends JFrame {
 
   }
 
-  public JCheckBox getBusLineCheckBox() {
-    return busLineCheckBox;
-  }
-
   public JButton getViewLineButton() {
     return viewLineButton;
   }
 
-  public JCheckBox getMetroLineCheckBox() {
-    return metroLineCheckBox;
-  }
-
   public JTextArea getnumLine() {
     return (JTextArea) numLine.getViewport().getView();
+  }
+
+  public JDialog getFloatingWindow() {
+    return floatingWindow;
+  }
+
+  public JComboBox<String> getLineTypeDropdown() {
+    return lineTypeDropdown;
+  }
+
+  public JComboBox<String> getComboBoxHours() {
+    return comboBoxHours;
+  }
+
+  public JComboBox<String> getComboBoxMinutes() {
+    return comboBoxMinutes;
   }
 
 }

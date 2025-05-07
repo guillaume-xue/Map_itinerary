@@ -19,6 +19,8 @@ import fr.u_paris.gla.project.astar.CostFunctionFactory;
 import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
+import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
+import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.utils.CSVExtractor;
 import fr.u_paris.gla.project.utils.Pair;
 import fr.u_paris.gla.project.utils.TransportTypes;
@@ -27,31 +29,38 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import fr.u_paris.gla.project.utils.Pair;
+import fr.u_paris.gla.project.utils.TransportTypes;
+
+import java.time.LocalTime;
+
 public class GUIController {
 
   private Gui gui;
   private Graph graph;
 
+  private boolean areStopsConnected = false;
+
   /**
    * Constructor for GUIController.
    * Initializes the GUI and sets up event listeners.
    */
-  public GUIController(String[] args) {
+  public GUIController(String[] args, Boolean isCSVCreate) {
     SwingUtilities.invokeLater(() -> {
-      // Create the main window
-      this.gui = new Gui();
+
+      if (isCSVCreate) {
+        IDFMNetworkExtractor.parse(args);
+      }
       // init Graph class
       this.graph = CSVExtractor.makeObjectsFromCSV(args);
-      //graph.connectStopsByWalking();
+      if (graph == null)
+        System.exit(0);
 
-      if (graph == null) System.exit(0);
-      
-      //This should not be called if the default maximum distance between Stops has not been changed, as it takes really long.
-      //graph.connectStopsByWalking();
-      
+      // Create the main window
+      this.gui = new Gui();
       // init Controllers
-      new KeyboardController(gui.getTextStart());
-      new KeyboardController(gui.getTextEnd());
+      new KeyboardController(gui.getTextStart(), gui.getTextEnd(), gui.getResearchButton());
+      new KeyboardController(gui.getnumLine());
       new MouseController(gui.getMapViewer(), gui.getTextStart(), gui.getTextEnd(), this.graph, this.gui);
       // init Listenners
       initFocusListenerToTextArea();
@@ -204,20 +213,6 @@ public class GUIController {
         gui.getDistCheckBox().setSelected(true);
       }
     });
-    gui.getBusLineCheckBox().addActionListener(e -> {
-      if (gui.getBusLineCheckBox().isSelected()) {
-        gui.getMetroLineCheckBox().setSelected(false);
-      } else {
-        gui.getMetroLineCheckBox().setSelected(true);
-      }
-    });
-    gui.getMetroLineCheckBox().addActionListener(e -> {
-      if (gui.getMetroLineCheckBox().isSelected()) {
-        gui.getBusLineCheckBox().setSelected(false);
-      } else {
-        gui.getBusLineCheckBox().setSelected(true);
-      }
-    });
   }
 
   /**
@@ -227,27 +222,20 @@ public class GUIController {
    */
   private void initActionListenner() {
     gui.getViewLineButton().addActionListener(e -> {
-      if (gui.getnumLine().getText().equals("Line number")) {
-        JOptionPane.showMessageDialog(this.gui, "Veuillez entrer un numéro de ligne.",
-            "Erreur",
-            JOptionPane.ERROR_MESSAGE);
-        return;
-      } else if (gui.getnumLine().getText().equals("")) {
-        JOptionPane.showMessageDialog(this.gui, "Veuillez entrer un numéro de ligne.",
-            "Erreur",
-            JOptionPane.ERROR_MESSAGE);
-        return;
-      }
-      String lineNumber = gui.getnumLine().getText();
-      if (gui.getBusLineCheckBox().isSelected()) {
-        gui.displayLine(graph.getListOfLines(), TransportTypes.Bus, lineNumber);
-      } else if (gui.getMetroLineCheckBox().isSelected()) {
-        gui.displayLine(graph.getListOfLines(), TransportTypes.Subway, lineNumber);
+      TransportTypes type = TransportTypes.valueOf(gui.getLineTypeDropdown().getSelectedItem().toString());
+
+      if (gui.isShowAllLinesSelected()){
+        gui.displayTransportType(graph.getListOfLines(), type);
       } else {
-        JOptionPane.showMessageDialog(this.gui, "Veuillez sélectionner une ligne de bus ou de métro.",
+        if ( gui.getnumLine().getText().equals("Line Number") || gui.getnumLine().getText().equals("") ){
+          JOptionPane.showMessageDialog(this.gui, "Veuillez entrer un numéro de ligne.",
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
-        return;
+          return;
+        }
+
+        String lineNumber = gui.getnumLine().getText();
+        gui.displayLine(graph.getListOfLines(), type, lineNumber);
       }
     });
 
@@ -277,6 +265,14 @@ public class GUIController {
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
         return;
+      } else if (gui.getComboBoxHours().getSelectedItem() == "Now"
+          && gui.getComboBoxMinutes().getSelectedItem() != "Now") {
+        JOptionPane.showMessageDialog(this.gui, "Veuillez choisir l'heure.", "Erreur", JOptionPane.ERROR_MESSAGE);
+        return;
+      } else if (gui.getComboBoxHours().getSelectedItem() != "Now"
+          && gui.getComboBoxMinutes().getSelectedItem() == "Now") {
+        JOptionPane.showMessageDialog(this.gui, "Veuillez choisir les minutes.", "Erreur", JOptionPane.ERROR_MESSAGE);
+        return;
       }
 
       // Choose the cost function based on the selected checkbox
@@ -304,13 +300,23 @@ public class GUIController {
       if (startCoordinates != null && endCoordinates != null) {
         try {
 
-          //Create and get Start and Finish Stops
-          MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(startCoordinates[0], startCoordinates[1], endCoordinates[0], endCoordinates[1]);
+          // Create and get Start and Finish Stops
+          MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(startCoordinates[0], startCoordinates[1],
+              endCoordinates[0], endCoordinates[1]);
 
-          LocalTime heureDepart = LocalTime.now();
+          LocalTime heureDepart;
+          if (gui.getComboBoxHours().getSelectedItem().toString().equals("Now") &&
+              gui.getComboBoxMinutes().getSelectedItem().toString().equals("Now")) {
+            heureDepart = LocalTime.now();
+          } else {
+            heureDepart = LocalTime.of(Integer.parseInt(gui.getComboBoxHours().getSelectedItem().toString()),
+                Integer.parseInt(gui.getComboBoxMinutes().getSelectedItem().toString()));
+          }
 
+          System.out.println("Recherche de trajet en cours...");
           // pour le nouveau format
-          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(startFinish.getLeft(), startFinish.getRight(), heureDepart);
+          ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(startFinish.getLeft(), startFinish.getRight(),
+              heureDepart);
 
           displayItinerary(itinerary);
 
@@ -384,24 +390,32 @@ public class GUIController {
    */
   private void initMenuBar() {
     // Add action listeners to toggle checkmark icons
-    JMenuItem busMenuItem = gui.getMenuItem(0, 0);
-    busMenuItem.addActionListener(e -> {
-      gui.toggleCheckmark(busMenuItem);
-      if (gui.isCheckmarkEnabled(busMenuItem)) {
-        gui.viewLine(graph, "Bus");
-      } else {
-        gui.cleanMap();
-      }
+    JMenuItem networkMenuItem = gui.getMenuItem(0, 0);
+    networkMenuItem.addActionListener(e -> {
+      gui.toggleCheckmark(networkMenuItem);
+      gui.toggleFloatingWindow(gui.isCheckmarkEnabled(networkMenuItem));
     });
-    JMenuItem metroMenuItem = gui.getMenuItem(0, 1);
-    metroMenuItem.addActionListener(e -> {
-      gui.toggleCheckmark(metroMenuItem);
-      if (gui.isCheckmarkEnabled(metroMenuItem)) {
-        gui.viewLine(graph, "Subway");
+
+    JMenuItem connectStopsMenuItem = gui.getMenuItem(1,0);
+    connectStopsMenuItem.addActionListener(e -> {
+      if ( !areStopsConnected ){
+        int confirm = JOptionPane.showConfirmDialog(
+        this.gui, 
+        "Attention option expérimentale. Connecter les stations entre-elles pour les trajets à pied\n" + 
+        " prend du temps et rend l'algorithme de recherche plus lent. Si vous confirmez l'action\n" + 
+        " garder un oeil sur le terminal pour savoir quand les connections ont fini d'être créées.\n"
+        ,"Confirmation requise"
+        , JOptionPane.YES_NO_OPTION);
+        if ( confirm == 0 ){
+          graph.connectStopsByWalkingV2();
+          this.areStopsConnected = true;
+        } 
       } else {
-        gui.cleanMap();
+        JOptionPane.showMessageDialog(this.gui, "Stations déjà connectées. Relancer l'application pour enlever cette option.",
+            "Info",
+            JOptionPane.ERROR_MESSAGE);
       }
-    });
+    }); 
   }
 
   public void launch() {

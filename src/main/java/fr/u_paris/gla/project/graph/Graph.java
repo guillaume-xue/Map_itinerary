@@ -2,6 +2,7 @@ package fr.u_paris.gla.project.graph;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collections;
 
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -10,7 +11,8 @@ import static fr.u_paris.gla.project.io.UpgradedNetworkFormat.WALK_AVG_SPEED;
 
 public class Graph {
     //constante pour la ligne de marche
-    public static double MAX_DISTANCE_WALKABLE = 0.200;
+    public static double MAX_DISTANCE_WALKABLE = 0.1;
+    public static double MAX_DISTANCE_WALKABLE_START_FINISH = 0.700;
     public static final Line WALK_LINE = new Line("IDWALK", "Marche a pied", "Walk", "808080");
     private ArrayList<Stop> listOfStops = new ArrayList<>();
     
@@ -22,7 +24,7 @@ public class Graph {
         this.listOfStops = listOfStops;
     }
 
-    public Stop getStop(double longitude, double latitude) throws Exception{
+    public Stop getStop(double latitude, double longitude) throws Exception{
         for(Stop st : listOfStops){
             if(st.getLongitude() == longitude && st.getLatitude() == latitude){
                 return st;
@@ -31,20 +33,20 @@ public class Graph {
         throw new Exception(String.format("Stop was not found at coordinates x = %f, y = %f", longitude, latitude));
     }
 
-    public Stop getClosestStop(double longitude, double latitude) throws Exception{
+    public Stop getClosestStop(double latitude, double longitude) throws Exception{
 
         if(listOfStops.isEmpty()){
             throw new Exception("The list of stops is empty");
         }
 
-        listOfStops.sort((Stop a, Stop b) -> a.calculateDistance(longitude, latitude).compareTo(b.calculateDistance(longitude, latitude)));
+        listOfStops.sort((Stop a, Stop b) -> a.calculateDistance(latitude, longitude).compareTo(b.calculateDistance(latitude, longitude)));
 
-        System.out.println(
-            String.format(
-                "Closest Stop found = %s ", 
-                listOfStops.get(0).toString() 
-            )
-        );
+        // System.out.println(
+        //     String.format(
+        //         "Closest Stop found = %s ", 
+        //         listOfStops.get(0).toString() 
+        //     )
+        // );
         return listOfStops.get(0);
     }
 
@@ -54,13 +56,12 @@ public class Graph {
      * Previous StartStop and FinishStops will be removed from the listOfStops, but their connections will not be severed (seen comments in Graph.connectStopsByWalking() )
      * Return a MutablePair<Stop, Stop>, with MutablePair.left <- startStop, MutablePair.right <- finishStop
      */
-
-    public MutablePair<Stop, Stop> addStartAndFinish(double longitudeS, double latitudeS, double longitudeF, double latitudeF) throws Exception{
+    public MutablePair<Stop, Stop> addStartAndFinish(double latitudeS, double longitudeS, double latitudeF, double longitudeF) throws Exception{
         if(listOfStops.isEmpty()){
             throw new Exception("The graph is empty");
         }
-        Stop startStop = new Stop(longitudeS, latitudeS, "StartPoint");
-        Stop finishStop = new Stop(longitudeF, latitudeF, "FinishPoint");
+        Stop startStop = new Stop(latitudeS, longitudeS, "StartPoint");
+        Stop finishStop = new Stop(latitudeF, longitudeF, "FinishPoint");
 
         double distance;
 
@@ -70,11 +71,11 @@ public class Graph {
             //Remove previous startPoints that may have been generated.
             {
                 distance = startStop.calculateDistance(e);
-                if (distance < MAX_DISTANCE_WALKABLE * 1.33) {
+                if (distance < MAX_DISTANCE_WALKABLE_START_FINISH) {
                     startStop.addAdjacentStop(e, "Walk", calculateWalkingTime(distance), (float) distance);
                 }
                 distance = finishStop.calculateDistance(e);
-                if (distance < MAX_DISTANCE_WALKABLE * 1.33) {
+                if (distance < MAX_DISTANCE_WALKABLE_START_FINISH) {
                     e.addAdjacentStop(finishStop, "Walk", calculateWalkingTime(distance), (float) distance);
                 }
             }   
@@ -152,6 +153,31 @@ public class Graph {
             }
         }
         System.out.println("\nFinished connecting all nodes by walking");
+    }
+    
+    /**
+     * nlog(n) version of connectStopsByWalking ( uses a 2DTree )
+     */
+    public void connectStopsByWalkingV2(){
+        System.out.println("Connecting all nodes, max distance: " + MAX_DISTANCE_WALKABLE + "km");
+
+        TwoDTree tree = new TwoDTree(this.listOfStops);
+
+        for (Stop source : listOfStops){
+            // Instead of parsing every stop with every other stop we search the radius in the 2Dtree
+            List<Stop> nearbyStops = tree.radiusSearch(source.getLatitude(), source.getLongitude(), MAX_DISTANCE_WALKABLE);
+
+            for ( Stop target : nearbyStops ){
+                if ( !source.equals(target) && !source.hasAdjacentStop(target) ){
+                    double distance = source.calculateDistance(target);
+                    Duration duration = calculateWalkingTime(distance);
+                    source.addAdjacentStop(target, "Walk", duration, (float) distance);
+                    target.addAdjacentStop(source, "Walk", duration, (float) distance);
+                }
+            }
+        }
+
+        System.out.println("Finished connecting.");
     }
 
     private Duration calculateWalkingTime(double distance){
