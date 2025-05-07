@@ -52,8 +52,6 @@ public class GUIController {
       if (graph == null)
         System.exit(0);
 
-      //graph.connectStopsByWalkingV2();
-
       // Create the main window
       this.gui = new Gui();
       // init Controllers
@@ -220,22 +218,21 @@ public class GUIController {
    */
   private void initActionListenner() {
     gui.getViewLineButton().addActionListener(e -> {
-      if (gui.getnumLine().getText().equals("Line number")) {
-        JOptionPane.showMessageDialog(this.gui, "Veuillez entrer un numéro de ligne.",
-            "Erreur",
-            JOptionPane.ERROR_MESSAGE);
-        return;
-      } else if (gui.getnumLine().getText().equals("")) {
-        JOptionPane.showMessageDialog(this.gui, "Veuillez entrer un numéro de ligne.",
-            "Erreur",
-            JOptionPane.ERROR_MESSAGE);
-        return;
-      }
-
-      String lineNumber = gui.getnumLine().getText();
       TransportTypes type = TransportTypes.valueOf(gui.getLineTypeDropdown().getSelectedItem().toString());
-      gui.displayLine(graph.getListOfLines(), type, lineNumber);
 
+      if (gui.isShowAllLinesSelected()){
+        gui.displayTransportType(graph.getListOfLines(), type);
+      } else {
+        if ( gui.getnumLine().getText().equals("Line Number") || gui.getnumLine().getText().equals("") ){
+          JOptionPane.showMessageDialog(this.gui, "Veuillez entrer un numéro de ligne.",
+            "Erreur",
+            JOptionPane.ERROR_MESSAGE);
+          return;
+        }
+
+        String lineNumber = gui.getnumLine().getText();
+        gui.displayLine(graph.getListOfLines(), type, lineNumber);
+      }
     });
 
     gui.getResearchButton().addActionListener(e -> {
@@ -376,28 +373,10 @@ public class GUIController {
    */
   private void initMenuBar() {
     // Add action listeners to toggle checkmark icons
-    JMenuItem busMenuItem = gui.getMenuItem(0, 0);
-    busMenuItem.addActionListener(e -> {
-      gui.toggleCheckmark(busMenuItem);
-      if (gui.isCheckmarkEnabled(busMenuItem)) {
-        gui.viewLine(graph, "Bus");
-      } else {
-        gui.cleanMap();
-      }
-    });
-    JMenuItem metroMenuItem = gui.getMenuItem(0, 1);
-    metroMenuItem.addActionListener(e -> {
-      gui.toggleCheckmark(metroMenuItem);
-      if (gui.isCheckmarkEnabled(metroMenuItem)) {
-        gui.viewLine(graph, "Subway");
-      } else {
-        gui.cleanMap();
-      }
-    });
-    JMenuItem lineMenuItem = gui.getMenuItem(0, 3);
-    lineMenuItem.addActionListener(e -> {
-      gui.toggleCheckmark(lineMenuItem);
-      gui.toggleFloatingWindow(gui.isCheckmarkEnabled(lineMenuItem));
+    JMenuItem networkMenuItem = gui.getMenuItem(0, 0);
+    networkMenuItem.addActionListener(e -> {
+      gui.toggleCheckmark(networkMenuItem);
+      gui.toggleFloatingWindow(gui.isCheckmarkEnabled(networkMenuItem));
     });
 
     JMenuItem connectStopsMenuItem = gui.getMenuItem(1,0);

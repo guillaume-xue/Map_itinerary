@@ -16,11 +16,14 @@ public class StopEntry implements Comparable<StopEntry> {
     public final double longitude;
     public final double latitude;
 
-    /** Create the stop
-     * 
-     * @param lname
-     * @param longitude
-     * @param latitude */
+    /**
+     * Constructs a new StopEntry instance.
+     *
+     * @param      stopName   The stop name
+     * @param      stopId     The stop identifier
+     * @param      longitude  The longitude
+     * @param      latitude   The latitude
+     */
     public StopEntry(String stopName, String stopId, double longitude, double latitude) {
         super();
         this.stopName = stopName;

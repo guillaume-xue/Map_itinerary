@@ -122,7 +122,7 @@ public class TestAStar {
             Files.createDirectories(outputPath.getParent());
             Files.write(outputPath, resultLines);
 
-            System.out.println("Efficiency test completed. Results written to " + outputPath);
+            //System.out.println("Efficiency test completed. Results written to " + outputPath);
 
         } catch (Exception e) {
             e.printStackTrace();

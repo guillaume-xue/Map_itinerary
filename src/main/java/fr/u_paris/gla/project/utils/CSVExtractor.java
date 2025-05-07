@@ -324,7 +324,7 @@ public final class CSVExtractor {
         // La liste de stations finale à ajouter à la subline
         ArrayList<Stop> listOfStops = buildPotentialLine(stops, listOfStopsEntry, ligne, line[JunctionsFormat.VARIANT_INDEX]);
         if ( listOfStops.isEmpty() ){
-            LOGGER.warning("Suppression de la sous-ligne");
+            //LOGGER.warning("Suppression de la sous-ligne");
             return;
         }
 
@@ -371,7 +371,7 @@ public final class CSVExtractor {
             }
         }
 
-        LOGGER.warning("Pas de chemin potentiel trouvé pour la sous-ligne " + ligne + ", variant " + variant + "\n" );
+        //LOGGER.warning("Pas de chemin potentiel trouvé pour la sous-ligne " + ligne + ", variant " + variant + "\n" );
         return new ArrayList<>();
     }
 
@@ -457,7 +457,6 @@ public final class CSVExtractor {
                 + "\nExpected: " + expectedTerminus + " | Found: " + actualTerminus );
                 return;
             }
-
 
             try{
                 Stop departureStop = stops.get(0);
