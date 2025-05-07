@@ -14,8 +14,10 @@ import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Paint;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +32,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -54,21 +57,7 @@ import org.openstreetmap.gui.jmapviewer.MapPolygonImpl;
 import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
-<<<<<<< src/main/java/fr/u_paris/gla/project/views/Gui.java
-=======
-import java.awt.*;
-import java.time.LocalTime;
-
-import javax.swing.*;
-import javax.swing.border.AbstractBorder;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
->>>>>>> src/main/java/fr/u_paris/gla/project/views/Gui.java
 import fr.u_paris.gla.project.astar.SegmentItineraire;
-import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Line;
 import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.graph.Subline;
@@ -680,7 +669,6 @@ public class Gui extends JFrame {
     return pathPanel;
   }
 
-<<<<<<< src/main/java/fr/u_paris/gla/project/views/Gui.java
   public class SolidColoredLine extends JPanel {
     private final Color color;
 
@@ -851,7 +839,7 @@ public class Gui extends JFrame {
     }
   }
 
-  private String getResourcePathForTransportTypeIcones(TransportTypes tty) throws Error{
+  private String getResourcePathForTransportTypeIcones (TransportTypes tty) throws Error {
     String ret = "src/main/resources-filtered/fr/u_paris/gla/project";
     //Rail, Subway, Bus, Tram, Walk, Funicular
     switch (tty) {
@@ -1171,35 +1159,6 @@ public class Gui extends JFrame {
   }
   
 
-  public void displayLine(ArrayList<Line> lines, TransportTypes type, String lineNum) {
-    mapViewer.removeAllMapMarkers();
-    mapViewer.removeAllMapPolygons();
-    for (Line line : lines) {
-      if (line.getType() != type || !line.getName().equals(lineNum)) {
-        continue;
-      } else {
-        for (Subline subline : line.getListOfSublines()) {
-          for (Stop stop : subline.getListOfStops()) {
-            Coordinate coord = new Coordinate(stop.getLongitude(), stop.getLatitude());
-            MapMarkerDot marker = new MapMarkerDot(coord);
-            mapViewer.addMapMarker(marker);
-          }
-          for (Stop stop : subline.getListOfStops()) {
-            for (Stop adjacentStop : stop.getAdjacentStops()) {
-              if (subline.getListOfStops().contains(adjacentStop)) {
-                Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
-                Coordinate mEnd = new Coordinate(adjacentStop.getLongitude(), adjacentStop.getLatitude());
-                String color = "#" + line.getColor();
-                MapPolygon mLine = new ColoredMapPolygon(mStart, mEnd, mEnd, Color.decode(color));
-                mapViewer.addMapPolygon(mLine);
-              }
-            }
-          }
-        }
-        mapViewer.setDisplayPosition(new Coordinate(48.8566, 2.3522), 10);
-        mapViewer.repaint();
-        break;
-=======
   /**
    * Calls the displaySpecificLine to display one line on the map.
    *
@@ -1212,7 +1171,7 @@ public class Gui extends JFrame {
       if (!lineFound) {
           JOptionPane.showMessageDialog(this, "No line found with the given number.",
               "Line Not Found", JOptionPane.INFORMATION_MESSAGE);
->>>>>>> src/main/java/fr/u_paris/gla/project/views/Gui.java
+
       }
   }
 
@@ -1573,3 +1532,5 @@ public class Gui extends JFrame {
   }
 
 }
+    
+    
