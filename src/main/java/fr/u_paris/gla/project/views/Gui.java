@@ -15,6 +15,7 @@ import javax.swing.border.AbstractBorder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.graph.Graph;
@@ -23,6 +24,7 @@ import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.graph.Subline;
 import fr.u_paris.gla.project.utils.TransportTypes;
 
+
 public class Gui extends JFrame {
 
   private static final int SCREEN_WIDTH = 900;
@@ -30,6 +32,9 @@ public class Gui extends JFrame {
   private static final int RESEARCH_PANEL_WIDTH = 350;
   private static final int MIN_SCREEN_WIDTH = 600;
   private static final int MIN_SCREEN_HEIGHT = 300;
+  private static final Coordinate PARIS_CENTER = new Coordinate(48.8566, 2.3522);
+  private static final int DEFAULT_ZOOM = 10;
+
   private JScrollPane textStart;
   private JScrollPane textEnd;
   private JPanel contentPanel;
@@ -38,6 +43,7 @@ public class Gui extends JFrame {
   private JButton researchButton;
   private JCheckBox distCheckBox;
   private JCheckBox timeCheckBox;
+  private JCheckBox showAllLinesCheckBox;
   private JScrollPane numLine;
   private JComboBox<String> comboBoxHours;
   private JComboBox<String> comboBoxMinutes;
@@ -69,12 +75,7 @@ public class Gui extends JFrame {
     // Create a menu bar
     JMenuBar menuBar = new JMenuBar();
     JMenu viewMenu = new JMenu("View");
-    JMenuItem busMenu = new JMenuItem("Bus");
-    JMenuItem metroMenu = new JMenuItem("Metro");
-    JMenuItem floatingWindowMenu = new JMenuItem("Line");
-    viewMenu.add(busMenu);
-    viewMenu.add(metroMenu);
-    viewMenu.addSeparator();
+    JMenuItem floatingWindowMenu = new JMenuItem("Network");
     viewMenu.add(floatingWindowMenu);
     menuBar.add(viewMenu);
 
@@ -194,9 +195,13 @@ public class Gui extends JFrame {
     add(mainContentPanel);
   }
 
+  public boolean isShowAllLinesSelected() {
+      return showAllLinesCheckBox != null && showAllLinesCheckBox.isSelected();
+  }
+
   private void createFloatingWindow() {
     floatingWindow = new JDialog(this, "Floating Window", false);
-    floatingWindow.setSize(200, 150);
+    floatingWindow.setSize(200, 200);
     floatingWindow.setLocationRelativeTo(this);
     floatingWindow.setUndecorated(true); // Enlever la barre de titre et de fermeture
     floatingWindow.setAlwaysOnTop(false); // Toujours au-dessus de la fenêtre principale
@@ -208,7 +213,7 @@ public class Gui extends JFrame {
     panel.setBackground(primaryBackgroundColor);
 
     JPanel titlePanel = new JPanel();
-    JLabel label = new JLabel("Display Line");
+    JLabel label = new JLabel("Display Network");
     titlePanel.add(label);
 
     // Set the textArea for the line number
@@ -240,6 +245,12 @@ public class Gui extends JFrame {
     lineTypeDropdown.setFocusable(false);
     comboBox.add(lineTypeDropdown);
 
+    JPanel checkBoxPanel = new JPanel();
+    showAllLinesCheckBox = new JCheckBox("Show all lines");
+    showAllLinesCheckBox.setBackground(primaryBackgroundColor);
+    showAllLinesCheckBox.setForeground(textColor);
+    checkBoxPanel.add(showAllLinesCheckBox);
+
     // Create a button to view the line
     this.viewLineButton = new JButton("View Line");
     JPanel buttonPanel = new JPanel();
@@ -248,6 +259,7 @@ public class Gui extends JFrame {
     panel.add(titlePanel);
     panel.add(textPanel);
     panel.add(comboBox);
+    panel.add(checkBoxPanel);
     panel.add(buttonPanel);
     this.floatingWindow.add(panel, BorderLayout.CENTER);
 
@@ -260,6 +272,18 @@ public class Gui extends JFrame {
             mainWindowLocation.y + (Gui.this.getHeight() - floatingWindow.getHeight() - 50));
       }
     });
+
+    showAllLinesCheckBox.addActionListener(e -> {
+        boolean showAll = showAllLinesCheckBox.isSelected();
+        textArea.setEnabled(!showAll);
+        numLine.setEnabled(!showAll);
+        if (showAll) {
+            textArea.setBackground(new Color(220, 220, 220));
+        } else {
+            textArea.setBackground(primaryBackgroundColor);
+        }
+    });
+
   }
 
   public void toggleFloatingWindow(boolean visible) {
@@ -408,48 +432,75 @@ public class Gui extends JFrame {
   }
 
   /**
-   * Displays all bus stops on the map.
-   * 
-   * @param graph the graph containing the bus stops
+   * Adds a marker to the map.
+   *
+   * @param      latitude   The latitude
+   * @param      longitude  The longitude
+   * @param      color      The color
    */
-  public void viewLine(Graph graph, String type) {
-    mapViewer.removeAllMapMarkers();
-    mapViewer.removeAllMapPolygons();
-    ArrayList<Line> tmpLine = new ArrayList<>();
-    ArrayList<Subline> tmpLineSub = new ArrayList<>();
-    ArrayList<Stop> tmpLineStop = new ArrayList<>();
-    for (Line line : graph.getListOfLines()) {
-      if (tmpLine.contains(line) || line.getType() != TransportTypes.valueOf(type)) {
-        continue;
-      }
-      tmpLine.add(line);
-      for (Subline subline : line.getListOfSublines()) {
-        if (tmpLineSub.contains(subline)) {
-          continue;
-        }
-        for (Stop stop : subline.getListOfStops()) {
-          if (tmpLineStop.contains(stop)) {
-            continue;
+  private void addMarker(double latitude, double longitude, Color color){
+    MapMarkerDot marker;
+
+    if (color != null) {
+        marker = new MapMarkerDot(color, latitude, longitude);
+        marker.setBackColor(color);
+    } else {
+        marker = new MapMarkerDot(latitude, longitude);
+    }
+    
+    mapViewer.addMapMarker(marker);
+  }
+
+  /**
+   * Displays the specific transport type on the map with all their lines.
+   *
+   * @param      lines  The list of lines of the graph
+   * @param      type   The type to display
+   */
+  public void displayTransportType(ArrayList<Line> lines, TransportTypes type) {
+      cleanMap();
+
+      for (Line line : lines) {
+          if (line.getType() != type) {
+              continue;
           }
-          tmpLineStop.add(stop);
-          Coordinate coord = new Coordinate(stop.getLatitude(), stop.getLongitude());
-          MapMarkerDot marker = new MapMarkerDot(coord);
-          mapViewer.addMapMarker(marker);
-        }
+          
+          Color lineColor = Color.decode("#" + line.getColor());
+          
+          for (Subline subline : line.getListOfSublines()) {
+              for (int i = 0; i < subline.getListOfStops().size() - 1; i++) {
+                  Stop stop = subline.getListOfStops().get(i);
+                  Stop nextStop = subline.getListOfStops().get(i + 1);
+                  
+                  Coordinate start = new Coordinate(stop.getLatitude(), stop.getLongitude());
+                  Coordinate end = new Coordinate(nextStop.getLatitude(), nextStop.getLongitude());
+                  addPolygonLine(start, end, lineColor, false);
+              }
+          }
       }
+      
+      mapViewer.setDisplayPosition(new Coordinate(48.8566, 2.3522), 10);
+      mapViewer.repaint();
+  }
+
+  /**
+   * Adds a polygon line to link stops.
+   *
+   * @param      start   The start coordinates
+   * @param      end     The end coordinates
+   * @param      color   The color
+   * @param      isDash  isDash for walking
+   */
+  private void addPolygonLine(Coordinate start, Coordinate end, Color color, boolean isDash){
+    MapPolygon line;
+    if (isDash) {
+        line = new GrayDashedMapPolygon(start, end, start);
+    } else if (color != null) {
+        line = new ColoredMapPolygon(start, end, start, color);
+    } else {
+        line = new ColoredMapPolygon(start, end, start, Color.BLACK);
     }
-    for (Stop stop : tmpLineStop) {
-      for (Stop adjacentStop : stop.getAdjacentStops()) {
-        if (tmpLineStop.contains(adjacentStop)) {
-          Coordinate mStart = new Coordinate(stop.getLatitude(), stop.getLongitude());
-          Coordinate mEnd = new Coordinate(adjacentStop.getLatitude(), adjacentStop.getLongitude());
-          MapPolygon mLine = new MapPolygonImpl(mStart, mEnd, mStart);
-          mapViewer.addMapPolygon(mLine);
-        }
-      }
-    }
-    mapViewer.setDisplayPosition(new Coordinate(48.8566, 2.3522), 10);
-    mapViewer.repaint();
+    mapViewer.addMapPolygon(line);
   }
 
   /**
@@ -468,8 +519,7 @@ public class Gui extends JFrame {
    */
   public JPanel displayPath(ArrayList<SegmentItineraire> segments) {
     // Clear the map and content panel before displaying new paths
-    mapViewer.removeAllMapMarkers();
-    mapViewer.removeAllMapPolygons();
+    cleanMap();
 
     // Clear the content panel
     contentPanel.removeAll();
@@ -562,44 +612,65 @@ public class Gui extends JFrame {
     return pathPanel;
   }
 
-  public void displayLine(ArrayList<Line> lines, TransportTypes type, String lineNum) {
-    mapViewer.removeAllMapMarkers();
-    mapViewer.removeAllMapPolygons();
-    for (Line line : lines) {
-      if (line.getType() != type || !line.getName().equals(lineNum)) {
-        continue;
-      } else {
-        for (Subline subline : line.getListOfSublines()) {
-          for (Stop stop : subline.getListOfStops()) {
-            Coordinate coord = new Coordinate(stop.getLatitude(), stop.getLongitude());
-            MapMarkerDot marker = new MapMarkerDot(coord);
-            mapViewer.addMapMarker(marker);
-          }
-          for (Stop stop : subline.getListOfStops()) {
-            for (Stop adjacentStop : stop.getAdjacentStops()) {
-              if (subline.getListOfStops().contains(adjacentStop)) {
-                Coordinate mStart = new Coordinate(stop.getLatitude(), stop.getLongitude());
-                Coordinate mEnd = new Coordinate(adjacentStop.getLatitude(), adjacentStop.getLongitude());
-                String color = "#" + line.getColor();
-                MapPolygon mLine = new ColoredMapPolygon(mStart, mEnd, mEnd, Color.decode(color));
-                mapViewer.addMapPolygon(mLine);
-              }
-            }
-          }
-        }
-        mapViewer.setDisplayPosition(new Coordinate(48.8566, 2.3522), 10);
-        mapViewer.repaint();
-        break;
+  /**
+   * Calls the displaySpecificLine to display one line on the map.
+   *
+   * @param      lines    The list of lines
+   * @param      type     The type
+   * @param      lineNum  The line number
+   */
+  public void displayLine(ArrayList<Line> lines, TransportTypes type, String lineNum){
+      boolean lineFound = displaySpecificLine(lines, type, lineNum);
+      if (!lineFound) {
+          JOptionPane.showMessageDialog(this, "No line found with the given number.",
+              "Line Not Found", JOptionPane.INFORMATION_MESSAGE);
       }
-    }
-    if (mapViewer.getComponentCount() == 0) {
-      JOptionPane.showMessageDialog(this, "No line found with the given number.",
-          "Line Not Found", JOptionPane.INFORMATION_MESSAGE);
-      mapViewer.removeAllMapMarkers();
-      mapViewer.removeAllMapPolygons();
-      mapViewer.repaint();
-    }
-    mapViewer.repaint();
+  }
+
+  /**
+   * Adds the specific line to the map.
+   *
+   * @param      lines    The list of lines
+   * @param      type     The type
+   * @param      lineNum  The line number
+   *
+   * @return     Returns if the line was found
+   */
+  private boolean displaySpecificLine(ArrayList<Line> lines, TransportTypes type, String lineNum) {
+      cleanMap();
+
+      boolean lineFound = false;
+      
+      for (Line line : lines) {
+          if (line.getType() != type || !line.getName().equals(lineNum)) {
+              continue;
+          }
+          
+          lineFound = true;
+          Color lineColor = Color.decode("#" + line.getColor());
+          
+          for (Subline subline : line.getListOfSublines()) {
+              for (Stop stop : subline.getListOfStops()) {
+                  addMarker(stop.getLatitude(), stop.getLongitude(), null);
+              }
+              
+              for (int i = 0; i < subline.getListOfStops().size() - 1; i++) {
+                  Stop stop = subline.getListOfStops().get(i);
+                  Stop nextStop = subline.getListOfStops().get(i + 1);
+                  
+                  Coordinate start = new Coordinate(stop.getLatitude(), stop.getLongitude());
+                  Coordinate end = new Coordinate(nextStop.getLatitude(), nextStop.getLongitude());
+                  addPolygonLine(start, end, lineColor, false);
+              }
+          }
+          
+          // Center the map
+          mapViewer.setDisplayPosition(PARIS_CENTER, DEFAULT_ZOOM);
+          mapViewer.repaint();
+          break;
+      }
+      
+      return lineFound;
   }
 
   /**
@@ -624,6 +695,13 @@ public class Gui extends JFrame {
     });
   }
 
+  /**
+   * Makes a JPanel to display the schedules for a stop.
+   *
+   * @param      stop  The stop
+   *
+   * @return     The JPanel.
+   */
   public JPanel displayListOfStopDeparture(Stop stop) {
     HashMap<Subline, ArrayList<LocalTime>> departures = stop.getDepartures();
     JPanel pathPanel = new JPanel();
@@ -683,6 +761,9 @@ public class Gui extends JFrame {
     return pathPanel;
   }
 
+  /**
+   * Custom MapPolygon to make a line between two stops.
+   */
   public class ColoredMapPolygon extends MapPolygonImpl {
     private final Color color;
 
@@ -704,26 +785,12 @@ public class Gui extends JFrame {
       Color originalColor = g2d.getColor();
       RenderingHints originalHints = g2d.getRenderingHints();
 
-      float borderWidth = 6.0f;
-      Stroke borderStroke = new BasicStroke(
-          borderWidth,       
-          BasicStroke.CAP_BUTT,
-          BasicStroke.JOIN_ROUND // pour une jointure smooth
-      );
-
-      float mainWidth = 5.0f;
-      Stroke mainStroke = new BasicStroke(
-          mainWidth,
-          BasicStroke.CAP_BUTT,
-          BasicStroke.JOIN_ROUND
-      );
-
       g2d.setColor(Color.BLACK);
-      g2d.setStroke(borderStroke);
+      g2d.setStroke( new BasicStroke(6.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
       drawLines(g2d, points);
 
       g2d.setColor(color);
-      g2d.setStroke(mainStroke);
+      g2d.setStroke(new BasicStroke(5.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
       drawLines(g2d, points);
 
       g2d.setStroke(originalStroke);
@@ -743,6 +810,9 @@ public class Gui extends JFrame {
   }
 
 
+  /**
+   * Custom MapPolygon to make a line between two stops, for walking.
+   */
   public class GrayDashedMapPolygon extends MapPolygonImpl {
     private static final Color GRAY_COLOR = Color.GRAY;
 
@@ -764,7 +834,7 @@ public class Gui extends JFrame {
 
       g2d.setColor(GRAY_COLOR); // Set the color to gray
       float[] dashPattern = { 10, 10 }; // Define dash pattern (10 pixels on, 10 pixels off)
-      g2d.setStroke(new java.awt.BasicStroke(4, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, dashPattern, 0));
+      g2d.setStroke( new BasicStroke(4, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, dashPattern, 0));
       for (int i = 1; i < points.size(); i++) {
         Point p1 = points.get(i - 1);
         Point p2 = points.get(i);
