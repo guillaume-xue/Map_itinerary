@@ -1,5 +1,52 @@
 package fr.u_paris.gla.project.views;
 
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.WindowConstants;
+import javax.swing.border.AbstractBorder;
+
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
@@ -7,6 +54,8 @@ import org.openstreetmap.gui.jmapviewer.MapPolygonImpl;
 import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 import org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource;
 
+<<<<<<< src/main/java/fr/u_paris/gla/project/views/Gui.java
+=======
 import java.awt.*;
 import java.time.LocalTime;
 
@@ -17,12 +66,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+>>>>>>> src/main/java/fr/u_paris/gla/project/views/Gui.java
 import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Line;
 import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.graph.Subline;
 import fr.u_paris.gla.project.utils.TransportTypes;
+import fr.u_paris.gla.project.views.Gui.ColoredMapPolygon;
+import fr.u_paris.gla.project.views.Gui.GrayDashedMapPolygon;
 
 
 public class Gui extends JFrame {
@@ -38,6 +90,8 @@ public class Gui extends JFrame {
   private JScrollPane textStart;
   private JScrollPane textEnd;
   private JPanel contentPanel;
+  private JPanel textItineraryPanel;
+  private JScrollPane textItineraryScrollPane;
   private JScrollPane contentScrollPane;
   private JMapViewer mapViewer;
   private JButton researchButton;
@@ -114,6 +168,13 @@ public class Gui extends JFrame {
     contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
     contentPanel.setBackground(primaryBackgroundColor);
 
+    //Create zone to show textual itinerary
+    textItineraryPanel = new JPanel();
+    textItineraryPanel.setLayout(new BoxLayout(textItineraryPanel, BoxLayout.Y_AXIS));
+    textItineraryPanel.setBackground(primaryBackgroundColor);
+
+
+
     // Create checkboxes for choosing the best route by distance or time
     JLabel label = new JLabel("Best route by : ");
     this.distCheckBox = new JCheckBox("Distance");
@@ -174,8 +235,15 @@ public class Gui extends JFrame {
     // Add the research panel to a scroll pane
     contentScrollPane = new JScrollPane(contentPanel);
     contentScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-    contentScrollPane.getVerticalScrollBar().setUnitIncrement(16); // Smoother
-                                                                   // scrolling
+    contentScrollPane.getVerticalScrollBar().setUnitIncrement(16); // Smoother scrolling
+
+
+    textItineraryScrollPane = new JScrollPane(textItineraryPanel);
+    textItineraryScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+    textItineraryScrollPane.getVerticalScrollBar().setUnitIncrement(16); // Smoother scrolling
+
+
+
 
     // Create a split pane to separate the research panel and the content panel
     JSplitPane splitPane = new JSplitPane(
@@ -184,7 +252,7 @@ public class Gui extends JFrame {
     splitPane.setEnabled(false);
 
     splitPane.add(researchPanel, JSplitPane.TOP);
-    splitPane.add(contentScrollPane, JSplitPane.BOTTOM);
+    splitPane.add(textItineraryScrollPane, JSplitPane.BOTTOM);
 
     // Add the split pane and the map panel to the main content panel
     JPanel mainContentPanel = new JPanel();
@@ -612,6 +680,526 @@ public class Gui extends JFrame {
     return pathPanel;
   }
 
+<<<<<<< src/main/java/fr/u_paris/gla/project/views/Gui.java
+  public class SolidColoredLine extends JPanel {
+    private final Color color;
+
+
+    public SolidColoredLine(Color color) {
+      super();
+      this.color = color;
+      this.setBackground(Color.WHITE);
+      this.setOpaque(true);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+      super.paintComponent(g);
+
+      Graphics2D g2d = (Graphics2D) g;
+
+      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+
+      int width = getWidth();
+      int height = getHeight();
+
+
+      int middleX = width / 2;
+
+
+      g2d.setColor(color);
+      g2d.setStroke(new BasicStroke(4)); 
+      g2d.drawLine(middleX, 0, middleX, height);
+    }
+  }
+  public class DashedColoredLine extends JPanel {
+    private final Color color;
+
+
+    public DashedColoredLine(Color color) {
+      super();
+      this.color = color;
+      this.setBackground(Color.WHITE);
+      this.setOpaque(true);
+    }
+    
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        Graphics2D g2d = (Graphics2D) g.create();
+
+        // Calculate dynamic dash size based on height
+        int panelHeight = getHeight();
+        float dashLength = Math.max(2f, panelHeight / 50f); // 2% of height or minimum 2px
+        float gapLength = dashLength; // Make dashes and gaps equal
+
+        // Create dynamic dash pattern
+        float[] dashPattern = {dashLength, gapLength};
+
+        // Set stroke with dynamic dash
+        g2d.setStroke(new BasicStroke(
+            2f,                      // Line thickness
+            BasicStroke.CAP_BUTT, 
+            BasicStroke.JOIN_MITER, 
+            10f,                     // Miter limit
+            dashPattern,            // Dash pattern
+            0f                      // Dash phase
+        ));
+
+        g2d.setColor(color);
+
+        // Draw vertical dashed line down the center
+        int x = getWidth() / 2;
+        g2d.drawLine(x, 0, x, getHeight());
+
+        g2d.dispose();
+    }
+  }
+
+
+  public class SolidDownwardsArrow extends JPanel {
+    private final Color color;
+
+    public SolidDownwardsArrow(Color color) {
+      super();
+      this.color = color;
+      this.setBackground(Color.WHITE);
+      this.setOpaque(true);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        
+
+        Graphics2D g2d = (Graphics2D) g;
+
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        int width = getWidth();
+        int height = getHeight();
+
+        int[] xPoints = { width / 2, width, 0 };
+        int[] yPoints = { height, 0, 0 };
+
+        g2d.setColor(color);
+        g2d.fillPolygon(xPoints, yPoints, 3);
+    }
+  }
+
+  public class SolidCircle extends JPanel {
+  
+    public SolidCircle(){
+      this.setBackground(Color.WHITE);
+      this.setOpaque(true);
+    }
+     @Override
+    protected void paintComponent(Graphics g) {
+      super.paintComponent(g);
+
+        // Cast to Graphics2D for better control
+      Graphics2D g2d = (Graphics2D) g;
+
+        // Enable anti-aliasing for smooth edges
+      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Set circle color
+      g2d.setColor(Color.BLUE);
+
+        // Define the diameter of the circle
+      int diameter = Math.min(getWidth(), getHeight()) / 2;
+
+        // Calculate top-left corner to center the circle
+      int x = (getWidth() - diameter) / 2;
+      int y = (getHeight() - diameter) / 2;
+
+      // Draw filled circle
+      g2d.fillOval(x, y, diameter, diameter);
+    }
+  }
+  public class ImagePanel extends JPanel {
+    private BufferedImage image;
+
+    public ImagePanel(String imagePath) {
+        try {
+            image = ImageIO.read(new File(imagePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Image could not be loaded: " + imagePath);
+        }
+        this.setPreferredSize(new Dimension(15, 15));
+
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+      super.paintComponent(g);
+
+      if (image != null) {
+          // Scale image to fit the panel
+          this.setBackground(Color.WHITE);
+          this.setOpaque(true);
+
+          int width = getWidth();
+          int height = getHeight();
+          int lessOf = height < width ? height : width;
+
+          g.drawImage(image, 0, 0, lessOf, lessOf, this);
+      }
+    }
+  }
+
+  private String getResourcePathForTransportTypeIcones(TransportTypes tty) throws Error{
+    String ret = "src/main/resources-filtered/fr/u_paris/gla/project";
+    //Rail, Subway, Bus, Tram, Walk, Funicular
+    switch (tty) {
+      case Rail -> {
+        return ret + "/icone-paris-rail.png";
+      }
+      case Subway -> {
+        return ret + "/icone-paris-subway.png";
+      }
+      case Bus -> {
+        return ret + "/icone-paris-bus.png";
+      }
+      case Tram -> {
+        return ret + "/icone-paris-tram.png";
+      }
+      case Walk -> { 
+        return ret + "/icone-paris-walk.png";
+      } 
+      case Funicular -> {
+        return ret + "/icone-paris-funicular.png";
+      }
+      default -> {
+        throw new RuntimeException("You tried to match a case of TransportType that does not exist");
+      }
+    }
+  }
+  public class TextSquarePanel extends JPanel {
+    private String text;
+    private Color squareColor;
+
+    public TextSquarePanel(String text, Color squareColor) {
+        this.text = text;
+        this.squareColor = squareColor;
+        this.setPreferredSize(new Dimension(15, 15));
+    }
+
+    public void setText(String text) {
+        this.text = text;
+        repaint();
+    }
+
+    public void setSquareColor(Color color) {
+        this.squareColor = color;
+        repaint();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        int width = getWidth();
+        int height = getHeight();
+
+        // Draw background square
+        g.setColor(squareColor);
+        g.fillRect(0, 0, width, height);
+
+        // Find max font size that fits within the square
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setColor(Color.WHITE);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        int fontSize = height; // start with maximum font size
+        Font font = new Font("SansSerif", Font.BOLD, fontSize);
+        FontMetrics fm;
+
+        // Reduce font size until it fits both width and height
+        while (fontSize > 5) {
+            font = font.deriveFont((float) fontSize);
+            fm = g2d.getFontMetrics(font);
+            int textWidth = fm.stringWidth(text);
+            int textHeight = fm.getAscent() + fm.getDescent();
+
+            if (textWidth <= width * 0.9 && textHeight <= height * 0.9) {
+                break;
+            }
+
+            fontSize--;
+        }
+
+        g2d.setFont(font);
+        fm = g2d.getFontMetrics();
+        int x = (width - fm.stringWidth(text)) / 2;
+        int y = (height + fm.getAscent() - fm.getDescent()) / 2;
+
+        g2d.drawString(text, x, y);
+        g2d.dispose();
+    }
+  }
+
+  public JPanel displayTextItinerary(ArrayList<SegmentItineraire> segments){
+    textItineraryPanel.removeAll();
+    textItineraryPanel.revalidate();
+
+
+    JPanel startAndEndingTimesJP = new JPanel();
+    startAndEndingTimesJP.setBackground(primaryBackgroundColor);
+    startAndEndingTimesJP.setLayout(new BoxLayout(startAndEndingTimesJP, BoxLayout.Y_AXIS));
+    
+    LocalTime startTimeLT = segments.get(0).getHeureDepart();
+    LocalTime arrivalTimeLT = segments.get(segments.size() -1).getHeureArrivee();
+
+    Duration travelTimeD = Duration.between(startTimeLT, arrivalTimeLT);
+
+    startAndEndingTimesJP.add(new JTextArea(
+      String.format("Départ : %s", 
+        startTimeLT.toString().substring(0, 5))));
+    startAndEndingTimesJP.add(new JTextArea(
+      String.format("Arrivée : %s", 
+       arrivalTimeLT.toString().substring(0, 5))));
+    startAndEndingTimesJP.add(new JTextArea(
+      String.format("Temps de trajet estimée: %dh, %dm, %ds",
+        travelTimeD.toHours(), 
+        travelTimeD.toMinutesPart(),
+        travelTimeD.toSecondsPart())));
+        
+
+    JPanel textItinJP = new JPanel();
+
+    textItinJP.setLayout(new GridBagLayout());
+    textItinJP.setOpaque(true);
+    textItinJP.setBackground(Color.WHITE);
+    GridBagConstraints c = new GridBagConstraints();
+    c.fill = GridBagConstraints.HORIZONTAL;
+
+    int iterations = 0;
+    int fourTimeIterations = 0;
+
+    for (SegmentItineraire segment : segments) {
+      String timeStart = segment.getHeureDepart().toString().substring(0, 5);
+      String placeToStart = segment.getStops().get(0).getNameOfAssociatedStation();
+      TransportTypes typeOfLine = segment.getSubline().getAssociatedLine().getType();
+      ImagePanel iconeOfTransportType = new ImagePanel(getResourcePathForTransportTypeIcones(typeOfLine));
+
+      //Add Starting time
+      c.fill = GridBagConstraints.BOTH;
+      c.gridx = 0; 
+      c.gridy = fourTimeIterations;
+      textItinJP.add(new JLabel(timeStart + "  "), c);
+
+      
+      //Determine color of line for this segment
+      Color color = Color.decode("#" + segment.getSubline().getAssociatedLine().getColor());
+
+      SolidCircle sc = new SolidCircle();
+      c.fill = GridBagConstraints.BOTH;
+      c.gridx = 1;
+      c.gridy = fourTimeIterations;
+      c.weightx = 0.5;
+      textItinJP.add(sc, c);
+      
+      //If walking, add dashed lines
+      if (segment.getSubline().getSublineType().equals(TransportTypes.Walk)) {
+        DashedColoredLine sl1 = new DashedColoredLine(color);
+        c.fill = GridBagConstraints.BOTH;
+        c.gridx = 1;
+        c.gridy = fourTimeIterations + 1;
+        c.weightx = 1;
+        textItinJP.add(sl1, c);
+  
+        DashedColoredLine sl2 = new DashedColoredLine(color);
+        c.fill = GridBagConstraints.BOTH;
+        c.gridx = 1;
+        c.gridy = fourTimeIterations + 2;
+        c.weightx = 0;
+        textItinJP.add(sl2, c);
+      }
+      //else, add solid lines
+      else {
+        SolidColoredLine sl1 = new SolidColoredLine(color);
+        c.fill = GridBagConstraints.BOTH;
+        c.gridx = 1;
+        c.gridy = fourTimeIterations + 1;
+        c.weightx = 1;
+        textItinJP.add(sl1, c);
+  
+        SolidColoredLine sl2 = new SolidColoredLine(color);
+        c.fill = GridBagConstraints.BOTH;
+        c.gridx = 1;
+        c.gridy = fourTimeIterations + 2;
+        c.weightx = 0;
+        textItinJP.add(sl2, c);
+      }
+      
+      
+      JPanel totalListOfStopsAndIconeAndDirection = new JPanel();
+      totalListOfStopsAndIconeAndDirection.setLayout(new BoxLayout(totalListOfStopsAndIconeAndDirection, BoxLayout.Y_AXIS));
+      totalListOfStopsAndIconeAndDirection.setBorder(BorderFactory.createEmptyBorder(0, 05, 0, 0));
+      totalListOfStopsAndIconeAndDirection.setBackground(Color.WHITE);
+      totalListOfStopsAndIconeAndDirection.setOpaque(true);
+
+      JPanel collapsableListOfStopsInItinerary = new JPanel();
+      collapsableListOfStopsInItinerary.setLayout(new BoxLayout(collapsableListOfStopsInItinerary, BoxLayout.Y_AXIS));
+      collapsableListOfStopsInItinerary.setBackground(Color.WHITE);
+      collapsableListOfStopsInItinerary.setOpaque(true);
+      collapsableListOfStopsInItinerary.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 0));
+      
+      JPanel typeOfTransportAndDirection = new JPanel();
+      typeOfTransportAndDirection.setLayout(new FlowLayout(FlowLayout.LEFT));
+      typeOfTransportAndDirection.setOpaque(true);
+      typeOfTransportAndDirection.setBackground(Color.WHITE);
+
+      if (!segment.getSubline().getSublineType().equals(TransportTypes.Walk)) {
+        for(int i = 1; i < segment.getStops().size() - 1; i ++){
+          Stop stp = segment.getStops().get(i);
+          JPanel stopIconAndStop = new JPanel();
+          stopIconAndStop.setLayout(new FlowLayout(FlowLayout.LEFT));
+          stopIconAndStop.setOpaque(true);
+          stopIconAndStop.setBackground(Color.WHITE);
+
+          stopIconAndStop.add(new SolidCircle());
+          stopIconAndStop.add(new JLabel(stp.getNameOfAssociatedStation()));
+
+          collapsableListOfStopsInItinerary.add(stopIconAndStop);
+        }
+        totalListOfStopsAndIconeAndDirection.add(getIconAndLine(segment.getSubline()));
+        totalListOfStopsAndIconeAndDirection.add(collapsableListOfStopsInItinerary);
+      }
+      else {
+        if(segment.getStops().get(0).getNameOfAssociatedStation().equals(segment.getStops().get(1).getNameOfAssociatedStation())){
+          typeOfTransportAndDirection.add(iconeOfTransportType);
+          typeOfTransportAndDirection.add(new JLabel("Changement de quai"));
+        }
+        else {
+          typeOfTransportAndDirection.add(iconeOfTransportType);
+          typeOfTransportAndDirection.add(new JLabel("Marchez jusqu'à destination"));
+        }
+        totalListOfStopsAndIconeAndDirection.add(typeOfTransportAndDirection);
+      }
+      
+      c.fill = GridBagConstraints.BOTH;
+      c.gridx = 2;
+      c.gridy = fourTimeIterations + 2;
+      c.weightx = 0.5;
+      textItinJP.add(totalListOfStopsAndIconeAndDirection, c);
+
+
+      SolidDownwardsArrow sda = new SolidDownwardsArrow(color);
+      c.fill = GridBagConstraints.VERTICAL;
+      c.gridx = 1;
+      c.gridy = fourTimeIterations + 3;
+      c.weightx = 1;
+      
+      textItinJP.add(sda, c);
+      
+
+      //Add place to start 
+      c.fill = GridBagConstraints.BOTH;
+      c.gridx = 2; 
+      c.gridwidth = 1;
+      c.gridy = fourTimeIterations; 
+      textItinJP.add(new JLabel("  " + placeToStart), c);
+
+      iterations += 1;
+      fourTimeIterations = iterations * 4;
+      
+      if(iterations == segments.size()){
+        String timeArrival = segment.getHeureArrivee().toString().substring(0, 5);
+        String placeToArrive = segment.getStops().get(segment.getStops().size() - 1).getNameOfAssociatedStation();
+        
+        c.fill = GridBagConstraints.BOTH;
+        c.gridx = 0; 
+        c.gridy = fourTimeIterations ;
+        //Add Arriving time
+        textItinJP.add((new JLabel(timeArrival)), c);
+
+
+        SolidCircle scIt = new SolidCircle();
+        c.fill = GridBagConstraints.BOTH;
+        c.gridx = 1;
+        c.gridy = fourTimeIterations;
+        c.weightx = 0.5;
+        textItinJP.add(scIt, c);
+
+        c.fill = GridBagConstraints.BOTH;
+        c.gridx = 2; 
+        c.gridwidth = 2;
+        c.gridy = fourTimeIterations; 
+        //Add Arrival time
+        textItinJP.add((new JLabel(placeToArrive)), c);
+      }
+    }
+
+
+
+
+
+    JPanel fullTextItinerary = new JPanel();
+    fullTextItinerary.setOpaque(true);
+    fullTextItinerary.setBackground(primaryBackgroundColor);
+    fullTextItinerary.setLayout(new BoxLayout(fullTextItinerary, BoxLayout.Y_AXIS));
+
+    fullTextItinerary.add(startAndEndingTimesJP);
+
+    textItinJP.setBorder(BorderFactory.createEmptyBorder(20, 00, 0, 0)); // explicitly remove borders
+    fullTextItinerary.add(textItinJP);
+
+    SwingUtilities.invokeLater(() -> {
+            getTextItineraryScrollPane().getVerticalScrollBar().setValue(0); 
+    });
+
+    return fullTextItinerary;
+  }
+
+  public JPanel getIconAndLine(Subline subline){
+
+    JPanel typeOfTransportAndDirection = new JPanel();
+    typeOfTransportAndDirection.setLayout(new FlowLayout(FlowLayout.LEFT));
+    typeOfTransportAndDirection.setBackground(Color.WHITE);
+    typeOfTransportAndDirection.setOpaque(true);
+    typeOfTransportAndDirection.add(new ImagePanel(getResourcePathForTransportTypeIcones(subline.getSublineType())));
+    typeOfTransportAndDirection.add(new TextSquarePanel(subline.getAssociatedLine().getName(), Color.decode("#" + subline.getAssociatedLine().getColor())));
+    typeOfTransportAndDirection.add(new JLabel(" Direction : " + subline.getDestination().getNameOfAssociatedStation()));
+
+    return typeOfTransportAndDirection;
+
+  }
+  
+
+  public void displayLine(ArrayList<Line> lines, TransportTypes type, String lineNum) {
+    mapViewer.removeAllMapMarkers();
+    mapViewer.removeAllMapPolygons();
+    for (Line line : lines) {
+      if (line.getType() != type || !line.getName().equals(lineNum)) {
+        continue;
+      } else {
+        for (Subline subline : line.getListOfSublines()) {
+          for (Stop stop : subline.getListOfStops()) {
+            Coordinate coord = new Coordinate(stop.getLongitude(), stop.getLatitude());
+            MapMarkerDot marker = new MapMarkerDot(coord);
+            mapViewer.addMapMarker(marker);
+          }
+          for (Stop stop : subline.getListOfStops()) {
+            for (Stop adjacentStop : stop.getAdjacentStops()) {
+              if (subline.getListOfStops().contains(adjacentStop)) {
+                Coordinate mStart = new Coordinate(stop.getLongitude(), stop.getLatitude());
+                Coordinate mEnd = new Coordinate(adjacentStop.getLongitude(), adjacentStop.getLatitude());
+                String color = "#" + line.getColor();
+                MapPolygon mLine = new ColoredMapPolygon(mStart, mEnd, mEnd, Color.decode(color));
+                mapViewer.addMapPolygon(mLine);
+              }
+            }
+          }
+        }
+        mapViewer.setDisplayPosition(new Coordinate(48.8566, 2.3522), 10);
+        mapViewer.repaint();
+        break;
+=======
   /**
    * Calls the displaySpecificLine to display one line on the map.
    *
@@ -624,6 +1212,7 @@ public class Gui extends JFrame {
       if (!lineFound) {
           JOptionPane.showMessageDialog(this, "No line found with the given number.",
               "Line Not Found", JOptionPane.INFORMATION_MESSAGE);
+>>>>>>> src/main/java/fr/u_paris/gla/project/views/Gui.java
       }
   }
 
@@ -680,9 +1269,9 @@ public class Gui extends JFrame {
    * @param sublineTextArea the JTextArea representing the subline
    * @param timesPanel      the JPanel containing the list of times
    */
-  private void addToggleFunctionality(JTextArea sublineTextArea, JPanel timesPanel) {
-    sublineTextArea.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    sublineTextArea.addMouseListener(new java.awt.event.MouseAdapter() {
+  private void addToggleFunctionality(JPanel jp, JPanel timesPanel) {
+    jp.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    jp.addMouseListener(new java.awt.event.MouseAdapter() {
       private boolean expanded = false;
 
       @Override
@@ -703,13 +1292,14 @@ public class Gui extends JFrame {
    * @return     The JPanel.
    */
   public JPanel displayListOfStopDeparture(Stop stop) {
+    textItineraryPanel.removeAll();
     HashMap<Subline, ArrayList<LocalTime>> departures = stop.getDepartures();
     JPanel pathPanel = new JPanel();
     pathPanel.setLayout(new BoxLayout(pathPanel, BoxLayout.Y_AXIS));
     pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
     pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
 
-    JTextArea stopTextArea = createTextAreaOutput(stop.getNameOfAssociatedStation());
+    JTextArea stopTextArea = createTextAreaOutput("Horaires : " + stop.getNameOfAssociatedStation());
     stopTextArea.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0)); // Add bottom margin
     pathPanel.add(stopTextArea);
 
@@ -730,9 +1320,9 @@ public class Gui extends JFrame {
     }
     for (Subline subline : uniqueSublineList) {
 
-      JTextArea sublineTextArea = createTextAreaOutput(
-          subline.getAssociatedLine().getName() + " - " + subline.getDestination().getNameOfAssociatedStation());
-      pathPanel.add(sublineTextArea);
+      //get the subLine's type, the corresponding Icon, and the line number all in a neat JPanel.
+      JPanel temp = getIconAndLine(subline);
+      pathPanel.add(temp);
 
       JPanel timesPanel = new JPanel();
       timesPanel.setLayout(new BoxLayout(timesPanel, BoxLayout.Y_AXIS)); // Ensure vertical layout for times
@@ -756,8 +1346,14 @@ public class Gui extends JFrame {
       }
 
       pathPanel.add(timesPanel);
-      addToggleFunctionality(sublineTextArea, timesPanel); // Add toggle functionality
+      addToggleFunctionality(temp, timesPanel); // Add toggle functionality
     }
+
+    //Makes the scrolling bar go to the top
+    SwingUtilities.invokeLater(() -> {
+      getTextItineraryScrollPane().getVerticalScrollBar().setValue(0); 
+    });
+
     return pathPanel;
   }
 
@@ -929,6 +1525,17 @@ public class Gui extends JFrame {
    */
   public JCheckBox getDistCheckBox() {
     return distCheckBox;
+  }
+
+  public JPanel getTextItineraryPanel(){
+    return textItineraryPanel;
+  }
+
+  public JScrollPane getContentScrollPane(){
+    return contentScrollPane;
+  }
+  public JScrollPane getTextItineraryScrollPane(){
+    return textItineraryScrollPane;
   }
 
   /**

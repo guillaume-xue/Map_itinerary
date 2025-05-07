@@ -1,16 +1,16 @@
 package fr.u_paris.gla.project.controllers;
 
 import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseEvent;
 
-import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
+import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
 
 import fr.u_paris.gla.project.graph.Graph;
@@ -131,7 +131,12 @@ public class MouseController {
                 mapViewer.addMapMarker(new MapMarkerDot(coord));
                 try {
                   Stop stop = graph.getClosestStop(coord.getLat(), coord.getLon());
-                  gui.getContentPanel().add(gui.displayListOfStopDeparture(stop));
+                  gui.getTextItineraryPanel().add(gui.displayListOfStopDeparture(stop));
+
+                  
+
+                  gui.getTextItineraryPanel().revalidate();
+                  gui.getTextItineraryPanel().repaint();
                 } catch (Exception e1) {
                   e1.printStackTrace();
                 }
