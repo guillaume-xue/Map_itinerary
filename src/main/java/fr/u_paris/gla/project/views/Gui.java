@@ -977,21 +977,7 @@ public class Gui extends JFrame {
 
 
     startAndEndingTimesJP.add(jl3);
-    /*
-    startAndEndingTimesJP.add(new JTextArea(
-      String.format("Départ : %s", 
-        startTimeLT.toString().substring(0, 5))));
-    startAndEndingTimesJP.add(new JTextArea(
-      String.format("Arrivée : %s", 
-       arrivalTimeLT.toString().substring(0, 5))));
-    startAndEndingTimesJP.add(new JTextArea(
-      String.format("Temps de trajet estimée: %dh, %dm, %ds",
-        travelTimeD.toHours(), 
-        travelTimeD.toMinutesPart(),
-        travelTimeD.toSecondsPart())));
-        */
-        
-
+  
     JPanel textItinJP = new JPanel();
 
     textItinJP.setLayout(new GridBagLayout());
