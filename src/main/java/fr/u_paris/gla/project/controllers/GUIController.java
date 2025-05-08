@@ -151,11 +151,11 @@ public class GUIController {
         JTextArea textStartArea = gui.getTextStart();
         JTextArea textEndArea = gui.getTextEnd();
         JTextArea viewLineNumLine = gui.getnumLine();
-        if (textStartArea.getText().equals("From")) {
+        if (textStartArea.getText().equals("De")) {
           textStartArea.setText("");
         }
         if (textEndArea.getText().equals("")) {
-          textEndArea.setText("To");
+          textEndArea.setText("À");
         }
         if (viewLineNumLine.getText().equals("")) {
           viewLineNumLine.setText("Line number");
@@ -168,11 +168,11 @@ public class GUIController {
         JTextArea textStartArea = gui.getTextStart();
         JTextArea textEndArea = gui.getTextEnd();
         JTextArea viewLineNumLine = gui.getnumLine();
-        if (textEndArea.getText().equals("To")) {
+        if (textEndArea.getText().equals("À")) {
           textEndArea.setText("");
         }
         if (textStartArea.getText().equals("")) {
-          textStartArea.setText("From");
+          textStartArea.setText("De");
         }
         if (viewLineNumLine.getText().equals("")) {
           viewLineNumLine.setText("Line number");
@@ -189,10 +189,10 @@ public class GUIController {
           viewLineNumLine.setText("");
         }
         if (textStartArea.getText().equals("")) {
-          textStartArea.setText("From");
+          textStartArea.setText("De");
         }
         if (textEndArea.getText().equals("")) {
-          textEndArea.setText("To");
+          textEndArea.setText("À");
         }
       }
     });
@@ -227,7 +227,7 @@ public class GUIController {
       if (gui.isShowAllLinesSelected()){
         gui.displayTransportType(graph.getListOfLines(), type);
       } else {
-        if ( gui.getnumLine().getText().equals("Line Number") || gui.getnumLine().getText().equals("") ){
+        if ( gui.getnumLine().getText().equals("N° ligne") || gui.getnumLine().getText().equals("") ){
           JOptionPane.showMessageDialog(this.gui, "Veuillez entrer un numéro de ligne.",
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
@@ -240,17 +240,17 @@ public class GUIController {
     });
 
     gui.getResearchButton().addActionListener(e -> {
-      if (gui.getTextStart().getText().equals("From") || gui.getTextEnd().getText().equals("To")) {
+      if (gui.getTextStart().getText().equals("De") || gui.getTextEnd().getText().equals("À")) {
         JOptionPane.showMessageDialog(this.gui, "Veuillez entrer une adresse de départ et d'arrivée.",
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
         return;
-      } else if (gui.getTextStart().getText().equals("From")) {
+      } else if (gui.getTextStart().getText().equals("De")) {
         JOptionPane.showMessageDialog(this.gui, "Veuillez entrer une adresse de départ.",
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
         return;
-      } else if (gui.getTextEnd().getText().equals("To")) {
+      } else if (gui.getTextEnd().getText().equals("À")) {
         JOptionPane.showMessageDialog(this.gui, "Veuillez entrer une adresse d'arrivée.",
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
@@ -265,12 +265,12 @@ public class GUIController {
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
         return;
-      } else if (gui.getComboBoxHours().getSelectedItem() == "Now"
-          && gui.getComboBoxMinutes().getSelectedItem() != "Now") {
+      } else if (gui.getComboBoxHours().getSelectedItem() == "Mtn"
+          && gui.getComboBoxMinutes().getSelectedItem() != "Mtn") {
         JOptionPane.showMessageDialog(this.gui, "Veuillez choisir l'heure.", "Erreur", JOptionPane.ERROR_MESSAGE);
         return;
-      } else if (gui.getComboBoxHours().getSelectedItem() != "Now"
-          && gui.getComboBoxMinutes().getSelectedItem() == "Now") {
+      } else if (gui.getComboBoxHours().getSelectedItem() != "Mtn"
+          && gui.getComboBoxMinutes().getSelectedItem() == "Mtn") {
         JOptionPane.showMessageDialog(this.gui, "Veuillez choisir les minutes.", "Erreur", JOptionPane.ERROR_MESSAGE);
         return;
       }
@@ -305,8 +305,8 @@ public class GUIController {
               endCoordinates[0], endCoordinates[1]);
 
           LocalTime heureDepart;
-          if (gui.getComboBoxHours().getSelectedItem().toString().equals("Now") &&
-              gui.getComboBoxMinutes().getSelectedItem().toString().equals("Now")) {
+          if (gui.getComboBoxHours().getSelectedItem().toString().equals("Mtn") &&
+              gui.getComboBoxMinutes().getSelectedItem().toString().equals("Mtn")) {
             heureDepart = LocalTime.now();
           } else {
             heureDepart = LocalTime.of(Integer.parseInt(gui.getComboBoxHours().getSelectedItem().toString()),
