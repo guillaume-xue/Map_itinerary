@@ -117,13 +117,13 @@ public class Gui extends JFrame {
   private void init() {
     // Create a menu bar
     JMenuBar menuBar = new JMenuBar();
-    JMenu viewMenu = new JMenu("View");
-    JMenuItem floatingWindowMenu = new JMenuItem("Network");
+    JMenu viewMenu = new JMenu("Vue");
+    JMenuItem floatingWindowMenu = new JMenuItem("Réseau");
     viewMenu.add(floatingWindowMenu);
     menuBar.add(viewMenu);
 
     JMenu devMenu = new JMenu("Dev");
-    JMenuItem connectStopsItem = new JMenuItem("Connect stops...");
+    JMenuItem connectStopsItem = new JMenuItem("Connecter les arrêts");
     devMenu.add(connectStopsItem);
     devMenu.addSeparator();
 
@@ -131,13 +131,13 @@ public class Gui extends JFrame {
     this.setJMenuBar(menuBar);
 
     // Create text areas for the start and end
-    this.textStart = createTextAreaInput("From");
+    this.textStart = createTextAreaInput("De");
     JPanel startPanel = new JPanel();
     startPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
     startPanel.setBackground(primaryBackgroundColor);
     startPanel.add(textStart);
 
-    this.textEnd = createTextAreaInput("To");
+    this.textEnd = createTextAreaInput("À");
     JPanel endPanel = new JPanel();
     endPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
     endPanel.setBackground(primaryBackgroundColor);
@@ -165,10 +165,10 @@ public class Gui extends JFrame {
 
 
     // Create checkboxes for choosing the best route by distance or time
-    JLabel label = new JLabel("Best route by : ");
+    JLabel label = new JLabel("Meilleur itinéraire en: ");
     this.distCheckBox = new JCheckBox("Distance");
     this.distCheckBox.setSelected(true); // Default to distance
-    this.timeCheckBox = new JCheckBox("Time");
+    this.timeCheckBox = new JCheckBox("Temps");
     JPanel checkBoxPanel = new JPanel();
     checkBoxPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 
@@ -270,14 +270,14 @@ public class Gui extends JFrame {
     panel.setBackground(primaryBackgroundColor);
 
     JPanel titlePanel = new JPanel();
-    JLabel label = new JLabel("Display Network");
+    JLabel label = new JLabel("Réseau");
     titlePanel.add(label);
 
     // Set the textArea for the line number
 
     JPanel textPanel = new JPanel();
     this.numLine = new JScrollPane();
-    JTextArea textArea = new JTextArea("Line number");
+    JTextArea textArea = new JTextArea("N° ligne");
     textArea.setForeground(textColor);
     textArea.setBackground(primaryBackgroundColor);
     textArea.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -303,13 +303,13 @@ public class Gui extends JFrame {
     comboBox.add(lineTypeDropdown);
 
     JPanel checkBoxPanel = new JPanel();
-    showAllLinesCheckBox = new JCheckBox("Show all lines");
+    showAllLinesCheckBox = new JCheckBox("Toutes les lignes");
     showAllLinesCheckBox.setBackground(primaryBackgroundColor);
     showAllLinesCheckBox.setForeground(textColor);
     checkBoxPanel.add(showAllLinesCheckBox);
 
     // Create a button to view the line
-    this.viewLineButton = new JButton("View Line");
+    this.viewLineButton = new JButton("Afficher");
     JPanel buttonPanel = new JPanel();
     buttonPanel.add(viewLineButton);
 
@@ -477,7 +477,7 @@ public class Gui extends JFrame {
    * @return the search button
    */
   private JButton createSearchButton() {
-    JButton buttonSearch = new JButton("Search");
+    JButton buttonSearch = new JButton("Rechercher");
     buttonSearch.setFont(new Font("Segoe UI", Font.BOLD, 16));
     buttonSearch.setBackground(accentColor);
     buttonSearch.setForeground(textColor);
@@ -943,20 +943,41 @@ public class Gui extends JFrame {
     LocalTime arrivalTimeLT = segments.get(segments.size() -1).getHeureArrivee();
 
     Duration travelTimeD = Duration.between(startTimeLT, arrivalTimeLT);
+    //If total time is negative, then modulo 24 hours to get correct difference between arrival and departure. 
+    if(travelTimeD.isNegative()){
+      travelTimeD = travelTimeD.plusHours(24);
+     } 
 
-    startAndEndingTimesJP.add(new JTextArea(
+    JTextArea jl1 = new JTextArea(
       String.format("Départ : %s", 
-        startTimeLT.toString().substring(0, 5))));
-    startAndEndingTimesJP.add(new JTextArea(
-      String.format("Arrivée : %s", 
-       arrivalTimeLT.toString().substring(0, 5))));
-    startAndEndingTimesJP.add(new JTextArea(
-      String.format("Temps de trajet estimée: %dh, %dm, %ds",
-        travelTimeD.toHours(), 
-        travelTimeD.toMinutesPart(),
-        travelTimeD.toSecondsPart())));
-        
+      startTimeLT.toString().substring(0, 5))
+    );
+    jl1.setEditable(false);
+    jl1.setFocusable(false);
+    startAndEndingTimesJP.add(jl1);
+    
 
+    JTextArea jl2 = new JTextArea(
+      String.format("Arrivée : %s", 
+      arrivalTimeLT.toString().substring(0, 5))
+    );
+    jl2.setEditable(false);
+    jl2.setFocusable(false);
+
+    startAndEndingTimesJP.add(jl2);
+
+    JTextArea jl3 = new JTextArea(
+      String.format("Temps de trajet estimée: %dh, %dm, %ds",
+      travelTimeD.toHours(), 
+      travelTimeD.toMinutesPart(),
+      travelTimeD.toSecondsPart())
+    );
+    jl3.setEditable(false);
+    jl3.setFocusable(false);
+
+
+    startAndEndingTimesJP.add(jl3);
+  
     JPanel textItinJP = new JPanel();
 
     textItinJP.setLayout(new GridBagLayout());
@@ -1169,7 +1190,7 @@ public class Gui extends JFrame {
   public void displayLine(ArrayList<Line> lines, TransportTypes type, String lineNum){
       boolean lineFound = displaySpecificLine(lines, type, lineNum);
       if (!lineFound) {
-          JOptionPane.showMessageDialog(this, "No line found with the given number.",
+          JOptionPane.showMessageDialog(this, "Pas de ligne trouvée.",
               "Line Not Found", JOptionPane.INFORMATION_MESSAGE);
 
       }
@@ -1258,7 +1279,11 @@ public class Gui extends JFrame {
     pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
     pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
 
-    JTextArea stopTextArea = createTextAreaOutput("Horaires : " + stop.getNameOfAssociatedStation());
+    JTextArea stopTextArea = createTextAreaOutput(
+      "Horaires de départ pour la station : \n" 
+      + stop.getNameOfAssociatedStation()
+      + "\nCliquez sur la ligne pour afficher ces horaires");    
+
     stopTextArea.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0)); // Add bottom margin
     pathPanel.add(stopTextArea);
 

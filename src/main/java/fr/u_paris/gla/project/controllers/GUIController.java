@@ -151,11 +151,11 @@ public class GUIController {
         JTextArea textStartArea = gui.getTextStart();
         JTextArea textEndArea = gui.getTextEnd();
         JTextArea viewLineNumLine = gui.getnumLine();
-        if (textStartArea.getText().equals("From")) {
+        if (textStartArea.getText().equals("De")) {
           textStartArea.setText("");
         }
         if (textEndArea.getText().equals("")) {
-          textEndArea.setText("To");
+          textEndArea.setText("À");
         }
         if (viewLineNumLine.getText().equals("")) {
           viewLineNumLine.setText("Line number");
@@ -168,11 +168,11 @@ public class GUIController {
         JTextArea textStartArea = gui.getTextStart();
         JTextArea textEndArea = gui.getTextEnd();
         JTextArea viewLineNumLine = gui.getnumLine();
-        if (textEndArea.getText().equals("To")) {
+        if (textEndArea.getText().equals("À")) {
           textEndArea.setText("");
         }
         if (textStartArea.getText().equals("")) {
-          textStartArea.setText("From");
+          textStartArea.setText("De");
         }
         if (viewLineNumLine.getText().equals("")) {
           viewLineNumLine.setText("Line number");
@@ -189,10 +189,10 @@ public class GUIController {
           viewLineNumLine.setText("");
         }
         if (textStartArea.getText().equals("")) {
-          textStartArea.setText("From");
+          textStartArea.setText("De");
         }
         if (textEndArea.getText().equals("")) {
-          textEndArea.setText("To");
+          textEndArea.setText("À");
         }
       }
     });
@@ -227,7 +227,7 @@ public class GUIController {
       if (gui.isShowAllLinesSelected()){
         gui.displayTransportType(graph.getListOfLines(), type);
       } else {
-        if ( gui.getnumLine().getText().equals("Line Number") || gui.getnumLine().getText().equals("") ){
+        if ( gui.getnumLine().getText().equals("N° ligne") || gui.getnumLine().getText().equals("") ){
           JOptionPane.showMessageDialog(this.gui, "Veuillez entrer un numéro de ligne.",
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
@@ -240,17 +240,17 @@ public class GUIController {
     });
 
     gui.getResearchButton().addActionListener(e -> {
-      if (gui.getTextStart().getText().equals("From") || gui.getTextEnd().getText().equals("To")) {
+      if (gui.getTextStart().getText().equals("De") || gui.getTextEnd().getText().equals("À")) {
         JOptionPane.showMessageDialog(this.gui, "Veuillez entrer une adresse de départ et d'arrivée.",
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
         return;
-      } else if (gui.getTextStart().getText().equals("From")) {
+      } else if (gui.getTextStart().getText().equals("De")) {
         JOptionPane.showMessageDialog(this.gui, "Veuillez entrer une adresse de départ.",
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
         return;
-      } else if (gui.getTextEnd().getText().equals("To")) {
+      } else if (gui.getTextEnd().getText().equals("À")) {
         JOptionPane.showMessageDialog(this.gui, "Veuillez entrer une adresse d'arrivée.",
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
@@ -401,7 +401,7 @@ public class GUIController {
       if ( !areStopsConnected ){
         int confirm = JOptionPane.showConfirmDialog(
         this.gui, 
-        "Attention option expérimentale. Connecter les stations entre-elles pour les trajets à pied\n" + 
+        "Attention option expérimentale. Connecter les stations entre-elles (100 mètres par défaut) pour les trajets à pied\n" + 
         " prend du temps et rend l'algorithme de recherche plus lent. Si vous confirmez l'action\n" + 
         " garder un oeil sur le terminal pour savoir quand les connections ont fini d'être créées.\n"
         ,"Confirmation requise"
