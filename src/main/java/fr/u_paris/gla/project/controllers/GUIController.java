@@ -265,12 +265,12 @@ public class GUIController {
             "Erreur",
             JOptionPane.ERROR_MESSAGE);
         return;
-      } else if (gui.getComboBoxHours().getSelectedItem() == "Mtn"
-          && gui.getComboBoxMinutes().getSelectedItem() != "Mtn") {
+      } else if (gui.getComboBoxHours().getSelectedItem() == "Now"
+          && gui.getComboBoxMinutes().getSelectedItem() != "Now") {
         JOptionPane.showMessageDialog(this.gui, "Veuillez choisir l'heure.", "Erreur", JOptionPane.ERROR_MESSAGE);
         return;
-      } else if (gui.getComboBoxHours().getSelectedItem() != "Mtn"
-          && gui.getComboBoxMinutes().getSelectedItem() == "Mtn") {
+      } else if (gui.getComboBoxHours().getSelectedItem() != "Now"
+          && gui.getComboBoxMinutes().getSelectedItem() == "Now") {
         JOptionPane.showMessageDialog(this.gui, "Veuillez choisir les minutes.", "Erreur", JOptionPane.ERROR_MESSAGE);
         return;
       }
@@ -305,8 +305,8 @@ public class GUIController {
               endCoordinates[0], endCoordinates[1]);
 
           LocalTime heureDepart;
-          if (gui.getComboBoxHours().getSelectedItem().toString().equals("Mtn") &&
-              gui.getComboBoxMinutes().getSelectedItem().toString().equals("Mtn")) {
+          if (gui.getComboBoxHours().getSelectedItem().toString().equals("Now") &&
+              gui.getComboBoxMinutes().getSelectedItem().toString().equals("Now")) {
             heureDepart = LocalTime.now();
           } else {
             heureDepart = LocalTime.of(Integer.parseInt(gui.getComboBoxHours().getSelectedItem().toString()),
@@ -401,7 +401,7 @@ public class GUIController {
       if ( !areStopsConnected ){
         int confirm = JOptionPane.showConfirmDialog(
         this.gui, 
-        "Attention option expérimentale. Connecter les stations entre-elles pour les trajets à pied\n" + 
+        "Attention option expérimentale. Connecter les stations entre-elles (100 mètres par défaut) pour les trajets à pied\n" + 
         " prend du temps et rend l'algorithme de recherche plus lent. Si vous confirmez l'action\n" + 
         " garder un oeil sur le terminal pour savoir quand les connections ont fini d'être créées.\n"
         ,"Confirmation requise"
