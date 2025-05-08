@@ -20,7 +20,6 @@ import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
-import fr.u_paris.gla.project.astar.SegmentItineraire;
 import fr.u_paris.gla.project.utils.CSVExtractor;
 import fr.u_paris.gla.project.utils.Pair;
 import fr.u_paris.gla.project.utils.TransportTypes;
@@ -28,11 +27,6 @@ import fr.u_paris.gla.project.views.Gui;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import fr.u_paris.gla.project.utils.Pair;
-import fr.u_paris.gla.project.utils.TransportTypes;
-
-import java.time.LocalTime;
 
 public class GUIController {
 
@@ -301,7 +295,7 @@ public class GUIController {
         try {
 
           // Create and get Start and Finish Stops
-          MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(startCoordinates[0], startCoordinates[1],
+          MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(startAddress, endAddress, startCoordinates[0], startCoordinates[1],
               endCoordinates[0], endCoordinates[1]);
 
           LocalTime heureDepart;
