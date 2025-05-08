@@ -2,8 +2,8 @@ package fr.u_paris.gla.project.graph;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.lang3.tuple.MutablePair;
 
@@ -56,12 +56,12 @@ public class Graph {
      * Previous StartStop and FinishStops will be removed from the listOfStops, but their connections will not be severed (seen comments in Graph.connectStopsByWalking() )
      * Return a MutablePair<Stop, Stop>, with MutablePair.left <- startStop, MutablePair.right <- finishStop
      */
-    public MutablePair<Stop, Stop> addStartAndFinish(double latitudeS, double longitudeS, double latitudeF, double longitudeF) throws Exception{
+    public MutablePair<Stop, Stop> addStartAndFinish(String nameOfStart, String nameOfFinish, double latitudeS, double longitudeS, double latitudeF, double longitudeF) throws Exception{
         if(listOfStops.isEmpty()){
             throw new Exception("The graph is empty");
         }
-        Stop startStop = new Stop(latitudeS, longitudeS, "StartPoint");
-        Stop finishStop = new Stop(latitudeF, longitudeF, "FinishPoint");
+        Stop startStop = new Stop(latitudeS, longitudeS, nameOfStart);
+        Stop finishStop = new Stop(latitudeF, longitudeF, nameOfFinish);
 
         double distance;
 

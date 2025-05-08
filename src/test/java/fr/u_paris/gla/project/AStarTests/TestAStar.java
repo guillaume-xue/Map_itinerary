@@ -89,7 +89,7 @@ public class TestAStar {
                 Pair<Double, Double> p1 = testPairs.get(i).getKey();
                 Pair<Double, Double> p2 = testPairs.get(i).getValue();
 
-                MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish(p1.getKey(), p1.getValue(),
+                MutablePair<Stop, Stop> startFinish = graph.addStartAndFinish("Start", "Finish", p1.getKey(), p1.getValue(),
                 p2.getKey(), p2.getValue());
 
                 long pathStart = System.nanoTime();

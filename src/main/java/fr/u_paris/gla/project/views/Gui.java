@@ -778,8 +778,10 @@ public class Gui extends JFrame {
   }
 
   public class SolidCircle extends JPanel {
+    Color color;
   
-    public SolidCircle(){
+    public SolidCircle(Color color){
+      this.color = color;
       this.setBackground(Color.WHITE);
       this.setOpaque(true);
     }
@@ -793,9 +795,6 @@ public class Gui extends JFrame {
         // Enable anti-aliasing for smooth edges
       g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Set circle color
-      g2d.setColor(Color.BLUE);
-
         // Define the diameter of the circle
       int diameter = Math.min(getWidth(), getHeight()) / 2;
 
@@ -804,7 +803,12 @@ public class Gui extends JFrame {
       int y = (getHeight() - diameter) / 2;
 
       // Draw filled circle
+      g2d.setColor(color);
       g2d.fillOval(x, y, diameter, diameter);
+
+      g2d.setColor(Color.BLACK);
+      g2d.setStroke(new BasicStroke(1)); 
+      g2d.drawOval(x, y, diameter, diameter);
     }
   }
   public class ImagePanel extends JPanel {
@@ -1005,12 +1009,24 @@ public class Gui extends JFrame {
       //Determine color of line for this segment
       Color color = Color.decode("#" + segment.getSubline().getAssociatedLine().getColor());
 
-      SolidCircle sc = new SolidCircle();
-      c.fill = GridBagConstraints.BOTH;
-      c.gridx = 1;
-      c.gridy = fourTimeIterations;
-      c.weightx = 0.5;
-      textItinJP.add(sc, c);
+      //First Circle is red, last is reblued, all others are yellow
+      if(iterations == 0){
+        SolidCircle sc = new SolidCircle(Color.RED);
+        c.fill = GridBagConstraints.BOTH;
+        c.gridx = 1;
+        c.gridy = fourTimeIterations;
+        c.weightx = 0.5;
+        textItinJP.add(sc, c);
+      }
+      else{
+        SolidCircle sc = new SolidCircle(Color.YELLOW);
+        c.fill = GridBagConstraints.BOTH;
+        c.gridx = 1;
+        c.gridy = fourTimeIterations;
+        c.weightx = 0.5;
+        textItinJP.add(sc, c);
+      }
+      
       
       //If walking, add dashed lines
       if (segment.getSubline().getSublineType().equals(TransportTypes.Walk)) {
@@ -1071,7 +1087,7 @@ public class Gui extends JFrame {
           stopIconAndStop.setOpaque(true);
           stopIconAndStop.setBackground(Color.WHITE);
 
-          stopIconAndStop.add(new SolidCircle());
+          stopIconAndStop.add(new SolidCircle(Color.YELLOW));
           stopIconAndStop.add(new JLabel(stp.getNameOfAssociatedStation()));
 
           collapsableListOfStopsInItinerary.add(stopIconAndStop);
@@ -1128,7 +1144,7 @@ public class Gui extends JFrame {
         textItinJP.add((new JLabel(timeArrival)), c);
 
 
-        SolidCircle scIt = new SolidCircle();
+        SolidCircle scIt = new SolidCircle(Color.BLUE);
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 1;
         c.gridy = fourTimeIterations;
