@@ -993,7 +993,24 @@ public class Gui extends JFrame {
     int iterations = 0;
     int fourTimeIterations = 0;
 
-    for (SegmentItineraire segment : segments) {
+    for (int a = 0; a < segments.size(); a ++) {
+      SegmentItineraire segment = segments.get(a);
+
+      Duration timeToWaitForNexttransport = Duration.ZERO;
+
+      if(a < segments.size() - 2){
+        timeToWaitForNexttransport = 
+        Duration.between(
+          segment.getHeureArrivee(), 
+          segments.get(a + 1).getHeureDepart());
+      }
+
+      
+      
+      if(timeToWaitForNexttransport.isNegative()){
+        timeToWaitForNexttransport = timeToWaitForNexttransport.plusHours(24);
+      }
+
       String timeStart = segment.getHeureDepart().toString().substring(0, 5);
       String placeToStart = segment.getStops().get(0).getNameOfAssociatedStation();
       TransportTypes typeOfLine = segment.getSubline().getAssociatedLine().getType();
@@ -1092,6 +1109,21 @@ public class Gui extends JFrame {
 
           collapsableListOfStopsInItinerary.add(stopIconAndStop);
         }
+        //Add JLabel to explain waiting time
+        if(!timeToWaitForNexttransport.isZero()){
+          JTextArea waitingTimeForNextTransportJTA = new JTextArea(String.format(
+            "Et Attente de %dh, %dm, %ds" 
+            + " pour le prochain " + 
+            segments.get(a + 1).getSubline().getAssociatedLine().getType().toString(), 
+            timeToWaitForNexttransport.toHours(), 
+            timeToWaitForNexttransport.toMinutesPart(),
+            timeToWaitForNexttransport.toSecondsPart())
+          );
+          waitingTimeForNextTransportJTA.setFocusable(false);
+          waitingTimeForNextTransportJTA.setEditable(false);
+          collapsableListOfStopsInItinerary.add(waitingTimeForNextTransportJTA);
+        }
+
         totalListOfStopsAndIconeAndDirection.add(getIconAndLine(segment.getSubline()));
         totalListOfStopsAndIconeAndDirection.add(collapsableListOfStopsInItinerary);
       }
@@ -1099,12 +1131,44 @@ public class Gui extends JFrame {
         if(segment.getStops().get(0).getNameOfAssociatedStation().equals(segment.getStops().get(1).getNameOfAssociatedStation())){
           typeOfTransportAndDirection.add(iconeOfTransportType);
           typeOfTransportAndDirection.add(new JLabel("Changement de quai"));
+          //Add JLabel to explain waiting time
+          if(!timeToWaitForNexttransport.isZero()){
+            JTextArea waitingTimeForNextTransportJTA = new JTextArea(String.format(
+              "Et Attente de %dh, %dm, %ds" 
+              + " pour le prochain " + 
+              segments.get(a + 1).getSubline().getAssociatedLine().getType().toString(), 
+              timeToWaitForNexttransport.toHours(), 
+              timeToWaitForNexttransport.toMinutesPart(),
+              timeToWaitForNexttransport.toSecondsPart())
+            );
+            waitingTimeForNextTransportJTA.setFocusable(false);
+            waitingTimeForNextTransportJTA.setEditable(false);
+            collapsableListOfStopsInItinerary.add(waitingTimeForNextTransportJTA);
+          }
+
+          
         }
         else {
           typeOfTransportAndDirection.add(iconeOfTransportType);
           typeOfTransportAndDirection.add(new JLabel("Marchez jusqu'à destination"));
+          //Add JLabel to explain waiting time
+          if(!timeToWaitForNexttransport.isZero()){
+            JTextArea waitingTimeForNextTransportJTA = new JTextArea(String.format(
+              "Et Attente de %dh, %dm, %ds" 
+              + " pour le prochain " + 
+              segments.get(a + 1).getSubline().getAssociatedLine().getType().toString(), 
+              timeToWaitForNexttransport.toHours(), 
+              timeToWaitForNexttransport.toMinutesPart(),
+              timeToWaitForNexttransport.toSecondsPart())
+            );
+            waitingTimeForNextTransportJTA.setFocusable(false);
+            waitingTimeForNextTransportJTA.setEditable(false);
+            collapsableListOfStopsInItinerary.add(waitingTimeForNextTransportJTA);
+          }
+
         }
         totalListOfStopsAndIconeAndDirection.add(typeOfTransportAndDirection);
+        totalListOfStopsAndIconeAndDirection.add(collapsableListOfStopsInItinerary);
       }
       
       c.fill = GridBagConstraints.BOTH;
