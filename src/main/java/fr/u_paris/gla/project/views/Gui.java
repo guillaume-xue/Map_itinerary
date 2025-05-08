@@ -943,7 +943,41 @@ public class Gui extends JFrame {
     LocalTime arrivalTimeLT = segments.get(segments.size() -1).getHeureArrivee();
 
     Duration travelTimeD = Duration.between(startTimeLT, arrivalTimeLT);
+    //If total time is negative, then modulo 24 hours to get correct difference between arrival and departure. 
+    if(travelTimeD.isNegative()){
+      travelTimeD = travelTimeD.plusHours(24);
+     } 
 
+    JTextArea jl1 = new JTextArea(
+      String.format("Départ : %s", 
+      startTimeLT.toString().substring(0, 5))
+    );
+    jl1.setEditable(false);
+    jl1.setFocusable(false);
+    startAndEndingTimesJP.add(jl1);
+    
+
+    JTextArea jl2 = new JTextArea(
+      String.format("Arrivée : %s", 
+      arrivalTimeLT.toString().substring(0, 5))
+    );
+    jl2.setEditable(false);
+    jl2.setFocusable(false);
+
+    startAndEndingTimesJP.add(jl2);
+
+    JTextArea jl3 = new JTextArea(
+      String.format("Temps de trajet estimée: %dh, %dm, %ds",
+      travelTimeD.toHours(), 
+      travelTimeD.toMinutesPart(),
+      travelTimeD.toSecondsPart())
+    );
+    jl3.setEditable(false);
+    jl3.setFocusable(false);
+
+
+    startAndEndingTimesJP.add(jl3);
+    /*
     startAndEndingTimesJP.add(new JTextArea(
       String.format("Départ : %s", 
         startTimeLT.toString().substring(0, 5))));
@@ -955,6 +989,7 @@ public class Gui extends JFrame {
         travelTimeD.toHours(), 
         travelTimeD.toMinutesPart(),
         travelTimeD.toSecondsPart())));
+        */
         
 
     JPanel textItinJP = new JPanel();
@@ -1258,7 +1293,11 @@ public class Gui extends JFrame {
     pathPanel.setBackground(primaryBackgroundColor); // Background color of paths panel
     pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
 
-    JTextArea stopTextArea = createTextAreaOutput("Horaires : " + stop.getNameOfAssociatedStation());
+    JTextArea stopTextArea = createTextAreaOutput(
+      "Horaires de départ pour la station : \n" 
+      + stop.getNameOfAssociatedStation()
+      + "\nCliquez sur la ligne pour afficher ces horaires");    
+
     stopTextArea.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0)); // Add bottom margin
     pathPanel.add(stopTextArea);
 
