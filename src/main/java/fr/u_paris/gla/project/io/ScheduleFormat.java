@@ -13,8 +13,10 @@ import java.util.ArrayList;
  */
 public final class ScheduleFormat {
 	
+    /** Expected number of columns in the schedules CSVs */
 	public static final int NUMBER_COLUMNS = 4;
 	
+    /** Index des colonnes du fichier CSV des horaires */
     public static final int LINE_ID_INDEX       = 0;
     public static final int TRIP_SEQUENCE_INDEX = 1;
     public static final int TERMINUS_INDEX      = 2;

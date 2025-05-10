@@ -312,15 +312,13 @@ public class GUIController {
           ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(startFinish.getLeft(), startFinish.getRight(),
               heureDepart);
 
-          displayItinerary(itinerary);
+          printItinerary(itinerary);
 
           // Display the path on the map
           gui.getTextItineraryPanel().add(gui.displayTextItinerary(itinerary));
 
           
           //Scroll the JScrollPane used to display the textual itinerary to the top
-          
-
 
           gui.getContentPanel().add(gui.displayPath(itinerary));
           gui.getContentPanel().add(new JPanel());
@@ -348,9 +346,11 @@ public class GUIController {
     });
   }
 
-  // TBD
-  // la fonction c'est juste en attendant qu'on ait les affichages avec horaire ds
-  // l'app et c'est pour debugger
+  /**
+   * Debug function to print out the stops and their corresponding departure times.
+   *
+   * @param      stopsAndTimes  The stops and corresponding times
+   */
   public static void printPathWithTimes(ArrayList<Pair<Stop, LocalTime>> stopsAndTimes) {
     if (stopsAndTimes == null || stopsAndTimes.isEmpty()) {
       System.out.println("Aucun chemin trouvé.");
@@ -364,9 +364,13 @@ public class GUIController {
     }
   }
 
-  // TBD
-  // pr debugger
-  public void displayItinerary(ArrayList<SegmentItineraire> itinerary) {
+
+  /**
+   * Debug function to print an itinerary in the terminal.
+   *
+   * @param      itinerary  The itinerary
+   */
+  public void printItinerary(ArrayList<SegmentItineraire> itinerary) {
     if (itinerary == null || itinerary.isEmpty()) {
       System.out.println("L'itinéraire est vide.");
       return;
@@ -412,6 +416,9 @@ public class GUIController {
     }); 
   }
 
+  /**
+   * Launches the gui
+   */
   public void launch() {
     gui.launch();
   }

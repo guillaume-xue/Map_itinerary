@@ -5,6 +5,9 @@ import java.util.Objects;
 
 import fr.u_paris.gla.project.utils.TransportTypes;
 
+/**
+ * A class to describe a line in the Network
+ */
 public class Line implements Comparable<Line>{
     
     private String id; // clef primaire
@@ -13,6 +16,14 @@ public class Line implements Comparable<Line>{
     private String color;
     private ArrayList<Subline> listOfSublines = new ArrayList<>();
     
+    /**
+     * Constructs a line instance.
+     *
+     * @param      id     The identifier
+     * @param      name   The name
+     * @param      type   The type
+     * @param      color  The color
+     */
     public Line(String id, String name, String type, String color){
         this.id = id;
         this.name = name;
@@ -20,31 +31,26 @@ public class Line implements Comparable<Line>{
         this.color = color;
     }
 
+    /**
+     * Adds a subline.
+     *
+     * @param      subline  The subline
+     */
     public void addSubline(Subline subline){
     	if (!listOfSublines.contains(subline)) {
             listOfSublines.add(subline);
         }
     }
+    
+    public String getId(){  return id; }
+    
+    public String getName(){ return name; }
+    
+    public TransportTypes getType(){ return type; }
+    
+    public String getColor(){ return color; }
 
-    public String getId(){
-        return id;
-    }
-
-    public String getName(){
-        return name;
-    }
-
-    public TransportTypes getType(){
-        return type;
-    }
-
-    public String getColor(){
-        return color;
-    }
-
-    public ArrayList<Subline> getListOfSublines(){
-        return listOfSublines;
-    }
+    public ArrayList<Subline> getListOfSublines(){ return listOfSublines; }
 
     public void setListOfSublines(ArrayList<Subline> newSublines){
         this.listOfSublines.clear();

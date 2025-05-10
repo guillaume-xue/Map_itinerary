@@ -154,6 +154,13 @@ public class CSVStreamProviderForMapData implements Supplier<String[]> {
         return distance / speed; 
     }
     
+    /**
+     * Formats a (long) time to a (string) time.
+     *
+     * @param      time  The time
+     *
+     * @return     The string representation of the time.
+     */
     private static String formatTime(long time) {
         return MessageFormat.format("{0}:{1}", //$NON-NLS-1$
                 MINUTES_SECOND_FORMATTER.format(time / SECONDS_IN_MINUTES), MINUTES_SECOND_FORMATTER.format(time % SECONDS_IN_MINUTES));

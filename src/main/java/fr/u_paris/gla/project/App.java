@@ -13,9 +13,7 @@ import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
 import fr.u_paris.gla.project.utils.CSVExtractor;
 
 /**
- * Simple application model.
- *
- * @author Emmanuel Bigeon
+ * Application entry point. Manages the commands & gui.
  */
 public class App {
     /**
@@ -158,7 +156,7 @@ public class App {
     }
 
     /**
-     * Prints the help message.
+     * Prints the help message in terminal.
      */
     public static void printHelp() {
         System.out.println("Usage: java -jar " + JAR_PATH + ".jar [options]");

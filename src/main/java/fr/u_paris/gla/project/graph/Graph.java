@@ -9,21 +9,41 @@ import org.apache.commons.lang3.tuple.MutablePair;
 
 import static fr.u_paris.gla.project.io.UpgradedNetworkFormat.WALK_AVG_SPEED;
 
+/**
+ * Java object representation of the transport Network, holds the lines, sublines, stops etc...
+ */
 public class Graph {
-    //constante pour la ligne de marche
-    public static double MAX_DISTANCE_WALKABLE = 0.1;
-    public static double MAX_DISTANCE_WALKABLE_START_FINISH = 0.700;
-    public static final Line WALK_LINE = new Line("IDWALK", "Marche a pied", "Walk", "808080");
-    private ArrayList<Stop> listOfStops = new ArrayList<>();
+
+    public static double MAX_DISTANCE_WALKABLE = 0.1; // Max distance between two stops when linking them for walking
+    public static double MAX_DISTANCE_WALKABLE_START_FINISH = 0.700; // Max distance between the start/finish and the other stops when linking them
+    
+    public static final Line WALK_LINE = new Line("IDWALK", "Marche a pied", "Walk", "808080"); // Arbitrary line for walking
     
     //on ajoute la Line WALK_LINE à notre graphe, au debut elle est vide puis elle est remplie par l'algo quand c'est nécéssaire
     private ArrayList<Line> listOfLines = new ArrayList<>(Collections.singletonList(WALK_LINE));
+    private ArrayList<Stop> listOfStops = new ArrayList<>();
 
+    /**
+     * Constructs a new Graph instance.
+     *
+     * @param      listOfStops  The list of stops
+     * @param      listOfLines  The list of lines
+     */
     public Graph(ArrayList<Stop> listOfStops, ArrayList<Line> listOfLines){
         this.listOfLines = listOfLines;
         this.listOfStops = listOfStops;
     }
 
+    /**
+     * Gets the stop at the given coordinates, if found.
+     *
+     * @param      latitude   The latitude
+     * @param      longitude  The longitude
+     *
+     * @return     The found stop.
+     *
+     * @throws     Exception  Throws an exception is stop is not found.
+     */
     public Stop getStop(double latitude, double longitude) throws Exception{
         for(Stop st : listOfStops){
             if(st.getLongitude() == longitude && st.getLatitude() == latitude){
@@ -33,6 +53,16 @@ public class Graph {
         throw new Exception(String.format("Stop was not found at coordinates x = %f, y = %f", longitude, latitude));
     }
 
+    /**
+     * Gets the closest stop to the given coordinates.
+     *
+     * @param      latitude   The latitude
+     * @param      longitude  The longitude
+     *
+     * @return     The closest stop found.
+     *
+     * @throws     Exception  Throws an exception if the current list of stops of the graph is empty.
+     */
     public Stop getClosestStop(double latitude, double longitude) throws Exception{
 
         if(listOfStops.isEmpty()){
@@ -41,12 +71,9 @@ public class Graph {
 
         listOfStops.sort((Stop a, Stop b) -> a.calculateDistance(latitude, longitude).compareTo(b.calculateDistance(latitude, longitude)));
 
-        // System.out.println(
-        //     String.format(
-        //         "Closest Stop found = %s ", 
-        //         listOfStops.get(0).toString() 
-        //     )
-        // );
+        // Debug print
+        //System.out.println( String.format( "Closest Stop found = %s ", listOfStops.get(0).toString() ) );
+        
         return listOfStops.get(0);
     }
 
@@ -180,10 +207,26 @@ public class Graph {
         System.out.println("Finished connecting.");
     }
 
+    /**
+     * Helper function to calculate the walking time for a given distance.
+     *
+     * @param      distance  The distance
+     *
+     * @return     The walking time.
+     */
     private Duration calculateWalkingTime(double distance){
         return Duration.ofSeconds((long) Math.ceil( (distance / WALK_AVG_SPEED) * 3600));
     }
 
+    /**
+     * Gets the line associated to the given name
+     *
+     * @param      name       The name
+     *
+     * @return     The line.
+     *
+     * @throws     Exception  Throws an exception if no line is found with the given name.
+     */
     public Line getLine(String name) throws Exception{
         for(Line l : listOfLines){
             if(l.getName().equals(name)){
@@ -193,18 +236,33 @@ public class Graph {
         throw new Exception(String.format("Line was not found with name %s", name));
     }
 
+    /**
+     * Gets the list of lines.
+     *
+     * @return     The list of lines.
+     */
     public ArrayList<Line> getListOfLines(){
         return this.listOfLines;
     }
 
-    public void addStop(Stop stopA) {
-        if ( !listOfStops.contains(stopA) ) {
-            listOfStops.add(stopA);
+    /**
+     * Adds a stop.
+     *
+     * @param      stop  The stop a
+     */
+    public void addStop(Stop stop) {
+        if ( !listOfStops.contains(stop) ) {
+            listOfStops.add(stop);
         } else {
             System.out.println("Stop already exists in the graph.");
         }
     }
 
+    /**
+     * Gets the list of stops.
+     *
+     * @return     The list of stops.
+     */
     public ArrayList<Stop> getListOfStops(){
         return this.listOfStops;
     }
@@ -218,6 +276,11 @@ public class Graph {
         listOfLines.toString();
     }
 
+    /**
+     * Gets the string representation of the stats ( sizes of the lists ) of the graph
+     *
+     * @return     The string representation
+     */
     public String statsToString(){
         int sublinesCpt = 0;
         int emptySublinesCpt = 0;

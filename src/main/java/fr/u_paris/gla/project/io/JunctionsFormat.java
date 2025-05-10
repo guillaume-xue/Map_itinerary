@@ -3,8 +3,10 @@ package fr.u_paris.gla.project.io;
 /** A tool class for the junction format. */
 public final class JunctionsFormat {
 	
+    /** Expected number of colmuns in the junctions CSV */
 	public static final int NUMBER_COLUMNS = 3;
 	
+    /** Index des colonnes du fichier CSV des jonctions */
     public static final int LINE_ID_INDEX     = 0;
     public static final int VARIANT_INDEX     = 1;
     public static final int LIST_INDEX        = 2;

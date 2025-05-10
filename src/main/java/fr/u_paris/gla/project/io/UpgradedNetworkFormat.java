@@ -9,7 +9,8 @@ import java.time.temporal.Temporal;
 import java.util.Locale;
 
 
-/** A tool class for the network format. 
+/** 
+ * A tool class for the network format. 
  */
 public class UpgradedNetworkFormat {
 
@@ -55,11 +56,25 @@ public class UpgradedNetworkFormat {
         // Tool class
     }
 
+    /**
+     * Parses a string duration.
+     *
+     * @param      duration  The string duration
+     *
+     * @return     The duration
+     */
     public static Duration parseDuration(String duration) {
         LocalTime time = LocalTime.parse("00:" + duration, DURATION_FORMATTER);
         return Duration.between(time, ZERO);
     }
 
+    /**
+     * Parses a string duration, which has more than 2 digits.
+     *
+     * @param      duration  The string duration
+     *
+     * @return     The duration
+     */
     public static Duration parseLargeDuration(String duration) {
         String[] parts = duration.split(":");
         long minutes = Long.parseLong(parts[0]);
@@ -67,6 +82,13 @@ public class UpgradedNetworkFormat {
         return Duration.ofMinutes(minutes).plusSeconds(seconds);
     }
 
+    /**
+     * Formats a duration to a string.
+     *
+     * @param      duration  The duration
+     *
+     * @return     The string duration
+     */
     public static String formatDuration(Duration duration) {
         return Long.toString(duration.toMinutes()) + ":"
                 + DURATION_SECONDS_FORMATTER.format(duration.toSecondsPart());

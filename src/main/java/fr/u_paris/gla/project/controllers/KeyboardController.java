@@ -3,6 +3,9 @@ package fr.u_paris.gla.project.controllers;
 import javax.swing.JButton;
 import javax.swing.JTextArea;
 
+/**
+ * Controls the data flow into a keyboard object and updates the view whenever data changes.
+ */
 public class KeyboardController {
 
   private JTextArea textArea1;

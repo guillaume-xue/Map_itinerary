@@ -17,6 +17,9 @@ import fr.u_paris.gla.project.graph.Graph;
 import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.views.Gui;
 
+/**
+ * Controls the data flow into a mouse object and updates the view whenever data changes.
+ */
 public class MouseController {
 
   private JMapViewer mapViewer;
@@ -84,7 +87,9 @@ public class MouseController {
     mapViewer.addMouseMotionListener(new CustomMouseMotionAdapter());
   }
 
-  /// Custom mouse adapter to handle mouse events
+  /**
+   * Custom mouse adapter to handle mouse events
+   */
   private class CustomMouseAdapter extends MouseAdapter {
 
     private int leftClickCount = 0;
@@ -167,7 +172,9 @@ public class MouseController {
     }
   }
 
-  /// Custom mouse motion adapter to handle mouse drag events
+  /**
+   * Custom mouse motion adapter to handle mouse drag events
+   */
   private class CustomMouseMotionAdapter extends MouseMotionAdapter {
     @Override
     public void mouseDragged(MouseEvent e) {
