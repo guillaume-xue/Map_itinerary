@@ -13,7 +13,7 @@ import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
 import fr.u_paris.gla.project.utils.CSVExtractor;
 
 /**
- * Application entry point. Manages the commands & gui.
+ * Application entry point. Manages the launch of commands and gui.
  */
 public class App {
     /**
