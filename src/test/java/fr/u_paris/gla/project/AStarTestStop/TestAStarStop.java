@@ -10,15 +10,17 @@ public class TestAStarStop {
 
     @Test
     public void giveDepartureTimeFromUsedSublineTest(){
-        // 3 stations du RER C
         Stop stop1 = new Stop(48.88100428912917, 2.355103854928953, "Gare du Nord");
         Stop stop2 = new Stop(48.7801486976132, 2.3125717998386075, "Bourg-la-Reine");
         Subline subline = new Subline(stop1, stop2);
         LocalTime departureTime = LocalTime.now();
         LocalTime departureTimeFromUsedSubline = stop1.giveDepartureTimeFromUsedSubline(departureTime, subline);
 
-        System.out.println(departureTimeFromUsedSubline);
         System.out.println(departureTime);
+        System.out.println(departureTimeFromUsedSubline);
+
+        // Vérification que le temps de départ de la sous-ligne est égal au temps de départ donné
+        assert(departureTimeFromUsedSubline.equals(departureTime));
     }
 
     @Test
@@ -53,7 +55,7 @@ public class TestAStarStop {
 
     @Test
     public void giveNextStopsArrivalTime(){
-        
+
     }
 
 
