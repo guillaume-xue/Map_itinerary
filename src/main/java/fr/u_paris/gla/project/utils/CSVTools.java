@@ -39,6 +39,14 @@ public final class CSVTools {
         // Tool class
     }
 
+    /**
+     * Reads a csv from url.
+     *
+     * @param      url                  The url
+     * @param      contentLineConsumer  The content line consumer
+     *
+     * @throws     IOException          Throws exception if the parsing fails.
+     */
     public static void readCSVFromURL(String url, Consumer<String[]> contentLineConsumer)
             throws IOException {
         ICSVParser parser = new CSVParserBuilder().withSeparator(';').build();
@@ -59,6 +67,14 @@ public final class CSVTools {
         }
     }
 
+    /**
+     * Reads a csv.
+     *
+     * @param      path                 The path
+     * @param      contentLineConsumer  The content line consumer
+     *
+     * @throws     IOException          Throws exception if parsing fails.
+     */
     public static void readCSVFromFile(String path, Consumer<String[]> contentLineConsumer) 
             throws IOException {
         ICSVParser parser = new CSVParserBuilder().withSeparator(';').build();
@@ -91,7 +107,15 @@ public final class CSVTools {
         }
     }
 
-    
+    /**
+     * Reads a csv from zip.
+     *
+     * @param      zipFilePath          The zip file path
+     * @param      csvFileName          The csv file name
+     * @param      contentLineConsumer  The content line consumer
+     *
+     * @throws     IOException          Throws exceptions if there are problems with the ZIP/CSV
+     */
     public static void readCSVFromZip(String zipFilePath, String csvFileName, Consumer<String[]> contentLineConsumer) throws IOException {
         URL zipUrl = CSVTools.class.getClassLoader().getResource(zipFilePath);
         if (zipUrl == null) {

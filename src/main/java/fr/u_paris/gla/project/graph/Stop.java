@@ -60,18 +60,43 @@ public class Stop {
         return departures;
     }
 
+    /**
+     * Adds an adjacent stop.
+     *
+     * @param      adjacentStop           The adjacent stop
+     * @param      mode                   The mode
+     * @param      timeToNextStation      The time to next station
+     * @param      distanceToNextStation  The distance to next station
+     */
     public void addAdjacentStop(Stop adjacentStop, String mode, Duration timeToNextStation, Float distanceToNextStation){
         timeDistancePerAdjacentStop.put(new Pair(adjacentStop, TransportTypes.valueOf(mode)), new Pair(timeToNextStation, distanceToNextStation));
     }
     
+    /**
+     * Adds a list of departures for a given subline.
+     *
+     * @param      subline  The subline
+     * @param      times    The times
+     */
     public void addDeparture(Subline subline, ArrayList<LocalTime> times) {
         departures.put(subline, new ArrayList<>(times)); // defensive copy
     }
 
+    /**
+     * Adds a departure for a given subline.
+     *
+     * @param      subline  The subline
+     * @param      time     The time
+     */
     public void addDeparture(Subline subline, LocalTime time) {
         departures.computeIfAbsent(subline, k -> new ArrayList<>()).add(time);
     }
     
+    /**
+     * Gets the adjacent stops.
+     *
+     * @return     The list of adjacent stops.
+     */
     public ArrayList<Stop> getAdjacentStops() {
         ArrayList<Stop> stops = new ArrayList<>();
         for (Pair<Stop, TransportTypes> key : timeDistancePerAdjacentStop.keySet()) {
@@ -125,6 +150,13 @@ public class Stop {
     }
     
     
+    /**
+     * Finds a stop in subline.
+     *
+     * @param      subline  The subline
+     *
+     * @return     { description_of_the_return_value }
+     */
     public Stop findNextStopInSubline(Subline subline) {
     	ArrayList<Stop> stops = subline.getListOfStops();
     	for(int i = 0; i<stops.size() -1; i++) {
@@ -333,12 +365,25 @@ public class Stop {
             Double.doubleToLongBits(longitude) == Double.doubleToLongBits(other.longitude);
     }
 
-    //calculates the distance between two stops
+    /**
+     * Calculates the distance between two stops.
+     *
+     * @param      s     The stop
+     *
+     * @return     The distance.
+     */
     public Double calculateDistance(Stop s){
         return GPS.distance(this.latitude, this.longitude, s.latitude, s.longitude);
     }
     
-    //calculates the distance between a stop and the given coordinates
+    /**
+     * Calculates the distance between a stop and the given coordinates.
+     *
+     * @param      targetLatitude   The target latitude
+     * @param      targetLongitude  The target longitude
+     *
+     * @return     The distance.
+     */
     public Double calculateDistance(double targetLatitude, double targetLongitude){
         return GPS.distance(this.latitude, this.longitude, targetLatitude, targetLongitude);
     }

@@ -48,6 +48,13 @@ public final class GPS {
         return EARTH_RADIUS * c;
     }
 
+    /**
+     * Haversine function to calculate flying distance. Handles the earth radius.
+     *
+     * @param      val   The delta latitude/longitude
+     *
+     * @return     The result
+     */
     private static double haversine(double val) {
         return Math.pow(Math.sin(val / 2), 2);
     }

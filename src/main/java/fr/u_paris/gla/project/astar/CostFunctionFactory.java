@@ -16,6 +16,13 @@ public class CostFunctionFactory {
         DURATION
     }
 
+    /**
+     * Getter de la fonction de coût.
+     *
+     * @param      mode  Le mode souhaité
+     *
+     * @return     La fonction de coût correspondante
+     */
     public static CostFunction getCostFunction(Mode mode) {
         return switch (mode) {
             case DURATION -> new DurationCostFunction();

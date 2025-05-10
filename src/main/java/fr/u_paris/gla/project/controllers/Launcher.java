@@ -12,6 +12,9 @@ import javax.swing.ImageIcon;
 import java.awt.Image;
 import java.net.URL;
 
+/**
+ * Launcher for the GUI, basically a waiting screen while the objects are being parsed.
+ */
 public class Launcher {
 
   private static final URL SPLASH_SCREEN_IMAGE = Launcher.class

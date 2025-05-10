@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import fr.u_paris.gla.project.utils.TransportTypes;
 import java.util.Objects;
 
+/**
+ * A class to describe a subline in the Network.
+ */
 public class Subline {
 
     private String name;
@@ -80,7 +83,14 @@ public class Subline {
         this.sublineType = type;
     }
 
-    //Stop should be the departure Stop. 
+    /**
+     * Adds departure times. Stop argument should be the departue stop of the subline ( first in the list ).
+     *
+     * @param      Stop            The stop
+     * @param      departureTimes  The departure times
+     *
+     * @throws     Exception       The given Stop is not the departure one
+     */
     public void addDepartureTimes(Stop Stop, ArrayList<LocalTime> departureTimes) throws Exception{
         if(!Stop.equals(listOfStops.get(0))){
             throw new Exception("The departure Stop indicated does not match the first Stop in the list of Stops.");

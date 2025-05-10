@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -62,12 +63,21 @@ import fr.u_paris.gla.project.graph.Line;
 import fr.u_paris.gla.project.graph.Stop;
 import fr.u_paris.gla.project.graph.Subline;
 import fr.u_paris.gla.project.utils.TransportTypes;
-import fr.u_paris.gla.project.views.Gui.ColoredMapPolygon;
-import fr.u_paris.gla.project.views.Gui.GrayDashedMapPolygon;
+import fr.u_paris.gla.project.views.components.ColoredMapPolygon;
+import fr.u_paris.gla.project.views.components.GrayDashedMapPolygon;
+import fr.u_paris.gla.project.views.components.TextSquarePanel;
+import fr.u_paris.gla.project.views.components.SolidCircle;
+import fr.u_paris.gla.project.views.components.ImagePanel;
+import fr.u_paris.gla.project.views.components.DashedColoredLine;
+import fr.u_paris.gla.project.views.components.SolidColoredLine;
+import fr.u_paris.gla.project.views.components.SolidDownwardsArrow;
 
-
+/**
+ * The graphical user interface for the app.
+ */
 public class Gui extends JFrame {
 
+  /** Default constants */
   private static final int SCREEN_WIDTH = 900;
   private static final int SCREEN_HEIGHT = 600;
   private static final int RESEARCH_PANEL_WIDTH = 350;
@@ -76,6 +86,7 @@ public class Gui extends JFrame {
   private static final Coordinate PARIS_CENTER = new Coordinate(48.8566, 2.3522);
   private static final int DEFAULT_ZOOM = 10;
 
+  /** Main graphical objects to keep track of */
   private JScrollPane textStart;
   private JScrollPane textEnd;
   private JPanel contentPanel;
@@ -162,8 +173,6 @@ public class Gui extends JFrame {
     textItineraryPanel.setLayout(new BoxLayout(textItineraryPanel, BoxLayout.Y_AXIS));
     textItineraryPanel.setBackground(primaryBackgroundColor);
 
-
-
     // Create checkboxes for choosing the best route by distance or time
     JLabel label = new JLabel("Meilleur itinéraire en: ");
     this.distCheckBox = new JCheckBox("Distance");
@@ -230,9 +239,6 @@ public class Gui extends JFrame {
     textItineraryScrollPane = new JScrollPane(textItineraryPanel);
     textItineraryScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
     textItineraryScrollPane.getVerticalScrollBar().setUnitIncrement(16); // Smoother scrolling
-
-
-
 
     // Create a split pane to separate the research panel and the content panel
     JSplitPane splitPane = new JSplitPane(
@@ -669,180 +675,15 @@ public class Gui extends JFrame {
     return pathPanel;
   }
 
-  public class SolidColoredLine extends JPanel {
-    private final Color color;
-
-
-    public SolidColoredLine(Color color) {
-      super();
-      this.color = color;
-      this.setBackground(Color.WHITE);
-      this.setOpaque(true);
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-      super.paintComponent(g);
-
-      Graphics2D g2d = (Graphics2D) g;
-
-      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-
-      int width = getWidth();
-      int height = getHeight();
-
-
-      int middleX = width / 2;
-
-
-      g2d.setColor(color);
-      g2d.setStroke(new BasicStroke(4)); 
-      g2d.drawLine(middleX, 0, middleX, height);
-    }
-  }
-  public class DashedColoredLine extends JPanel {
-    private final Color color;
-
-
-    public DashedColoredLine(Color color) {
-      super();
-      this.color = color;
-      this.setBackground(Color.WHITE);
-      this.setOpaque(true);
-    }
-    
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        Graphics2D g2d = (Graphics2D) g.create();
-
-        // Calculate dynamic dash size based on height
-        int panelHeight = getHeight();
-        float dashLength = Math.max(2f, panelHeight / 50f); // 2% of height or minimum 2px
-        float gapLength = dashLength; // Make dashes and gaps equal
-
-        // Create dynamic dash pattern
-        float[] dashPattern = {dashLength, gapLength};
-
-        // Set stroke with dynamic dash
-        g2d.setStroke(new BasicStroke(
-            2f,                      // Line thickness
-            BasicStroke.CAP_BUTT, 
-            BasicStroke.JOIN_MITER, 
-            10f,                     // Miter limit
-            dashPattern,            // Dash pattern
-            0f                      // Dash phase
-        ));
-
-        g2d.setColor(color);
-
-        // Draw vertical dashed line down the center
-        int x = getWidth() / 2;
-        g2d.drawLine(x, 0, x, getHeight());
-
-        g2d.dispose();
-    }
-  }
-
-
-  public class SolidDownwardsArrow extends JPanel {
-    private final Color color;
-
-    public SolidDownwardsArrow(Color color) {
-      super();
-      this.color = color;
-      this.setBackground(Color.WHITE);
-      this.setOpaque(true);
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        
-
-        Graphics2D g2d = (Graphics2D) g;
-
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        int width = getWidth();
-        int height = getHeight();
-
-        int[] xPoints = { width / 2, width, 0 };
-        int[] yPoints = { height, 0, 0 };
-
-        g2d.setColor(color);
-        g2d.fillPolygon(xPoints, yPoints, 3);
-    }
-  }
-
-  public class SolidCircle extends JPanel {
-    Color color;
-  
-    public SolidCircle(Color color){
-      this.color = color;
-      this.setBackground(Color.WHITE);
-      this.setOpaque(true);
-    }
-     @Override
-    protected void paintComponent(Graphics g) {
-      super.paintComponent(g);
-
-        // Cast to Graphics2D for better control
-      Graphics2D g2d = (Graphics2D) g;
-
-        // Enable anti-aliasing for smooth edges
-      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        // Define the diameter of the circle
-      int diameter = Math.min(getWidth(), getHeight()) / 2;
-
-        // Calculate top-left corner to center the circle
-      int x = (getWidth() - diameter) / 2;
-      int y = (getHeight() - diameter) / 2;
-
-      // Draw filled circle
-      g2d.setColor(color);
-      g2d.fillOval(x, y, diameter, diameter);
-
-      g2d.setColor(Color.BLACK);
-      g2d.setStroke(new BasicStroke(1)); 
-      g2d.drawOval(x, y, diameter, diameter);
-    }
-  }
-  public class ImagePanel extends JPanel {
-    private BufferedImage image;
-
-    public ImagePanel(String imagePath) {
-        try {
-            image = ImageIO.read(new File(imagePath));
-        } catch (IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Image could not be loaded: " + imagePath);
-        }
-        this.setPreferredSize(new Dimension(15, 15));
-
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-      super.paintComponent(g);
-
-      if (image != null) {
-          // Scale image to fit the panel
-          this.setBackground(Color.WHITE);
-          this.setOpaque(true);
-
-          int width = getWidth();
-          int height = getHeight();
-          int lessOf = height < width ? height : width;
-
-          g.drawImage(image, 0, 0, lessOf, lessOf, this);
-      }
-    }
-  }
-
+  /**
+   * Gets the resource path for transport types icons.
+   *
+   * @param      tty    The trasport type
+   *
+   * @return     The resource path.
+   *
+   * @throws     Error  Throws an exception if transport type is not found.
+   */
   private String getResourcePathForTransportTypeIcones (TransportTypes tty) throws Error {
     String ret = "src/main/resources-filtered/fr/u_paris/gla/project";
     //Rail, Subway, Bus, Tram, Walk, Funicular
@@ -870,70 +711,15 @@ public class Gui extends JFrame {
       }
     }
   }
-  public class TextSquarePanel extends JPanel {
-    private String text;
-    private Color squareColor;
 
-    public TextSquarePanel(String text, Color squareColor) {
-        this.text = text;
-        this.squareColor = squareColor;
-        this.setPreferredSize(new Dimension(15, 15));
-    }
 
-    public void setText(String text) {
-        this.text = text;
-        repaint();
-    }
-
-    public void setSquareColor(Color color) {
-        this.squareColor = color;
-        repaint();
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        int width = getWidth();
-        int height = getHeight();
-
-        // Draw background square
-        g.setColor(squareColor);
-        g.fillRect(0, 0, width, height);
-
-        // Find max font size that fits within the square
-        Graphics2D g2d = (Graphics2D) g.create();
-        g2d.setColor(Color.WHITE);
-        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-        int fontSize = height; // start with maximum font size
-        Font font = new Font("SansSerif", Font.BOLD, fontSize);
-        FontMetrics fm;
-
-        // Reduce font size until it fits both width and height
-        while (fontSize > 5) {
-            font = font.deriveFont((float) fontSize);
-            fm = g2d.getFontMetrics(font);
-            int textWidth = fm.stringWidth(text);
-            int textHeight = fm.getAscent() + fm.getDescent();
-
-            if (textWidth <= width * 0.9 && textHeight <= height * 0.9) {
-                break;
-            }
-
-            fontSize--;
-        }
-
-        g2d.setFont(font);
-        fm = g2d.getFontMetrics();
-        int x = (width - fm.stringWidth(text)) / 2;
-        int y = (height + fm.getAscent() - fm.getDescent()) / 2;
-
-        g2d.drawString(text, x, y);
-        g2d.dispose();
-    }
-  }
-
+  /**
+   * Makes a JPanel that displays a list of SegmentItineraire ( basically an itinerary )
+   *
+   * @param      segments  The segments
+   *
+   * @return     The JPanel.
+   */
   public JPanel displayTextItinerary(ArrayList<SegmentItineraire> segments){
     textItineraryPanel.removeAll();
     textItineraryPanel.revalidate();
@@ -1145,7 +931,6 @@ public class Gui extends JFrame {
             waitingTimeForNextTransportJTA.setEditable(false);
             collapsableListOfStopsInItinerary.add(waitingTimeForNextTransportJTA);
           }
-
           
         }
         else {
@@ -1186,7 +971,6 @@ public class Gui extends JFrame {
       
       textItinJP.add(sda, c);
       
-
       //Add place to start 
       c.fill = GridBagConstraints.BOTH;
       c.gridx = 2; 
@@ -1207,7 +991,6 @@ public class Gui extends JFrame {
         //Add Arriving time
         textItinJP.add((new JLabel(timeArrival)), c);
 
-
         SolidCircle scIt = new SolidCircle(Color.BLUE);
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 1;
@@ -1223,10 +1006,6 @@ public class Gui extends JFrame {
         textItinJP.add((new JLabel(placeToArrive)), c);
       }
     }
-
-
-
-
 
     JPanel fullTextItinerary = new JPanel();
     fullTextItinerary.setOpaque(true);
@@ -1245,8 +1024,14 @@ public class Gui extends JFrame {
     return fullTextItinerary;
   }
 
+  /**
+   * Gets the associated line and icon of a subline.
+   *
+   * @param      subline  The subline
+   *
+   * @return     The JPanel holding the line and its icon.
+   */
   public JPanel getIconAndLine(Subline subline){
-
     JPanel typeOfTransportAndDirection = new JPanel();
     typeOfTransportAndDirection.setLayout(new FlowLayout(FlowLayout.LEFT));
     typeOfTransportAndDirection.setBackground(Color.WHITE);
@@ -1258,7 +1043,6 @@ public class Gui extends JFrame {
     return typeOfTransportAndDirection;
 
   }
-  
 
   /**
    * Calls the displaySpecificLine to display one line on the map.
@@ -1422,98 +1206,17 @@ public class Gui extends JFrame {
   }
 
   /**
-   * Custom MapPolygon to make a line between two stops.
+   * Helper function a draw a line between points.
+   *
+   * @param      g2d     The 2d graphics object
+   * @param      points  The list of points
    */
-  public class ColoredMapPolygon extends MapPolygonImpl {
-    private final Color color;
-
-    public ColoredMapPolygon(Coordinate start, Coordinate end, Coordinate middle, Color color) {
-      super(start, end, middle);
-      this.color = color;
-    }
-
-    @Override
-    public void paint(Graphics g, java.util.List<Point> points) {
-      if (points == null || points.size() < 2) {
-        return;
-      }
-      
-      Graphics2D g2d = (Graphics2D) g;
-
-      Stroke originalStroke = g2d.getStroke();
-      Paint originalPaint = g2d.getPaint();
-      Color originalColor = g2d.getColor();
-      RenderingHints originalHints = g2d.getRenderingHints();
-
-      g2d.setColor(Color.BLACK);
-      g2d.setStroke( new BasicStroke(6.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
-      drawLines(g2d, points);
-
-      g2d.setColor(color);
-      g2d.setStroke(new BasicStroke(5.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
-      drawLines(g2d, points);
-
-      g2d.setStroke(originalStroke);
-      g2d.setPaint(originalPaint);
-      g2d.setColor(originalColor);
-      g2d.setRenderingHints(originalHints);
-    }
-  }
-
-  // Helper function to draw a line between points
-  private void drawLines(Graphics2D g2d, java.util.List<Point> points) {
+  private void drawLines(Graphics2D g2d, List<Point> points) {
     for (int i = 1; i < points.size(); i++) {
       Point p1 = points.get(i - 1);
       Point p2 = points.get(i);
       g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
     }
-  }
-
-
-  /**
-   * Custom MapPolygon to make a line between two stops, for walking.
-   */
-  public class GrayDashedMapPolygon extends MapPolygonImpl {
-    private static final Color GRAY_COLOR = Color.GRAY;
-
-    public GrayDashedMapPolygon(Coordinate start, Coordinate end, Coordinate middle) {
-      super(start, end, middle);
-    }
-
-    @Override
-    public void paint(Graphics g, java.util.List<Point> points) {
-      if (points == null || points.size() < 2) {
-        return;
-      }
-      Graphics2D g2d = (Graphics2D) g;
-
-      Stroke originalStroke = g2d.getStroke();
-      Paint originalPaint = g2d.getPaint();
-      Color originalColor = g2d.getColor();
-      RenderingHints originalHints = g2d.getRenderingHints();
-
-      g2d.setColor(GRAY_COLOR); // Set the color to gray
-      float[] dashPattern = { 10, 10 }; // Define dash pattern (10 pixels on, 10 pixels off)
-      g2d.setStroke( new BasicStroke(4, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10, dashPattern, 0));
-      for (int i = 1; i < points.size(); i++) {
-        Point p1 = points.get(i - 1);
-        Point p2 = points.get(i);
-        g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
-      }
-
-      g2d.setStroke(originalStroke);
-      g2d.setPaint(originalPaint);
-      g2d.setColor(originalColor);
-      g2d.setRenderingHints(originalHints);
-    }
-  }
-
-  /**
-   * Launches the application.
-   */
-  public void launch() {
-    setVisible(true);
-    requestFocusInWindow();
   }
 
   /**
@@ -1537,105 +1240,46 @@ public class Gui extends JFrame {
     return menu.getItem(itemIndex);
   }
 
+  /** All the getters */
+
+  public JButton getResearchButton() { return researchButton; }
+
+  public JTextArea getTextStart() { return (JTextArea) textStart.getViewport().getView(); }
+
+  public JTextArea getTextEnd() { return (JTextArea) textEnd.getViewport().getView(); }
+
+  public JMapViewer getMapViewer() { return mapViewer; }
+
+  public JPanel getContentPanel() { return contentPanel; }
+
+  public JCheckBox getDistCheckBox() { return distCheckBox; }
+
+  public JPanel getTextItineraryPanel(){ return textItineraryPanel; }
+
+  public JScrollPane getContentScrollPane(){ return contentScrollPane; }
+
+  public JScrollPane getTextItineraryScrollPane(){ return textItineraryScrollPane; }
+
+  public JCheckBox getTimeCheckBox() { return timeCheckBox; }
+
+  public JButton getViewLineButton() { return viewLineButton; }
+
+  public JTextArea getnumLine() { return (JTextArea) numLine.getViewport().getView(); }
+
+  public JDialog getFloatingWindow() { return floatingWindow; }
+
+  public JComboBox<String> getLineTypeDropdown() { return lineTypeDropdown; }
+
+  public JComboBox<String> getComboBoxHours() { return comboBoxHours; }
+
+  public JComboBox<String> getComboBoxMinutes() { return comboBoxMinutes; }
+  
   /**
-   * Gets the research button.
-   * 
-   * @return the research button
+   * Launches the application.
    */
-  public JButton getResearchButton() {
-    return researchButton;
-  }
-
-  /**
-   * Gets the text areas for start and end.
-   * 
-   * @return the text areas
-   */
-  public JTextArea getTextStart() {
-    return (JTextArea) textStart.getViewport().getView();
-  }
-
-  /**
-   * Gets the text area for the end.
-   * 
-   * @return the text area
-   */
-  public JTextArea getTextEnd() {
-    return (JTextArea) textEnd.getViewport().getView();
-  }
-
-  /**
-   * Gets the map viewer.
-   * 
-   * @return the map viewer
-   */
-  public JMapViewer getMapViewer() {
-    return mapViewer;
-  }
-
-  /**
-   * Gets the content panel.
-   * 
-   * @return the content panel
-   */
-  public JPanel getContentPanel() {
-    return contentPanel;
-  }
-
-  /**
-   * Gets the text area for the path.
-   * 
-   * @return the text area
-   */
-  public JCheckBox getDistCheckBox() {
-    return distCheckBox;
-  }
-
-  public JPanel getTextItineraryPanel(){
-    return textItineraryPanel;
-  }
-
-  public JScrollPane getContentScrollPane(){
-    return contentScrollPane;
-  }
-  public JScrollPane getTextItineraryScrollPane(){
-    return textItineraryScrollPane;
-  }
-
-  /**
-   * Gets the text area for the path.
-   * 
-   * @return the text area
-   */
-  public JCheckBox getTimeCheckBox() {
-    return timeCheckBox;
-
-  }
-
-  public JButton getViewLineButton() {
-    return viewLineButton;
-  }
-
-  public JTextArea getnumLine() {
-    return (JTextArea) numLine.getViewport().getView();
-  }
-
-  public JDialog getFloatingWindow() {
-    return floatingWindow;
-  }
-
-  public JComboBox<String> getLineTypeDropdown() {
-    return lineTypeDropdown;
-  }
-
-  public JComboBox<String> getComboBoxHours() {
-    return comboBoxHours;
-  }
-
-  public JComboBox<String> getComboBoxMinutes() {
-    return comboBoxMinutes;
+  public void launch() {
+    setVisible(true);
+    requestFocusInWindow();
   }
 
 }
-    
-    

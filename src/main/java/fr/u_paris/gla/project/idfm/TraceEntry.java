@@ -15,8 +15,6 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 
-
-
 /**
  * Représente une ligne de transport intermédiaire utilisée pour la génération
  * des fichiers clients (CSV) contenant les informations d’horaires et d’arrêts.
