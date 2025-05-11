@@ -12,6 +12,7 @@ Logiciel de planification d'itinéraire. Permet de lire un réseau de transport 
 
 ### Dependances & pré-requis
 
+* Maven
 * Java JDK 17 minimum.
 * Une connexion internet pour afficher la carte et faire les recherches par adresses. En l'absence de connexion, il est necessaire de fournir des coordonnées GPS valides situées en Ile de France pour les addresses de départ et d'arrivée. 
 
@@ -56,11 +57,11 @@ Permet de lancer la configuration (création des fichiers de données) et l'inte
 
 Pour utiliser le jar:  
 ```
-java -jar target/project-2025.1.1.0-PROTOTYPE.jar [options...]
+java -jar target/project-1.2.0.jar [options...]
 ```
 
 :warning: Attention à utiliser la dernière version en date du Jar, le plus simple étant de prendre celle utilisée dans le Makefile :
-target/project-2025.1.1.0-PROTOTYPE.jar
+target/project-1.2.0.jar
 
 * Options de lancement
     * `--info` -> affiche dans la console la version et les auteurs de l'application.
@@ -94,6 +95,16 @@ Pour des explications plus détaillées de l'utilisation du programme, se réfé
 
 
 ## Historique des versions
+
+* 1.2.0 - Version finale
+    * Ajout des dernières fonctionnalitées:
+        * Optimalité des trajets en temps
+        * Affichage des horaires pour chaque station
+        * Déplacements à pied au début, pendant et à la fin du trajet
+    * Améliorations de l'UI/UX
+    * Améliorations de l'algorithme
+    * Corrections de bugs
+    * Refactor de certaines parties du code
 
 * 1.1.0
     * Ajout de la gestion des horaires
