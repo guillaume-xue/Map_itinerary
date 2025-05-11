@@ -32,7 +32,7 @@ public class TestAStar {
             // Config -> adapt everything before launching
             Path outputPath = Paths.get("results/effi5.txt"); 
             boolean connectStops = true;
-            String jarVersion = "1.1.0";
+            String jarVersion = "1.2.0";
             String maxWalkingDistance = "100";
             String maxWalkingDistanceStartAndFinish = "700";
             String note = "5th try - close to dev version + connects stop with 100 meters + openSet change";

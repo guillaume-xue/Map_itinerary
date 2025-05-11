@@ -6,4 +6,4 @@ soft:
 	mvn verify
 
 run:
-	java -jar target/project-2025.1.1.0-PROTOTYPE.jar --gui
+	java -jar target/project-1.2.0.jar --gui
