@@ -1,0 +1,168 @@
+< Toute démonstration visuelle doit être en plein écran afin d'avoir une map la plus grande possible. >
+
+INTRODUCTION : (Guillaume)
+
+Bienvenue dans notre video de présentation d'une application de recherche d'itinéraires pour le cours de Génie Logiciel Avancé. 
+Cette application peut afficher n'importe quel réseau de transport, avec métros, bus, tram, trains, et même des funiculaires et permettre non seulement d'afficher toutes les lignes de transport, ainsi que les horaires de passages à n'importe quelle station, mais aussi de déterminer un itinéraire optimal, en temps ou en distance, depuis n'importe quel deux points d'arrivée et de départ fixé par l'utilisateur, et ce, à n'importe quel moment de la journée. 
+
+
+Pour la démonstration de notre application nous utiliserons les données fournies par l'api de la RATP, sur le réseau de transport de l'Ile de France, néanmoins cette application peut lire et afficher n'importe quel réseau, à condition de fournir les données au format approprié.
+
+
+L'application est facile à lancer depuis un terminal : dans la racine du répertoire, il suffit de saisir les deux commandes 
+make all - pour compiler le projet, puis, une fois compilé, et pour toutes les fois suivantes, 
+make run - pour lancer l'application. 
+
+< Lancer l'application en la compilant avec make all, puis la lancer avec make run. Filmer le terminal, puis la fenêtre de l'application >. 
+
+LECT_LINE : (Mickael)
+
+Le réseau chargé dans l’application est descriptible à plusieurs niveaux de détails : l'on peut consulter et afficher l’ensemble des lignes pour un type de transport donné : 
+
+< View -> Display Line -> Metro -> ALL >
+
+< View -> Display Line -> Tram -> ALL >
+
+Attention, le réseau de bus étant particulièrement dense, cela peut prendre un certain temps pour les Bus. 
+
+L'on peut aussi afficher une ligne en particulier, pour visualiser tous ses différents embranchements, ainsi que tous les arrêts qu'elle dessert comme ceci : 
+
+
+< Display Line -> Metro  -> 7 >
+
+< Display Line -> Bus -> 62 >
+
+ <Display Line -> Funicular -> FUN (zoomer sur Montmartre pour bien pouvoir voir la ligne>
+
+
+LECT_TIME : (Guives)
+
+Au niveau de détail le plus bas, on peut afficher les stations individuellement. 
+Pour cela il suffit de placer un point sur la carte avec un click gauche, et la station la plus proche sera renvoyé ... 
+
+< Display Line -> Tram -> T9 -> Cliquer sur la station du T9 la plus proche l'Eglise Saint Jean Baptiste du Plateau -> Il devrait s'afficher le horaires de la ligne T9, station Germaine Tailleferre direction Porte de Choisy qui part pour la première fois de la journée à 5 heures 55 et la dernière à 1 heure 55 > 
+
+permettant ainsi de retrouver les lignes qui y passent ainsi que leurs horaires de passages.
+
+L'on peut voir ici par exemple que la ligne de tram T9 direction Porte de la Porte de Choisy possède un premier départ à 5 heures 55, et un dernier départ à 1 heure 55, avec un départ tous les 5 à 10 minutes en heure de pointe. 
+
+< Scroll down pour voir tous les départs en question >
+
+
+PLAN_0 - PLAN_3
+(Marie)
+
+ Bien entendu, l'utilisation principale de cette application devrait être pour trouver des itinéraires entre un point de départ et un point d'arrivée fixé par l'utilisateur. 
+
+Après avoir sélectionné le champ From, l'utilisateur peut cliquer la carte pour fixe son point de départ où qu'il veut en Ile de France. 
+
+< Sélectionner un point à Paris en cliquant sur la map après avoir sélectionné le champ From >
+
+De même, en sélectionnant le champ To, l'utilisateur peut déterminer son point d'arrivée souhaité.
+
+< Sélectionner un point à Paris en cliquant sur la map après avoir sélectionné le champ To >
+
+Les coordonnées géographiques correspondants au point donnée par l'utilisateur s'afficheront dans les champs From et To respectivement. 
+
+< Mettre une flèche / souligner les coordonnées dans les 2 champs >
+
+L'utilisateur peut aussi rentrer une adresse ou le nom d'un lieu dans ces champs. Il est recommandé à l'utilisateur d'aussi fournir le code postal de cette adresse pour affiner sa recherche. 
+
+ < Rentrer dans les champs les addresses 5 rue Thomas Mann 75013 et Tour Eiffel > 
+
+Il est bien sûr aussi possible de combiner ces deux approches
+
+< Cliquer sur la map pour fixer un point de départ, puis rentrer 21 rue du Temple 75004 > 
+
+ Une fois les points de départ de d'arrivée souhaité renseignés par l'utilisateur, celui ci peut choisi de déterminer le chemin le plus court en terme de temps, comme de distance en sélectionnant l'une des deux checkbox Distance ou Temps
+
+< Cliquer sur la checkbox Distance, puis Temps > 
+
+De plus, pour anticiper ses déplacements, l'utilisateur peut choisir de partir au plus vite,
+
+< Cercle autour de deux menus déroulants Now / Now >
+
+ou au contraire de sélectionner manuellement son temps de départ
+
+< Dérouler le menu de selection des heures / minutes et choisir 12:10 > 
+
+Finalement, l'utilisateur peut vouloir accepter de marcher sur une distance relativement longue entre deux arrêts : si il le souhaite, il peut donc activer cette fonctionnalité en allant dans le menu Dev et cliquer sur Connect all Stops. En cliquant, l'utilisateur accepte de marcher sur un maximum de 100 mètres entre deux stations géographiquement proches - par example sortir d'une station de métro pour prendre le bus. 
+
+Cette option pouvant ralentir de manière significative l'application, en n'est pas enclenchée par défaut - l'utilisateur, en fonction de la rapidité de sa machine, pourra décider de d'activer, ou non. 
+De plus, une fois sélectionnée, elle ne peut plus être désactivée avant de relancer l'application. 
+
+(Fin Marie, Début Foucauld)
+
+
+Voici quelques démonstrations de notre produit avec une combinaison des options décrites plus hauts : 
+
+
+Un trajet du 21 rue du Temple 75004 à la Tour Eiffel, départ prévu à 12:10, avec l'itinéraire le plus court possible, en indiquant ne pas vouloir marcher entre deux stations.  
+
+< Faire une recherche de l'itinéraire avec 
+From : 21 rue du Temple 75004
+To : Tour Eiffel
+Best route by : Distance 
+Heure : 12:10
+Ne pas connecter les Stops dans Dev.
+Cliquer sur Search
+>
+
+Une représentation graphique de l'itinéraire s'affiche sur la carte, avec un point rouge indiquant le point de départ, et un bleu le point d'arrivée. 
+Les lignes de transport prises, dans ce cas 2 bus, sont indiqués visuellement avec les couleurs officielles de la RATP. 
+Pour plus de détail, comme le temps de trajet ou encore les correspondances nécessaires, l'utilisateur est invité à consulter le panneau en bas à gauche de la carte, ou est affiché un récapitulatif de toutes les informations nécessaires pour arriver à sa destination. 
+
+Ici, l'utilisateur sera invité à marcher jusqu'à l'arrêt Rivoli - Pont Neuf du bus 21, de le prendre pour deux arrêts en direction de Porte de Saint-Ouen, puis de descendre à Palais Royal, Musée du Louvre, d'y attendre le bus 69 en direction de Champs de Mars. Il le prendra pendant 12 arrêts jusqu'à Bosquet - Grenelle, à l'issue de quoi il marchera jusqu'à sa destination. 
+
+Noter que ce chemin est le chemin le plus court, mais pas le plus rapide, puisqu'il prends 58 minutes. 
+
+Au contraire, un chemin le plus rapide entre ces deux points serait 
+
+< Faire une recherche de l'itinéraire avec 
+From : 21 rue du Temple 75004
+To : Tour Eiffel
+Best route by : Time 
+Heure : 12:10
+Ne pas connecter les Stops dans Dev.
+Cliquer sur Search
+>
+
+de prendre le RER B, puis le RER C pour un total de 27 minutes de porte à porte. 
+
+En acceptant de marcher entre deux stations, 
+
+< Faire une recherche de l'itinéraire avec 
+From : 21 rue du Temple 75004
+To : Tour Eiffel
+Best route by : Time 
+Heure : 12:10
+Connecter les Stops dans Dev.
+Cliquer sur Search
+>
+
+l'utilisateur gagne 5 minutes supplémentaires, et passe à un total de 22 minutes. 
+
+< Montrer un itinéraire de Google Maps allant du 21 rue du Temple à la Tour Eiffel passant par le RER C à 12:10, similaire à l'example ci - contre. Mettre côte à côte l'image de l'itinéraire de  Google Maps et le panneaux en bas à gauche de l'appli pour pouvoir facilement comparer les itinéraires.  > 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Google maps, référent en la matière, propose un itinéraire très similaire en 30 minutes ,marchant jusqu'au RER C au lieu de prendre le bus. Notre application utilisant un jeu de données publiques de la RATP, il se peut donc qu'il y ait de petites différences de trajet proposées avec Google Maps. 
+
+
+CONCLUSION : (Guives)
+
+L'on peut donc voir que l'application peut lire un réseau, ainsi que décrire toutes les lignes de transport qui le constitue, avec leurs diverses embranchements. 
+Elle est capable d'afficher les horaires de passage d'un transport pour un station donnée.
+Finalement, elle est capable de fournir un itinéraire optimisé dans un réseau, avec début et/ou fin de trajet à pied, et avec section de marche à pied entre deux stations, selon les besoins de l'utilisateur, depuis n'importe quel coordonnées géographique situé en Ile de France. 
+

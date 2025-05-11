@@ -1,18 +1,19 @@
 package fr.u_paris.gla.project;
 
+import java.util.Objects;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Properties;
+import java.io.File;
 
 import fr.u_paris.gla.project.controllers.Launcher;
 import fr.u_paris.gla.project.idfm.IDFMNetworkExtractor;
 import fr.u_paris.gla.project.utils.CSVExtractor;
 
 /**
- * Simple application model.
- *
- * @author Emmanuel Bigeon
+ * Application entry point. Manages the launch of commands and gui.
  */
 public class App {
     /**
@@ -21,37 +22,115 @@ public class App {
     private static final String UNSPECIFIED = "Unspecified"; //$NON-NLS-1$
 
     /**
+     * Default path constants
+     */
+    private static final String STOPS_DEFAULT = "stopsData.csv";
+    private static final String JUNCTIONS_DEFAULT = "junctionsData.csv";
+    private static final String SCHEDULES_DEFAULT = "Schedules/";
+    private static final String JAR_PATH = "path/projet-"
+            + readApplicationProperties().getProperty("app.version", UNSPECIFIED);
+
+    private static boolean isUsingDefault = false;
+
+    /**
      * Application entry point.
      *
      * @param args launching arguments
      */
     public static void main(String[] args) {
-        if (args.length > 0) {
-            for (String string : args) {
-                if ("--info".equals(string)) { //$NON-NLS-1$
-                    printAppInfos(System.out);
-                    return;
-                }
-                if ("--gui".equals(string)) { //$NON-NLS-1$
-                    new Launcher();
-                    return;
-                }
-                if ("--parse".equals(string)) {
-                    launchParser(args);
-                    return;
-                }
-                if ("--createfiles".equals(string)) {
-                    launchMakingFilesParser(new String[] { args[1], args[2], args[3] });
-                    return;
-                }
+
+        String command;
+        String[] command_args;
+
+        // Si aucun arguments spécifié on affiche le manuel.
+        if (args.length == 0) { // On a rien
+            printHelp();
+            return;
+        } else if (args.length == 1) { // On a que la commande
+            command = args[0];
+            command_args = new String[] { STOPS_DEFAULT, JUNCTIONS_DEFAULT, SCHEDULES_DEFAULT };
+            isUsingDefault = true;
+        } else if (args.length == 4) { // On a la commande + les arguments
+            if (areCommandsArgsValid(args)) { // Les arguments sont valides
+                command = args[0];
+                command_args = new String[] { args[1], args[2], args[3] };
+            } else { // Pas valides
+                System.out.println("Invalid usage. See usage below:\n");
+                printHelp();
+                return;
             }
+        } else { // Tout les autres cas
+            System.out.println("Invalid usage. See usage below:\n");
+            printHelp();
+            return;
+        }
+
+        switch (command) {
+            case "--info":
+                printAppInfos(System.out);
+                break;
+            case "--help":
+                printHelp();
+                break;
+            case "--create-files":
+                IDFMNetworkExtractor.parse(command_args);
+                break;
+            case "--parse":
+                CSVExtractor.makeObjectsFromCSV(command_args);
+                break;
+            case "--gui":
+
+                Boolean isValid = isUsingDefault && !areCommandsArgsValid(
+                        new String[] { "", command_args[0], command_args[1], command_args[2] });
+                // Si on veut utiliser les arguments par défault mais qu'ils n'ont pas été créé
+                if (isValid) {
+                    System.out.println(
+                            "GUI called with default arguments but default files do not exist yet. Calling parser.");
+                }
+                Launcher launcher = new Launcher(command_args, isValid);
+                break;
+            default:
+                System.out.println("Unknown command, see usage below:\n");
+                printHelp();
+                break;
         }
     }
 
     /**
-     * Prints application infos.
+     * Validates the arguments for the command. Verifies that the path leads to a
+     * correct expected file.
      *
-     * @param      out   The out stream
+     * @param args The arguments
+     *
+     * @return True if arguments are valid, false otherwise
+     */
+    public static boolean areCommandsArgsValid(String[] args) {
+        File stopsFile = new File(args[1]);
+        File junctionsFile = new File(args[2]);
+        File schedulesDir = new File(args[3]);
+
+        if (!stopsFile.exists() || !stopsFile.isFile() || !args[1].endsWith(".csv")) {
+            System.out.println("Error: '" + args[1] + "' does not exist or is not a CSV file. See usage.");
+            return false;
+        }
+
+        if (!junctionsFile.exists() || !junctionsFile.isFile() || !args[2].endsWith(".csv")) {
+            System.out.println("Error: '" + args[2] + "' does not exist or is not a CSV file. See usage.");
+            return false;
+        }
+
+        if (!schedulesDir.exists() || !schedulesDir.isDirectory()) {
+            System.out.println("Error: '" + args[3] + "' does not exist or is not a directory. See usage.");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Prints application infos (name, version, team).
+     *
+     * @param out The out stream
      */
     public static void printAppInfos(PrintStream out) {
         Properties props = readApplicationProperties();
@@ -64,7 +143,7 @@ public class App {
     /**
      * Loads and returns the application properties.
      *
-     * @return     a Properties object containing application information
+     * @return a Properties object containing application information
      */
     private static Properties readApplicationProperties() {
         Properties props = new Properties();
@@ -77,51 +156,29 @@ public class App {
     }
 
     /**
-     * Logs error messages based on the provided command and log context.
-     *
-     * @param      command  The string representation of the command
-     * @param      log      The log from the context
+     * Prints the help message in terminal.
      */
-    public static void errorLog(String command, String log) {
-
-        switch (command) {
-            case "parser":
-                System.out.println("Error: Invalid command line for objects parser. " + log + ".");
-                System.out.println("Usage: --parse <stops_data.csv> <junctions_data.csv>");
-                break;
-            case "generator":
-                System.out.println("Error: Invalid command line for IDFM parser. " + log + ".");
-                System.out.println("Usage: --createfiles mapData.csv junctionsData.csv Schedule/");
-                break;
-            default:
-                System.out.println("Error: Unknown");
-                break;
-        }
-    }
-
-    /**
-     * Main entry point for IDFM network Extractor.
-     *
-     * @param      args  The arguments, expects length 3, two target files and a directory
-     */
-    public static void launchMakingFilesParser(String[] args) {
-        if (args.length != 3) {
-            errorLog("generator", "Needs two target files and a target directory.");
-            return;
-        }
-        IDFMNetworkExtractor.parse(args);
-    }
-
-    /**
-     * Main entry point for objects parser.
-     *
-     * @param      args  The arguments, expects length 3, the command and two target files
-     */
-    public static void launchParser(String[] args) {
-        if (args.length != 3) {
-            errorLog("parser", "Missing inputs files");
-            return;
-        }
-        CSVExtractor.makeOjectsFromCSV(args);
+    public static void printHelp() {
+        System.out.println("Usage: java -jar " + JAR_PATH + ".jar [options]");
+        System.out.println();
+        System.out.println("Options:");
+        System.out.println();
+        System.out.println("    --help              Shows this help message and exits.");
+        System.out.println();
+        System.out.println("    --info              Shows the application information and exits.");
+        System.out.println();
+        System.out.println("    --create-files [stopsData.csv junctionsData.csv schedules_dir]");
+        System.out.println("                        Creates the files from the IDFM Network used by the model.");
+        System.out
+                .println("                        Arguments are optional. Provide all three or none to use defaults.");
+        System.out.println();
+        System.out.println("    --parse [stopsData.csv junctionsData.csv schedules_dir]");
+        System.out.println("                        Parses the provided files in argument to generate the model");
+        System.out
+                .println("                        Arguments are optional. Provide all three or none to use defaults.");
+        System.out.println();
+        System.out.println(
+                "    --gui               Main entry point of the application. Automatically manages the previous commands and launches the GUI.");
+        System.out.println();
     }
 }

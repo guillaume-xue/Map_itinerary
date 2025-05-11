@@ -7,8 +7,8 @@
 
 	<groupId>fr.u-paris.gla.groupe3lundi</groupId>
 	<artifactId>project</artifactId>
-	<version>2025.1.0.0-PROTOTYPE</version>
-	<name>Planificateur d'itin\u00e9raire</name>
+	<version>1.2.0</version>
+	<name>Planificateur d'itineraire</name>
 	<url>https://moule.informatique.univ-paris-diderot.fr/delarmin/gla-groupe-3-lundi</url>
 
 	<properties>
@@ -86,30 +86,6 @@
           <mainClass>fr.u_paris.gla.project.App</mainClass>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.5.0</version>
-        <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-          <archive>
-            <manifest>
-              <mainClass>fr.u_paris.gla.project.App</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-        <executions>
-          <execution>
-            <id>make-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
 	   <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -120,6 +96,18 @@
                     </nonFilteredFileExtensions>
                 </configuration>
         </plugin>
+<!-- 	      <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.4.1</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>jar</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin> -->
 		</plugins>
 		<resources>
 			<resource>
@@ -132,4 +120,9 @@
 			</resource>
 		</resources>
 	</build>
+
+  
+
+
+	
 </project>
