@@ -119,68 +119,6 @@ public class Graph {
     }
 
 
-
-    /*
-     * TODO : this will NOT remove the connections between stops if the maximum distance changes. To do this we would need to be able
-     * to identify what sort of transport is used when walking from a Stop to another 
-     * change HashMap<Stop, MutablePair<Duration, Float>> timeDistancePerAdjacentStop --> HashMap<Stop, MutableTriple<Duration, Float, String>> timeDistancePerAdjacentStop
-     * with String / an enum as the type of transport of the Subline that connects those two stops ? 
-     */
-    /*
-     * This is atrociously slow, and gets exponentially slower when the maximum distance walkable between two Stops increases, and more connections are created.
-     * Efforts should be made to speed this up, diminush the maximal acceptable walkable distance, or disable changing the distance and only run this once 
-     * in a different thread while the app is loading to avoid a painful user experience.  
-     * Currently useable with MAX_DISTANCE_WALKEABLE < 0.5km, and listOfStops = 35364.
-     */
-    /*
-     * Connects all Stops by creating walkable connections between Stops. New connections can be found in Stop.timeDistancePerAdjacentStop 
-     * As per discussion with Marie, their are no departures for walkables connections, as one can consider that one can start walking from a Stop 
-     * to another whenever they wish. 
-     * 
-     * If there is already a connection between stops A and B (for instance already a metro connection), then we will not be able to walk from A to B
-     */
-    public void connectStopsByWalking(){
-        double distance; 
-        int size = listOfStops.size();
-        Stop e;
-        Stop a;
-        //TODO : find a more efficient way to do this ?
-        /*
-        This will complete in n * (n + 1) / 2 iterations. 
-        I believe this is the least we can do as it is the maximum numbers of edges possible for a graph of n vertices, 
-        unless we decide to multithread this. However, due to concurrent acceses of shared variables (Stop.timeDistancePerAdjacentStop), I would be wary.
-         */ 
-        System.out.println("\nConnecting all Nodes by walking. This may take a while, please be patient.");
-        System.out.println("Current maximum distance between 2 points is " + MAX_DISTANCE_WALKABLE + "km");
-        if(MAX_DISTANCE_WALKABLE > 0.5){
-            System.out.println("You have selected a maximum walkable distance between stations above 0.5km. " + 
-            "The expected waiting time is very high.");
-        }
-        for(int x = 0; x < size; x ++){
-
-            //get current Stop to compare
-            a = listOfStops.get(x);
-
-            for(int z = x; z < size; z ++){
-                //get current Stop to be compared to
-                e = (listOfStops.get(z));
-
-                //check if there is already a connection
-                if(!e.hasAdjacentStop(a)){
-                    distance = a.calculateDistance(e);
-
-                    //we assume that the time to go from one Stop to another is identical in both ways (a to e and e to a). 
-                    //If this is not the case (for instance, if we take into account extra effort / time due to elevation changes), 
-                    //one should run additional checks here.
-                    if (distance < MAX_DISTANCE_WALKABLE * 1.33) {
-                        a.addAdjacentStop(e, "Walk", calculateWalkingTime(distance), (float) distance);
-                        e.addAdjacentStop(a, "Walk", calculateWalkingTime(distance), (float) distance);
-                    }
-                }
-            }
-        }
-        System.out.println("\nFinished connecting all nodes by walking");
-    }
     
     /**
      * nlog(n) version of connectStopsByWalking ( uses a 2DTree )

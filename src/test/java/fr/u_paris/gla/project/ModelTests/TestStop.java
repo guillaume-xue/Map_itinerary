@@ -1,16 +1,18 @@
 package fr.u_paris.gla.project;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.junit.jupiter.api.Test;
 
-import fr.u_paris.gla.project.graph.Stop;
 
+import fr.u_paris.gla.project.graph.Stop;
 
 public class TestStop {
 
+	
     @Test
     public void addAdjacentStopTest(){
         // 3 stations du RER C
@@ -23,6 +25,8 @@ public class TestStop {
         assert(stop3.getNameOfAssociatedStation() == "St-Michel Notre Dame");
 
     }
+    
+    
 
 }
 
