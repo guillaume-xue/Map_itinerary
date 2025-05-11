@@ -18,24 +18,6 @@ import java.util.HashMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestSegmentItineraire {
-    @Test
-    public void testToString() {
-        // Create a SegmentItineraire object with sample data
-        Subline subline = new Subline("B1");
-        ArrayList<Stop> stops = new ArrayList<>();
-        stops.add(new Stop(0,0,"Gare du Nord"));
-        stops.add(new Stop(0,0,"Chatelet"));
-        LocalTime heureDepart = LocalTime.of(10, 0);
-        LocalTime heureArrivee = LocalTime.of(10, 30);
-
-        SegmentItineraire segment = new SegmentItineraire(subline, stops, heureDepart, heureArrivee);
-
-        // Call the toString method
-        String result = segment.toString();
-
-        // Print the result
-        //System.out.println(result);
-    }
 
     @Test
     public void testSegmentItineraire() throws Exception {
