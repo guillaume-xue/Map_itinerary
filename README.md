@@ -8,6 +8,13 @@ Planificateur d'itinéraire urbain.
 
 Logiciel de planification d'itinéraire. Permet de lire un réseau de transport selon un format prédéfini et de calculer le trajet le plus court d'un point A (adresse ou coordonnées) à un point B (adresse ou coordonnées), en temps ou distance.
 
+## Video 
+
+Vous pourrez retrouver la video décrivant notre produit sur Youtube à l'adresse suivante : 
+[Youtube](https://www.youtube.com/watch?v=-vzrLvmfEwU)
+
+
+
 ## Lancement du programme
 
 ### Dependances & pré-requis
