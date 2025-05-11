@@ -40,7 +40,7 @@ make all
 ```
 Ou:  
 ```
-mvn clean package
+mvn clean verify
 ```
 
 ### Utilisation
