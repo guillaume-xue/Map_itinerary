@@ -1003,7 +1003,7 @@ public class Gui extends JFrame {
         c.gridwidth = 2;
         c.gridy = fourTimeIterations; 
         //Add Arrival time
-        textItinJP.add((new JLabel(placeToArrive)), c);
+        textItinJP.add((new JLabel(" " + placeToArrive)), c);
       }
     }
 
@@ -1038,7 +1038,15 @@ public class Gui extends JFrame {
     typeOfTransportAndDirection.setOpaque(true);
     typeOfTransportAndDirection.add(new ImagePanel(getResourcePathForTransportTypeIcones(subline.getSublineType())));
     typeOfTransportAndDirection.add(new TextSquarePanel(subline.getAssociatedLine().getName(), Color.decode("#" + subline.getAssociatedLine().getColor())));
-    typeOfTransportAndDirection.add(new JLabel(" Direction : " + subline.getDestination().getNameOfAssociatedStation()));
+    
+    String destination = subline.getDestination().getNameOfAssociatedStation();
+    int maxLength = 28;
+
+    if (destination.length() > maxLength) {
+        destination = destination.substring(0, maxLength - 3) + "...";
+    }
+
+    typeOfTransportAndDirection.add(new JLabel(" Direction: " + destination));
 
     return typeOfTransportAndDirection;
 
@@ -1144,9 +1152,9 @@ public class Gui extends JFrame {
     pathPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding for the panel
 
     JTextArea stopTextArea = createTextAreaOutput(
-      "Horaires de départ pour la station : \n" 
+      "Horaires de départ pour la station: \n" 
       + stop.getNameOfAssociatedStation()
-      + "\nCliquez sur la ligne pour afficher ces horaires");    
+      + "\nCliquez sur la ligne pour afficher ses horaires");    
 
     stopTextArea.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0)); // Add bottom margin
     pathPanel.add(stopTextArea);

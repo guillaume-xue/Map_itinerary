@@ -18,7 +18,7 @@ public class UpgradedNetworkFormat {
     public static final int GPS_PRECISION  = 18;
     
     //vitesses des différents type de transport, en km/h
-    public static final int RAIL_AVG_SPEED = 54;
+    public static final int RAIL_AVG_SPEED = 50;
     public static final int BUS_AVG_SPEED = 8;
     public static final int SUBWAY_AVG_SPEED = 22;
     public static final int TRAM_AVG_SPEED = 18;

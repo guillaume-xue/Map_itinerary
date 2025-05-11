@@ -312,7 +312,7 @@ public class GUIController {
           ArrayList<SegmentItineraire> itinerary = astar.findShortestPath(startFinish.getLeft(), startFinish.getRight(),
               heureDepart);
 
-          printItinerary(itinerary);
+          //printItinerary(itinerary);
 
           // Display the path on the map
           gui.getTextItineraryPanel().add(gui.displayTextItinerary(itinerary));
