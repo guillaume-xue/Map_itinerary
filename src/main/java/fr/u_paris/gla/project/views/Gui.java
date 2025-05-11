@@ -1179,13 +1179,14 @@ public class Gui extends JFrame {
       ArrayList<LocalTime> times = departures.get(subline);
 
       if (times == null || times.isEmpty()) {
-        JOptionPane.showMessageDialog(this, "No departures available for this subline.",
+/*        JOptionPane.showMessageDialog(this, "No departures available for this subline.",
             "No Departures", JOptionPane.INFORMATION_MESSAGE);
         mapViewer.removeAllMapMarkers();
         mapViewer.removeAllMapPolygons();
         mapViewer.repaint();
         pathPanel.removeAll();
-        break;
+        break;*/
+        continue;
       }
 
       for (LocalTime time : times) {
