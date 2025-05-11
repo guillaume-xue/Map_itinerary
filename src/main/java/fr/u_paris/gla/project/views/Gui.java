@@ -1150,6 +1150,7 @@ public class Gui extends JFrame {
 
     stopTextArea.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0)); // Add bottom margin
     pathPanel.add(stopTextArea);
+    pathPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add spacing between segments
 
     ArrayList<Subline> uniqueSublineList = new ArrayList<>();
     for (Subline subline : departures.keySet()) {
@@ -1168,8 +1169,11 @@ public class Gui extends JFrame {
     }
     for (Subline subline : uniqueSublineList) {
 
-      //get the subLine's type, the corresponding Icon, and the line number all in a neat JPanel.
+      // get the subLine's type, the corresponding Icon, and the line number all in a neat JPanel.
       JPanel temp = getIconAndLine(subline);
+      temp.setPreferredSize(new Dimension(200, 30)); // Set preferred size for the JPanel
+      temp.setMaximumSize(new Dimension(Short.MAX_VALUE, 30)); // Set maximum size for the JPanel
+      temp.setMinimumSize(new Dimension(200, 30)); // Set minimum size for the JPanel
       pathPanel.add(temp);
 
       JPanel timesPanel = new JPanel();
@@ -1179,28 +1183,32 @@ public class Gui extends JFrame {
       ArrayList<LocalTime> times = departures.get(subline);
 
       if (times == null || times.isEmpty()) {
-/*        JOptionPane.showMessageDialog(this, "No departures available for this subline.",
-            "No Departures", JOptionPane.INFORMATION_MESSAGE);
-        mapViewer.removeAllMapMarkers();
-        mapViewer.removeAllMapPolygons();
-        mapViewer.repaint();
-        pathPanel.removeAll();
-        break;*/
         continue;
       }
 
       for (LocalTime time : times) {
-        JTextArea timeTextArea = createTextAreaOutput(time.toString());
-        timesPanel.add(timeTextArea);
+        JPanel timePanel = new JPanel();
+        timePanel.setLayout(new FlowLayout(FlowLayout.LEFT)); // Ensure left-aligned layout for times
+        timePanel.setBackground(Color.WHITE); // Background color of times panel
+        timePanel.setPreferredSize(new Dimension(200, 30)); // Set preferred size for the JPanel
+        timePanel.setMaximumSize(new Dimension(Short.MAX_VALUE, 30)); // Set maximum size for the JPanel
+        timePanel.setMinimumSize(new Dimension(200, 30)); // Set minimum size for the JPanel
+        JLabel timeLabel = new JLabel(time.toString());
+        timeLabel.setFont(new Font("Arial", Font.PLAIN, 16)); // Set font for the JLabel
+        timePanel.add(new SolidCircle(Color.BLACK)); // Add a colored circle
+        timePanel.add(timeLabel);
+        timesPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add spacing between segments
+        timesPanel.add(timePanel);
       }
 
       pathPanel.add(timesPanel);
+      pathPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add spacing between segments
       addToggleFunctionality(temp, timesPanel); // Add toggle functionality
     }
 
-    //Makes the scrolling bar go to the top
+    // Makes the scrolling bar go to the top
     SwingUtilities.invokeLater(() -> {
-      getTextItineraryScrollPane().getVerticalScrollBar().setValue(0); 
+      getTextItineraryScrollPane().getVerticalScrollBar().setValue(0);
     });
 
     return pathPanel;
