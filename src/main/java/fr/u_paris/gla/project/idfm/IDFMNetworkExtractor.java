@@ -29,6 +29,7 @@ import java.io.FileWriter;
 
 import java.util.NavigableSet;
 import java.util.TreeSet;
+import java.util.TreeMap;
 import java.util.Optional;
 import java.time.LocalTime;
 import org.apache.commons.lang3.tuple.Pair;
@@ -36,69 +37,89 @@ import org.apache.commons.lang3.tuple.Triple;
 import java.util.Objects;
 import java.util.Iterator;
 
-/** Code of an extractor for the data from IDF mobilite.
+/**
+ * Extracteur de données pour le réseau de transport Île-de-France Mobilités (IDFM).
  * 
- * @author Emmanuel Bigeon */
+ * Cette classe permet de télécharger, parser et transformer des données publiques
+ * de transport fournies par IDFM. Elle génère des fichiers CSV utilisés par d'autres
+ * parties du projet, à partir de plusieurs sources de données :
+ * <ul>
+ *   <li>Les tracés des lignes de transport</li>
+ *   <li>Les arrêts associés à ces lignes</li>
+ *   <li>Les horaires et trajets (au format GTFS dans un fichier .zip)</li>
+ * </ul>
+ * 
+ * Le processus d'extraction comprend plusieurs étapes :
+ * <ol>
+ *   <li>Lecture et nettoyage des données de traces</li>
+ *   <li>Construction des correspondances entre routes, trips et arrêts</li>
+ *   <li>Création de fichiers CSV pour l'affichage sur carte, les horaires et les correspondances</li>
+ * </ol>
+ * 
+ * Pour lancer l'extraction, utiliser la méthode {@link #parse(String[])} en fournissant trois
+ * chemins de fichiers en argument (dans l'ordre : fichier pour la carte, fichier de correspondances,
+ * dossier de sortie pour les horaires).
+ *  
+ */
 public class IDFMNetworkExtractor {
 
-    /** The logger for information on the process */
+    /** Le logger pour les informations sur l'exécution du programme*/
     private static final Logger LOGGER = Logger
             .getLogger(IDFMNetworkExtractor.class.getName());
 
-    // IDF mobilite API URLs
+    /** URLs des fichiers CSV fournis par l'API IDF Mobilités */
     private static final String TRACE_FILE_URL = "https://data.iledefrance-mobilites.fr/api/explore/v2.1/catalog/datasets/traces-des-lignes-de-transport-en-commun-idfm/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B";
     private static final String STOPS_FILE_URL = "https://data.iledefrance-mobilites.fr/api/explore/v2.1/catalog/datasets/arrets-lignes/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B";
    
-    //IDF mobilite provided schedule file
+    /** Chemins des fichiers horaires fournis par IDF Mobilités */
     private static final String ZIP_PATH = "fr/u_paris/gla/project/idfm_data.zip";
     private static final String SCHEDULE_FILE_NAME = "idfm_data/stop_times.txt";
     private static final String TRIPS_FILE_NAME = "idfm_data/trips.txt";
     
-    //ID;Short Name;Long Name;Route Type;Color;Route URL;Shape;id_ilico;OperatorName;NetworkName;URL;long_name_first;geo_point_2d
 
-    // IDF mobilite csv formats 
+    /** Index des colonnes du fichier CSV des traces */
     private static final int IDFM_TRACE_ID_INDEX    = 0;
     private static final int IDFM_TRACE_SNAME_INDEX = 1;
     private static final int IDFM_TRACE_TYPE_INDEX = 3;
     private static final int IDFM_TRACE_COLOR_INDEX = 4;
 
-    //route_id;route_long_name;stop_id;stop_name;stop_lon;stop_lat;OperatorName;shortName;mode;Pointgeo;Nom_commune;Code_insee
-
+    /** Index des colonnes du fichier CSV des arrêts */
     private static final int IDFM_STOPS_RID_INDEX  = 0;
     private static final int IDFM_STOPS_ID_INDEX = 2;
     private static final int IDFM_STOPS_NAME_INDEX = 3;
     private static final int IDFM_STOPS_LON_INDEX  = 4;
     private static final int IDFM_STOPS_LAT_INDEX  = 5;
 
-    //the useful indexes for stop_times.txt file
+    /** Index utiles du fichier stop_times.txt */
     private static final int SCHEDULE_TRIP_ID = 0;
     private static final int SCHEDULE_DEPARTURES_TIME = 2;
     private static final int SCHEDULE_STOPS_ID = 5;
     
-    //the useful indexes for trips.txt file
+    /** Index utiles du fichier trips.txt */
     private static final int IDFM_ROUTE_ID = 0;
     private static final int IDFM_TRIP_ID = 2;
 
     
-    /** Main entry point for the extractor of IDF mobilite data into a network as
-     * defined by this application.
-     * 
-     * @param destination The destination file */
+    /**
+     * Point d'entrée du programme. Remplit les fichiers clients à partir des
+     * données des trajets, horaires et arrêts.
+     *
+     * @param args les chemins des fichiers à générer : carte, jonctions, horaires
+     */
     public static void parse(String[] args) {
-    	// map <route_id, traceEntry>
-        Map<String, TraceEntry> traces = new HashMap<>();
+        System.out.println("Création des fichiers en cours...\n");
+
+        Map<String, TraceEntry> traces = new TreeMap<>();
         fillMapTraceEntries(traces);
         cleanTraces(traces);
         
-        // map <route_id, list<trip_id>>
         Map<String, List<String>> tripsByRoutes = createMapRoutesAndTripsData();
-        // map <trip_id, list<pair<horaire,stopId>>>
         Map<String, List<Pair<String, String>>> itinerariesByTrip = findItineraryForEachTrip();
         
         addPathsAndDeparturesToTraces(traces, tripsByRoutes, itinerariesByTrip);
         
-        System.out.println("Le nombre de lignes avant création des fichiers est " + traces.size() +"\n");
-        printNumberOfStops(traces);
+        //System.out.println("Le nombre de lignes avant création des fichiers est " + traces.size() +"\n");
+        //printNumberOfStops(traces);
         
         File directory = new File(args[2]);
         if (!directory.exists()) {
@@ -108,10 +129,14 @@ public class IDFMNetworkExtractor {
         fillScheduleFiles(traces, directory);
         fillJunctionsFile(args[1], traces);
         fillMapDataFile(args[0], traces);
-        
+        System.out.println("Fichiers clients créés avec succès.");
     }
     
-    
+    /**
+     * Affiche le nombre total de quais contenus dans toutes les lignes de transport.
+     *
+     * @param traces la map des lignes de transport
+     */
     private static void printNumberOfStops(Map<String, TraceEntry> traces) {
     	int cptrStops = 0;
     	for (Map.Entry<String, TraceEntry> entry : traces.entrySet()) {
@@ -123,6 +148,12 @@ public class IDFMNetworkExtractor {
     	System.out.println("Le nombre de quais avant création des fichiers est "+cptrStops +"\n");
     }
     
+    /**
+     * Remplit le fichier des données de carte à partir de la map des traces.
+     *
+     * @param file   chemin du fichier à créer
+     * @param traces map des lignes de transport
+     */
     private static void fillMapDataFile(String file, Map<String, TraceEntry> traces) {
     	CSVStreamProviderForMapData provider = new CSVStreamProviderForMapData(traces);
 
@@ -134,7 +165,11 @@ public class IDFMNetworkExtractor {
         }
     }
     
-    //remplissage de la map traces à partir des URLs idfm
+    /**
+     * Remplit la map des lignes de transport à partir des fichiers CSV en ligne.
+     *
+     * @param traces la map à remplir
+     */
     private static void fillMapTraceEntries(Map<String, TraceEntry> traces) {
         try {
             CSVTools.readCSVFromURL(TRACE_FILE_URL,
@@ -152,7 +187,14 @@ public class IDFMNetworkExtractor {
     }
     
    
-    //finit de compléter la map traces en ajoutant aux TraceEntry les liste departures et map paths
+
+    /**
+     * Ajoute aux objets TraceEntry les départs et les chemins associés.
+     *
+     * @param traces            map des lignes
+     * @param tripsByRoutes     map route_id → liste de trip_id
+     * @param itinerariesByTrip map trip_id → liste de (horaire, arrêt)
+     */
     private static void addPathsAndDeparturesToTraces(Map<String, TraceEntry> traces, 
     		Map<String, List<String>> tripsByRoutes, 
     		Map<String, List<Pair<String, String>>> itinerariesByTrip) {
@@ -161,7 +203,7 @@ public class IDFMNetworkExtractor {
             String routeId = routeEntry.getKey();
             List<String> trips = routeEntry.getValue();
             
-            //verif qu'on a bien les infos dans la map traces
+            //verifie qu'on a bien les infos dans la map traces
             TraceEntry trace = traces.get(routeId);
             if (trace == null) {
                 continue;
@@ -178,6 +220,15 @@ public class IDFMNetworkExtractor {
     }
    
     
+    /**
+     * Complète les départs et chemins d’un objet TraceEntry donné.
+     *
+     * @param trace             ligne concernée
+     * @param trips             trips associés à cette ligne
+     * @param itinerariesByTrip map des trips vers leurs itinéraires
+     * @param departures        map à remplir : terminus → (heure, sous-ligne)
+     * @param paths             map à remplir : sous-ligne → liste d'arrêts
+     */
     private static void fillDeparturesAndPathsForTrace(TraceEntry trace,
     		List<String> trips, 
     		Map<String, List<Pair<String, String>>> itinerariesByTrip,
@@ -186,7 +237,6 @@ public class IDFMNetworkExtractor {
     	
     	Map<List<String>, String> subLines = new HashMap<>(); 
     	for (String tripId : trips) {
-        	// [("05:55","IDFM:22241");...]
         	List<Pair<String, String>> itinerary = itinerariesByTrip.get(tripId);
         	if (itinerary == null || itinerary.isEmpty()) {
                 continue;
@@ -239,6 +289,13 @@ public class IDFMNetworkExtractor {
         }
     }
     
+
+    /**
+     * Remplit le fichier des jonctions à partir des lignes de transport.
+     *
+     * @param junctionsFile chemin du fichier de jonctions à écrire
+     * @param traces         map des lignes
+     */
     private static void fillJunctionsFile(String junctionsFile, Map<String, TraceEntry> traces) {
         CSVStreamProviderForJunctions provider = new CSVStreamProviderForJunctions(traces);
         
@@ -250,12 +307,11 @@ public class IDFMNetworkExtractor {
         }
     }
     
-    
-    /**associe une ligne de transport avec tous les trajets fait dans la journée 
-     * (donc peut y avoir des doublons d'itinéraires car un même itinéraire à 
-     * 8:00 et à 12:00 ne représente pas un même trip)
-     * 
-     * @return
+    /**
+     * Construit une map associant chaque route à tous ses trips en se 
+     * basant sur le contenu du fichier fourni par IDFM.
+     *
+     * @return map de route_id → liste de trip_id
      */
     private static Map<String, List<String>> createMapRoutesAndTripsData() {
     	Map<String, List<String>> tripsByRoutes = new HashMap<>();
@@ -268,10 +324,10 @@ public class IDFMNetworkExtractor {
         return tripsByRoutes;
     }
     
-    /** lie un trip avec l'ensemble de ses stations parcourues dans le bon ordre
-     * pour l'instant dans cette map on peut avoir deux trip_id différents mais 
-     * les ordres des stations peuvent etre identiques
-     * @return
+    /**
+     * Construit une map associant chaque trip à son itinéraire détaillé.
+     *
+     * @return map de trip_id → liste de (horaire, stop_id)
      */
     private static Map<String, List<Pair<String, String>>> findItineraryForEachTrip() {
     	Map<String, List<Pair<String, String>>> itinerariesByTrip = new HashMap<>();
@@ -284,19 +340,28 @@ public class IDFMNetworkExtractor {
         return itinerariesByTrip;
     }
    
-    
+    /**
+     * Remplit les fichiers d’horaires pour chaque ligne.
+     * Un fichier est généré par couple Idligne-terminus et contient les départs selon les quais terminus.
+     *
+     * @param traces    la map des lignes contenant toutes les informations à écrire
+     * @param directory le répertoire dans lequel créer les fichiers
+     */
+
     private static void fillScheduleFiles(Map<String, TraceEntry> traces, File directory) {
     	for (TraceEntry trace : traces.values()) {
+    		String lineId = trace.getLineId();
     		String lineName = trace.getLineName();
-    		String lineType = trace.getLineType();
     		for (Map.Entry<String,List<Pair<String,String>>> dep : trace.getDepartures().entrySet()) {
     			String stopName = dep.getKey();
     			List<Pair<String, String>> timesAndJunctions = dep.getValue();
-    			String sanitizedStopName = stopName.replaceAll("[\\\\/]", "_"); //pour eviter les erreurs liés aux / et \ dans les noms des stations
-                String fileName = directory + "/" + lineName + "_" + lineType + "_" + sanitizedStopName + ".csv";
+    			String sanitizedStopName = stopName.replaceAll("[\\\\/:*?\"<>|]", ""); //pour eviter les erreurs liées aux / et \ dans les noms des stations
+    			String sanitizedLineId = lineId.replaceAll("[\\\\/:*?\"<>|]", "");
+    			String fileName = directory.toString() + "/" + lineName + "_" + sanitizedLineId + "_" + sanitizedStopName + ".csv";
+    			//System.out.println("nom fichier :" + fileName);
                 File file = new File(fileName);
                 
-                CSVStreamProviderForSchedules provider = new CSVStreamProviderForSchedules(timesAndJunctions, lineName, stopName);
+                CSVStreamProviderForSchedules provider = new CSVStreamProviderForSchedules(timesAndJunctions, sanitizedLineId, stopName);
                 
                 try {
                 	CSVTools.writeCSVToFile(fileName, Stream.generate(provider).takeWhile(Objects::nonNull));
@@ -309,9 +374,14 @@ public class IDFMNetworkExtractor {
     }
     
     	
-    
+    /**
+     * Complète la map des trajets par ligne à partir d'une ligne du fichier trips.txt.
+     *
+     * @param line           la ligne extraite du fichier CSV
+     * @param tripsByRoutes  la map des routes vers leurs trips à compléter
+     */
     private static void fillTripsByRoutesMap(String[] line, Map<String, List<String>> tripsByRoutes) {
-    	String routeId = line[IDFM_ROUTE_ID];
+    	String routeId = line[IDFM_ROUTE_ID].replaceAll(":", "");
     	String tripId = line[IDFM_TRIP_ID];
         // Ajouter routeId en tant que clé si pas présente dans la map
         tripsByRoutes.putIfAbsent(routeId, new ArrayList<>());
@@ -320,10 +390,12 @@ public class IDFMNetworkExtractor {
         tripsByRoutes.get(routeId).add(tripId);
     }
     
-    /**permet de trier les couples (depart, stop_depart) par heure de depart croissantes
-     * pas de problème avec minuit car dans le fichier stop_times c'est écrit "24:00:00"
-     * @param itinerariesByTrip
-     * @param newEntry
+    /**
+     * Trie et insère un horaire de départ dans la liste correspondante,
+     * de manière à conserver l’ordre chronologique.
+     *
+     * @param itinerariesByTrip       la liste des horaires de départ
+     * @param newEntry  le départ à insérer, sous forme de paire (heure, numéro de sous-ligne)
      */
     private static void insertSorted(List<Pair<String, String>> itinerariesByTrip, Pair<String, String> newEntry) {
         int index = 0;
@@ -333,6 +405,12 @@ public class IDFMNetworkExtractor {
         itinerariesByTrip.add(index, newEntry);
     }
     
+    /**
+     * Ajoute à la map un itinéraire (séquence d’arrêts et d’horaires) pour un trip donné.
+     *
+     * @param line               la ligne du fichier stop_times.txt représentant un arrêt d’un trip
+     * @param itinerariesByTrip  la map des trips vers leur liste (heure, id arrêt) à compléter
+     */
     private static void addItineraryToATrip(String[] line, Map<String, List<Pair<String, String>>> itinerariesByTrip) {
     	String tripId = line[SCHEDULE_TRIP_ID];
     	String timeOfDeparture = line[SCHEDULE_DEPARTURES_TIME];
@@ -344,7 +422,11 @@ public class IDFMNetworkExtractor {
     }
 
     
-    //supprime toutes les traces dont on a pas trouvé de stops leur appartenant
+    /**
+     * Supprime toutes les lignes de transport vides.
+     * 
+     * @param traces la map des lignes à nettoyer
+     */
     private static void cleanTraces(Map<String, TraceEntry> traces) {
     	Set<String> toRemove = new HashSet<>();
     	for (Entry<String, TraceEntry> traceEntry : traces.entrySet()) {
@@ -354,14 +436,23 @@ public class IDFMNetworkExtractor {
     		}
     	}
     	for (String string : toRemove) {
+    		//System.out.println(string);
             traces.remove(string);
         }
+    	//System.out.println("Nombre de lignes supprimées car ne possèdent aucun stops : " + toRemove.size() + "\n");
     }
 
     
-    //construit les listes désordonnées de quais appartenant à chacune des lignes de transport
+    /**
+     * Ajoute un arrêt (depuis le fichier des arrêts) à la ligne correspondante dans la map.
+     * L’arrêt est associé à son identifiant de ligne, si existant dans la map.
+     *
+     * @param line   la ligne du fichier CSV contenant les infos de l’arrêt
+     * @param traces la map des lignes à compléter
+     */
     private static void addStop(String[] line, Map<String, TraceEntry> traces) {
-    	String routeId = line[IDFM_STOPS_RID_INDEX];
+    	String routeId = line[IDFM_STOPS_RID_INDEX].replaceAll(":", "");
+    	
     	if (traces.containsKey(routeId)) {
     		StopEntry stop = new StopEntry(line[IDFM_STOPS_NAME_INDEX], line[IDFM_STOPS_ID_INDEX],
                 Double.parseDouble(line[IDFM_STOPS_LON_INDEX]),
@@ -370,10 +461,25 @@ public class IDFMNetworkExtractor {
     	}
     }
 
-    
+    /**
+     * Ajoute une ligne (depuis le fichier des tracés) à la map des lignes.
+     * Crée une nouvelle entrée TraceEntry si l’identifiant de ligne n’est pas encore présent.
+     *
+     * @param line   la ligne du fichier CSV contenant les infos sur la ligne de transport
+     * @param traces la map des lignes à compléter
+     */
     private static void addLine(String[] line, Map<String, TraceEntry> traces) {
-    	TraceEntry entry = new TraceEntry(line[IDFM_TRACE_SNAME_INDEX], line[IDFM_TRACE_ID_INDEX], line[IDFM_TRACE_TYPE_INDEX], line[IDFM_TRACE_COLOR_INDEX]);
-    	traces.put(line[IDFM_TRACE_ID_INDEX], entry);
+    	String id = line[IDFM_TRACE_ID_INDEX];
+    	String sanitizedLineId = id.replaceAll(":", "");
+        TraceEntry newEntry = new TraceEntry(line[IDFM_TRACE_SNAME_INDEX], sanitizedLineId, line[IDFM_TRACE_TYPE_INDEX], line[IDFM_TRACE_COLOR_INDEX]);
+        
+        if (traces.containsKey(id)) {
+            System.out.println("Attention : Un doublon a été détecté pour l'ID " + sanitizedLineId);
+            System.out.println("Ancienne entrée : " + traces.get(sanitizedLineId));
+            System.out.println("Nouvelle entrée : " + newEntry);
+        }
+        
+        traces.put(sanitizedLineId, newEntry);
     }
 
 }

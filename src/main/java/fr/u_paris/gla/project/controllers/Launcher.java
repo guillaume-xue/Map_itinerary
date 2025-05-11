@@ -20,17 +20,19 @@ public class Launcher {
   /**
    * Constructor.
    */
-  public Launcher() {
+  public Launcher(String[] args, boolean isCSVCreate) {
     // Create and display the splash screen
     JWindow splashScreen = createSplashScreen();
     splashScreen.setVisible(true);
-    // Close the splash screen
-    fadeOut(splashScreen);
-    splashScreen.dispose();
     // Set the system property for the user agent
     System.setProperty("http.agent", "MyCustomApp/1.0 (https://example.com)");
+    // Set the system property for the menu bar
+    // This is for MacOS to use the menu bar at the top of the screen
+    System.setProperty("apple.laf.useScreenMenuBar", "true");
     // Initialize the GUI
-    new GUIController();
+    GUIController guiController = new GUIController(args, isCSVCreate);
+    splashScreen.dispose();
+    guiController.launch();
   }
 
   /**
@@ -58,24 +60,6 @@ public class Launcher {
     window.setLocationRelativeTo(null);
 
     return window;
-  }
-
-  /**
-   * Adds a fade-out effect when closing the window.
-   *
-   * @param window the window to close
-   */
-  private static void fadeOut(JWindow window) {
-    float opacity = 1.0f;
-    while (opacity > 0.0f) {
-      window.setOpacity(opacity);
-      opacity -= 0.1f;
-      try {
-        Thread.sleep(50);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
   }
 
 }
